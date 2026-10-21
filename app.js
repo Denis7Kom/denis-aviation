@@ -11,7 +11,7 @@ const flights=[
 {from:'VHHH',to:'ZSPD',ru:'Гонконг → Шанхай Пудун',en:'Hong Kong → Shanghai Pudong',callsign:'CPA360',reg:'B-HNL',aircraft:'Boeing 777',fleet:null,duration:'02:33',a:[22.308,113.9185],b:[31.1443,121.8083]}
 ];
 let flightIndex=0,routeProgress=0,routePlaying=false,routeLongitude=90,routeLatitude=45;
-let fanAngle=0,fanSpeed=0,systemsClock=0,fansOn=true,lightsOn=true;
+let fanAngle=0,fanSpeed=0,systemsClock=0,lightsOn=true;
 let gearDown=false,gearPosition=0,flapsDown=false,flapPosition=0,autoTurn=true,autoTurnResume=0,detail='all',zoom=1,visualZoom=1,visualFocus=[0,0,0],visualAngle=26*D;
 let pitch=0,targetPitch=0,airspeed=250,altitude=12000,heading=280,verticalSpeed=0;
 let simRate=5,ownEast=0,ownNorth=0,trailClock=0,radarRange=5;const ownTrail=[[0,0]];
@@ -45,7 +45,20 @@ function radius(z){let i=1;while(i<profile.length-1&&z/a.len>profile[i][0])i++;c
 const ring=(z,rad)=>Array.from({length:N},(_,i)=>{const t=i/N*Math.PI*2;return [Math.cos(t)*r*shapeRadius(z,rad),Math.sin(t)*r*shapeRadius(z,rad)*.97+(z<-.4?-.13:0),z*a.len]});
 for(let k=1;k<profile.length;k++){const p=ring(...profile[k-1]),q=ring(...profile[k]);for(let j=0;j<N;j++)add([p[j],q[j],q[(j+1)%N],p[(j+1)%N]])}
 function tube(x,y,sections,color=body,n=24){for(let k=1;k<sections.length;k++)for(let j=0;j<n;j++){const at=(s,t)=>[x+Math.cos(t)*s[1],y+Math.sin(t)*s[1],s[0]];add([at(sections[k-1],j/n*2*Math.PI),at(sections[k],j/n*2*Math.PI),at(sections[k],(j+1)/n*2*Math.PI),at(sections[k-1],(j+1)/n*2*Math.PI)],color)}}
-function foil(stations,sign,color,movable=false){const fractions=[0,.12,.38,.72,1];for(let k=1;k<stations.length;k++){for(let j=1;j<fractions.length;j++)for(const side of [-1,1]){part=movable&&k<=2&&j===fractions.length-1?{kind:'flap',sign,hinge:stations[k-1],end:stations[k]}:null;const at=(s,f)=>[sign*s[0],s[1]+side*Math.sin(Math.PI*f)*s[4],s[2]+f*s[3]];add([at(stations[k-1],fractions[j-1]),at(stations[k],fractions[j-1]),at(stations[k],fractions[j]),at(stations[k-1],fractions[j])],side>0?color:color.map(v=>v*.65))}const s=stations[k-1],t=stations[k];part=movable&&k<=2?{kind:'flap',sign,hinge:s,end:t}:null;add([[sign*s[0],s[1],s[2]+s[3]],[sign*t[0],t[1],t[2]+t[3]],[sign*t[0],t[1]-.08,t[2]+t[3]],[sign*s[0],s[1]-.08,s[2]+s[3]]],[63,99,140]);part=null}}
+function foil(stations,sign,color,movable=false){
+ const fractions=[0,.12,.38,.72,1],at=(s,f,side=1)=>[sign*s[0],s[1]+side*Math.sin(Math.PI*f)*s[4],s[2]+f*s[3]];
+ for(let k=1;k<stations.length;k++){
+  const s=stations[k-1],t=stations[k],slat=movable&&k<=3?{kind:'slat',sign,hinge:s,end:t}:null,flap=movable&&k<=2?{kind:'flap',sign,hinge:s,end:t}:null;
+  for(let j=1;j<fractions.length;j++)for(const side of [-1,1]){
+   part=j===1?slat:j===fractions.length-1?flap:null;
+   add([at(s,fractions[j-1],side),at(t,fractions[j-1],side),at(t,fractions[j],side),at(s,fractions[j],side)],side>0?color:color.map(v=>v*.65));
+  }
+  // Close the moving leading edge; the exposed gap remains visible on extension.
+  if(slat){part=slat;add([at(s,.12,1),at(t,.12,1),at(t,.12,-1),at(s,.12,-1)],[94,130,165]);part=null;add([at(s,.12,1),at(t,.12,1),at(t,.12,-1),at(s,.12,-1)],[35,60,86]);}
+  part=flap;add([[sign*s[0],s[1],s[2]+s[3]],[sign*t[0],t[1],t[2]+t[3]],[sign*t[0],t[1]-.08,t[2]+t[3]],[sign*s[0],s[1]-.08,s[2]+s[3]]],[63,99,140]);part=null;
+ }
+}
+
 for(const sign of [-1,1]){
 const span=a.span/2,stations=[[r*.65,-.8,-9,16,.7],[span*.3,-.65,-5,11,.48],[span*.65,.05,2.7,6,.24],[span*.91,1.2,8.8,2.8,.09],[span,1.8,11.3,a.code==='B77W'?1.1:1.8,.04]];
 if(spec.tip>2)stations.push([span+.35,2.6,11.9,1.5,.04],[span+.45,1.8+spec.tip,13.4,.75,.02]);
@@ -95,7 +108,7 @@ function articulatedPoint(p,part,a,gear=gearPosition,flaps=flapPosition){
  const g=smoothStep(gear),f=smoothStep(flaps);
  if(part.kind==='mainGear'){const pivot=[part.sign*3.2,-1.4,6.3],q=p.map((v,i)=>v-pivot[i]),t=-part.sign*(1-g)*Math.PI*.49;return [pivot[0]+q[0]*Math.cos(t)-q[1]*Math.sin(t),pivot[1]+q[0]*Math.sin(t)+q[1]*Math.cos(t)+(1-g)*.6,p[2]]}
  if(part.kind==='noseGear'){const z=-a.len/2+8.6,y=-1.45,qy=p[1]-y,qz=p[2]-z,t=-(1-g)*Math.PI*.49;return [p[0],y+qy*Math.cos(t)-qz*Math.sin(t),z+qy*Math.sin(t)+qz*Math.cos(t)]}
- if(part.kind==='flap'){const h=part.hinge,e=part.end,origin=[part.sign*h[0],h[1],h[2]+h[3]*.72],end=[part.sign*e[0],e[1],e[2]+e[3]*.72],axis=end.map((v,i)=>v-origin[i]),n=Math.hypot(...axis),k=axis.map(v=>v/n),q=p.map((v,i)=>v-origin[i]),t=part.sign*f*32*D,co=Math.cos(t),si=Math.sin(t),dot=k.reduce((v,x,i)=>v+x*q[i],0),cross=[k[1]*q[2]-k[2]*q[1],k[2]*q[0]-k[0]*q[2],k[0]*q[1]-k[1]*q[0]];return q.map((v,i)=>origin[i]+v*co+cross[i]*si+k[i]*dot*(1-co)+(i===2?.9*f:0))}
+ if(part.kind==='flap'||part.kind==='slat'){const slat=part.kind==='slat',chord=slat?.12:.72;const h=part.hinge,e=part.end,origin=[part.sign*h[0],h[1],h[2]+h[3]*chord],end=[part.sign*e[0],e[1],e[2]+e[3]*chord],axis=end.map((v,i)=>v-origin[i]),n=Math.hypot(...axis),k=axis.map(v=>v/n),q=p.map((v,i)=>v-origin[i]),t=part.sign*f*(slat?-18:32)*D,co=Math.cos(t),si=Math.sin(t),dot=k.reduce((v,x,i)=>v+x*q[i],0),cross=[k[1]*q[2]-k[2]*q[1],k[2]*q[0]-k[0]*q[2],k[0]*q[1]-k[1]*q[0]];return q.map((v,i)=>origin[i]+v*co+cross[i]*si+k[i]*dot*(1-co)+(i===2?(slat?-.95:.9)*f:i===1&&slat?-.12*f:0))}
  return p;
 }
 // Small local pulses: navigation lamps stay steady; strobes use a double flash.
@@ -194,16 +207,15 @@ const q=routePoint(routeProgress),v=p(...q,1+Math.sin(routeProgress*Math.PI)*.12
 function fleetLog(){const matches=flights.filter(f=>f.fleet===aircraftIndex);$('#fleet-log-title').textContent=fleet[aircraftIndex].name;$('#fleet-log-description').textContent=matches.length?(lang==='en'?'Selected flights on this aircraft':'Избранные рейсы на этом самолёте'):(lang==='en'?'No matching flights in the selected logbook entries.':'В выбранных записях журнала рейсов на этом самолёте пока нет.');const box=$('#fleet-log-flights');box.innerHTML='';for(const f of matches){const b=document.createElement('button');b.className='fleet-flight';b.textContent=f.from+' → '+f.to+' / '+f.duration+' ↗';b.addEventListener('click',()=>selectFlight(flights.indexOf(f)));box.append(b)}}
 function modelTarget(){return detail==='cockpit'?{focus:[0,1,-fleet[aircraftIndex].len/2+5.3],zoom:3}:detail==='engines'?{focus:[airframe(fleet[aircraftIndex]).ex,-3.25,airframe(fleet[aircraftIndex]).ez+2.5],zoom:2.25}:detail==='gear'?{focus:[0,-5,5],zoom:2.15}:{focus:[0,0,0],zoom:1}}
 function snapModel(){gearPosition=gearDown?1:0;flapPosition=flapsDown?1:0;articulationText();const t=modelTarget();visualZoom=t.zoom*zoom;visualFocus=[...t.focus];visualAngle=angle}
-function updateModel(dt){if(!model.visible)return;systemsClock=(systemsClock+dt)%167400;const fanTarget=fansOn?.0018:0;fanSpeed+=(fanTarget-fanSpeed)*(1-Math.exp(-dt/850));if(!fansOn&&fanSpeed<.000005)fanSpeed=0;fanAngle=(fanAngle+fanSpeed*dt)%(Math.PI*2);const approach=(value,target,step)=>value<target?Math.min(target,value+step):Math.max(target,value-step);gearPosition=approach(gearPosition,gearDown?1:0,dt/3200);flapPosition=approach(flapPosition,flapsDown?1:0,dt/2600);articulationText();if(autoTurn&&!dragging&&detail==='all'&&phase>=autoTurnResume){angle=((angle+dt*.000032+Math.PI)%(Math.PI*2))-Math.PI;$('#rotation').value=Math.round(angle/D)}const t=modelTarget(),s=Math.min(dt/220,1);visualZoom+=(t.zoom*zoom-visualZoom)*s;visualFocus=visualFocus.map((v,i)=>v+(t.focus[i]-v)*s);visualAngle+=(((angle-visualAngle+Math.PI*3)%(Math.PI*2))-Math.PI)*s}
+function updateModel(dt){if(!model.visible)return;systemsClock=(systemsClock+dt)%167400;fanSpeed+=(.0018-fanSpeed)*(1-Math.exp(-dt/850));fanAngle=(fanAngle+fanSpeed*dt)%(Math.PI*2);const approach=(value,target,step)=>value<target?Math.min(target,value+step):Math.max(target,value-step);gearPosition=approach(gearPosition,gearDown?1:0,dt/3200);flapPosition=approach(flapPosition,flapsDown?1:0,dt/2600);articulationText();if(autoTurn&&!dragging&&detail==='all'&&phase>=autoTurnResume){angle=((angle+dt*.000032+Math.PI)%(Math.PI*2))-Math.PI;$('#rotation').value=Math.round(angle/D)}const t=modelTarget(),s=Math.min(dt/220,1);visualZoom+=(t.zoom*zoom-visualZoom)*s;visualFocus=visualFocus.map((v,i)=>v+(t.focus[i]-v)*s);visualAngle+=(((angle-visualAngle+Math.PI*3)%(Math.PI*2))-Math.PI)*s}
 $$('[data-detail]').forEach(b=>b.addEventListener('click',()=>{detail=b.dataset.detail;autoTurnResume=phase+3000;angle=(detail==='engines'?-12:detail==='cockpit'?20:detail==='gear'?35:26)*D;$('#rotation').value=Math.round(angle/D);$$('[data-detail]').forEach(n=>n.setAttribute('aria-pressed',String(n===b)));if(!motion)snapModel();drawPlane()}));
 $('#model-zoom').addEventListener('input',e=>{zoom=+e.target.value/100;if(!motion)snapModel();drawPlane()});
 function articulationText(){const en=lang==='en',gearMoving=Math.abs(gearPosition-(gearDown?1:0))>.001,flapMoving=Math.abs(flapPosition-(flapsDown?1:0))>.001;
  for(const [id,on,moving,label,state] of [['gear-toggle',gearDown,gearMoving,en?'GEAR':'ШАССИ',gearMoving?(gearDown?(en?'EXTENDING':'ВЫПУСК'):(en?'RETRACTING':'УБОРКА')):(gearDown?(en?'DOWN':'ВЫПУЩЕНЫ'):(en?'UP':'УБРАНЫ'))],['flaps-toggle',flapsDown,flapMoving,en?'FLAPS':'ЗАКРЫЛКИ',Math.round(smoothStep(flapPosition)*32)+'°']]){const b=$('#'+id);b.setAttribute('aria-pressed',String(on));b.querySelector('.control-name').textContent=label;const output=b.querySelector('output');if(output.textContent!==state)output.textContent=state}
- $('#fans-toggle').setAttribute('aria-pressed',String(fansOn));$('#fans-toggle .control-name').textContent=en?'FANS':'ВЕНТИЛЯТОРЫ';$('#lights-toggle').setAttribute('aria-pressed',String(lightsOn));$('#lights-toggle .control-name').textContent=en?'LIGHTS':'МАЯЧКИ';$('#auto-turn').setAttribute('aria-pressed',String(autoTurn));$('#auto-turn .control-name').textContent=en?'AUTO ROTATE':'АВТОПОВОРОТ';
+ $('#lights-toggle').setAttribute('aria-pressed',String(lightsOn));$('#lights-toggle .control-name').textContent=en?'LIGHTS':'ОГНИ';$('#auto-turn').setAttribute('aria-pressed',String(autoTurn));$('#auto-turn .control-name').textContent=en?'AUTO ROTATE':'АВТОПОВОРОТ';
 }
 $('#gear-toggle').addEventListener('click',()=>{gearDown=!gearDown;if(!motion)snapModel();articulationText();drawPlane()});
 $('#flaps-toggle').addEventListener('click',()=>{flapsDown=!flapsDown;if(!motion)snapModel();articulationText();drawPlane()});
-$('#fans-toggle').addEventListener('click',()=>{fansOn=!fansOn;articulationText();drawPlane()});
 $('#lights-toggle').addEventListener('click',()=>{lightsOn=!lightsOn;articulationText();drawPlane()});
 $('#auto-turn').addEventListener('click',()=>{autoTurn=!autoTurn;autoTurnResume=phase;articulationText()});
 
