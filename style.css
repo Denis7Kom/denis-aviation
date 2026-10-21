@@ -55,3 +55,5 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 
 
 .aircraft-actions{display:flex;flex-wrap:wrap;gap:8px}.aircraft-actions .button{display:flex;align-items:center;gap:10px;background:#0c192a;color:#c8def1;border:1px solid #41628780;border-radius:4px;cursor:pointer}.aircraft-actions .button:hover{background:#132c46;border-color:#88caff}.aircraft-actions output{font:8px var(--mono);color:#8eacc7;min-width:2ch}.aircraft-actions button[aria-pressed=true] output{color:var(--lime)}.aircraft-actions .button:focus-visible{outline:2px solid #8fceff;outline-offset:3px}@media(max-width:650px){.aircraft-actions{width:100%}.aircraft-actions .button{flex:1;justify-content:center;min-height:42px}}
+
+.airframe-signature{margin:0;padding:15px 24px;background:#091320;border:1px solid var(--line);border-top:0;color:#94b8d9;font:10px/1.8 var(--mono);letter-spacing:.02em}.stats .stat:last-child small{max-width:280px;line-height:1.7}@media(max-width:650px){.airframe-signature{padding:14px 16px;font-size:9px}}
