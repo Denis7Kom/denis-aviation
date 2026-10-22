@@ -178,3 +178,9 @@ body.motion-off .radar-switch:after{transition:none}
 @media(max-width:760px){.contact{padding:48px 0 20px}.contact-panel{grid-template-columns:1fr;gap:24px;padding:26px 22px;border-radius:9px}.contact h2{font-size:35px;letter-spacing:-1.3px;margin:18px 0 14px}.contact .contact-main>p{font-size:12px;margin-bottom:20px}.contact .contact-telegram{width:100%;min-height:50px;padding:14px 16px;font-size:10px;box-sizing:border-box}.contact-email{font-size:12px}.contact-elsewhere{padding:22px 0 0;border-left:0;border-top:1px solid #78b9f225}.contact-elsewhere h3{margin-bottom:8px}.contact-destination{padding:16px 0;min-height:74px}.contact-destination:first-of-type{border-top:0}.contact-destination strong{font-size:15px}.contact .eyebrow{font-size:8px}.contact-bottom{padding-top:8px}}
 @media(max-width:380px){.contact-panel{padding:24px 18px}.contact h2{font-size:31px}}
 @media(prefers-reduced-motion:reduce){.contact-destination,.contact-destination svg{transition:none}}
+
+/* Reserve breathing room above focused flight sliders. */
+.hud-inputs label{row-gap:8px}
+/* Let the flight deck fit narrow phones without intrinsic grid overflow. */
+.deck-grid>div{min-width:0}.atc-invitation .procedure-tabs button{min-width:0;overflow-wrap:anywhere}
+@media(max-width:760px){.deck-grid{grid-template-columns:minmax(0,1fr)}}
