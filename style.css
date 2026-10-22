@@ -133,3 +133,10 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .atc-join-steps{list-style:decimal;padding-left:19px;margin:0 0 20px}.atc-join-steps li{padding-left:5px;margin-bottom:15px;color:#80b9eb}.atc-join-steps strong{display:block;color:#d1e6fa;font-size:12px;font-weight:600}.atc-join-steps span{display:block;color:#9db1c7;font-size:11px;line-height:1.8;margin-top:4px}
 .atc-qualification>.tiny{font-size:8px;color:#a7d8f9;letter-spacing:1px}.atc-services{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}.atc-services span{border:1px solid #73baff50;background:#73baff0a;color:#b5dfff;padding:6px 9px;font:9px/1.5 var(--mono)}.atc-qualification--training{border-top:1px solid var(--line);margin-top:20px;padding-top:19px}.atc-qualification--training>.tiny{color:#d8b584}.atc-qualification--training .atc-services span{border-color:#ffc57840;color:#ebc794;background:#ffc57808}
 @media(max-width:650px){.atc-invitation{margin-top:25px}.atc-invitation-heading{padding:20px 16px 10px}.atc-invitation-heading h4{font-size:22px}.atc-callsign strong{font-size:27px}.atc-invitation .procedure-tabs button{font-size:8px;min-height:54px;padding:11px 5px}.atc-invitation .procedure-panel{padding:20px 16px;min-height:300px}.atc-invitation .procedure-panel p{font-size:12px}}
+
+/* Let each ATC tab determine its own height; JS animates between measured sizes. */
+.atc-invitation .procedure-panel{min-height:0}.atc-invitation .procedure-panel.is-transitioning{overflow:hidden}
+.atc-invitation [data-atc-panel]{display:flow-root}
+.atc-invitation .procedure-tabs button{transition:color .18s ease,background-color .18s ease,border-color .18s ease}
+.motion-off .atc-invitation .procedure-tabs button{transition:none}
+@media(prefers-reduced-motion:reduce){.atc-invitation .procedure-tabs button{transition:none}}
