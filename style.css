@@ -92,3 +92,12 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 #airport-role{max-width:55%;text-align:right;line-height:1.6;color:#91bde6}#airport-role[data-role=main]{color:var(--lime)}
 .globe-legend{position:absolute;top:36px;left:10px;right:10px;display:flex;flex-wrap:wrap;gap:12px;font:8px/1.5 var(--mono);color:#93caff;pointer-events:none}.globe-legend span:before{content:'';display:inline-block;width:5px;height:5px;margin-right:6px;border-radius:50%;background:#93caff;vertical-align:middle}.globe-legend .legend-main{color:#c2ff8a}.globe-legend .legend-main:before{background:#c2ff8a;box-shadow:0 0 0 2px #c2ff8a33}
 @media(max-width:650px){.network-category{font-size:10px;letter-spacing:1px}.airport-list--main{grid-template-columns:repeat(3,minmax(0,1fr))}.airport-list--main .airport-btn{padding:12px 9px;min-height:80px;gap:7px}.airport-list--main .airport-btn span{font-size:9px}.globe-legend{top:24px;font-size:7px;gap:10px}#airport-role{font-size:7px}}
+
+/* Favourite airports form an independent category within the network. */
+.network-category--favorite{color:#ffc578}.network-category--favorite small{color:#c6a375}
+.airport-list--favorite{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.airport-list--favorite .airport-btn{min-width:0;min-height:70px;flex-direction:column;align-items:flex-start;justify-content:center;gap:7px;background:linear-gradient(135deg,#50351e44,#101924);border-color:#ffc57833}
+.airport-list--favorite .airport-btn b{color:#ffc578}.airport-list--favorite .airport-btn span{overflow-wrap:anywhere}
+.airport-list--favorite .airport-btn[aria-pressed=true]{border-color:#ffc57899;background:#30261e}
+#airport-role[data-role=favorite],.globe-legend .legend-favorite{color:#ffc578}.globe-legend .legend-favorite:before{background:#ffc578;box-shadow:0 0 0 2px #ffc57822}
+@media(max-width:650px){.airport-list--favorite{grid-template-columns:repeat(2,minmax(0,1fr))}.airport-list--favorite .airport-btn{min-height:66px}.globe-legend{column-gap:10px;row-gap:5px}.globe-bottom #network-totals{font-size:6px;letter-spacing:0}}
