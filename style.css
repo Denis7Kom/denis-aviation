@@ -193,3 +193,7 @@ body.motion-off .radar-switch:after{transition:none}
 /* Compact simulator setup in the about section. */
 .sim-setup{margin:28px 0 0;padding-top:8px;border-top:1px solid var(--line)}.sim-setup-row{display:grid;grid-template-columns:110px minmax(0,1fr);gap:18px;padding:13px 0;align-items:baseline}.sim-setup-row+.sim-setup-row{border-top:1px solid #73baff10}.sim-setup dt{font:9px/1.8 var(--mono);color:var(--muted)}.sim-setup dd{margin:0;display:flex;flex-wrap:wrap;gap:8px 14px;min-width:0}.sim-setup dd span{font-size:11px;line-height:1.8;color:#c1d1e5;overflow-wrap:anywhere}.sim-setup-row:nth-child(2) dd span{color:var(--blue)}
 @media(max-width:600px){.sim-setup-row{grid-template-columns:minmax(0,1fr);gap:6px;padding:12px 0}.sim-setup dd{gap:6px 13px}.sim-setup dt{font-size:8px}}
+
+/* Compact traffic status: icon and text remain understandable without colour. */
+.flight-safety{display:flex;align-items:center;flex-wrap:wrap;gap:6px 9px;padding:9px 12px;min-width:0}.flight-safety>.safety-indicator{display:inline-flex;align-items:center;justify-content:center;flex:0 0 18px;width:18px;height:18px;border:1px solid currentColor;border-radius:50%;font:600 11px/1 var(--mono)}.flight-safety>#flight-safety-title{flex:1 1 140px;min-width:0;font-size:11px;overflow-wrap:anywhere}.flight-safety>small{font-size:9px;white-space:nowrap}.flight-safety>small:empty{display:none}
+@media(max-width:380px){.flight-safety{padding:8px 10px}.flight-safety>small{margin-left:27px}}
