@@ -197,3 +197,5 @@ body.motion-off .radar-switch:after{transition:none}
 /* Compact traffic status: icon and text remain understandable without colour. */
 .flight-safety{display:flex;align-items:center;flex-wrap:wrap;gap:6px 9px;padding:9px 12px;min-width:0}.flight-safety>.safety-indicator{display:inline-flex;align-items:center;justify-content:center;flex:0 0 18px;width:18px;height:18px;border:1px solid currentColor;border-radius:50%;font:600 11px/1 var(--mono)}.flight-safety>#flight-safety-title{flex:1 1 140px;min-width:0;font-size:11px;overflow-wrap:anywhere}.flight-safety>small{font-size:9px;white-space:nowrap}.flight-safety>small:empty{display:none}
 @media(max-width:380px){.flight-safety{padding:8px 10px}.flight-safety>small{margin-left:27px}}
+
+.flight-safety>.safety-indicator{box-sizing:border-box;padding:0;line-height:0}.safety-indicator svg{display:block;width:12px;height:12px;flex:none}
