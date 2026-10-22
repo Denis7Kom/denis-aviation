@@ -199,3 +199,5 @@ body.motion-off .radar-switch:after{transition:none}
 @media(max-width:380px){.flight-safety{padding:8px 10px}.flight-safety>small{margin-left:27px}}
 
 .flight-safety>.safety-indicator{box-sizing:border-box;padding:0;line-height:0}.safety-indicator svg{display:block;width:12px;height:12px;flex:none}
+
+.fleet-variants{position:relative;font:9px var(--mono);color:#bdcee4}.fleet-variants summary{display:flex;align-items:center;gap:6px;list-style:none;cursor:pointer;border:1px solid var(--line);padding:6px 11px;border-radius:3px}.fleet-variants summary::-webkit-details-marker{display:none}.fleet-variants summary svg{width:10px;height:10px;transition:transform .2s}.fleet-variants[open] summary{border-color:#73baff88;color:var(--blue)}.fleet-variants[open] summary svg{transform:rotate(180deg)}.fleet-variants-list{position:absolute;z-index:5;top:calc(100% + 7px);left:50%;transform:translateX(-50%);min-width:120px;padding:12px 14px;background:#0b1422;border:1px solid #73baff55;border-radius:3px;line-height:2;box-shadow:0 8px 24px #0008;white-space:nowrap}.fleet-variants summary:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
