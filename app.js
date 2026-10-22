@@ -17,7 +17,7 @@ let flightIndex=0,routeProgress=0,routePlaying=false,routeLongitude=90,routeLati
 let fanAngle=0,fanSpeed=0,systemsClock=0,lightsOn=true;
 let gearDown=false,gearPosition=0,flapsDown=false,flapPosition=0,autoTurn=true,autoTurnResume=0,detail='all',zoom=1,visualZoom=1,visualFocus=[0,0,0],visualAngle=26*D;
 let pitch=0,targetPitch=0,airspeed=250,altitude=12000,heading=280,verticalSpeed=0;
-let simRate=5,ownEast=0,ownNorth=0,trailClock=0,radarRange=5,radarScale='auto';const radarTraffic=[{east:1.6,north:2.25,label:'SIM01',heading:115,speed:220,altitude:12500},{east:-2.5,north:-.75,label:'SIM02',heading:40,speed:195,altitude:11000},{east:1.8,north:-2,label:'SIM03',heading:310,speed:240,altitude:13000}].map(t=>({...t,startEast:t.east,startNorth:t.north,trail:[[t.east,t.north]]}));let radarCenterOwn=false,radarSelected='USER01',radarHits=[],trafficTrailClock=0;const ownTrail=[[0,0]];
+let simRate=1,ownEast=0,ownNorth=0,trailClock=0,radarRange=5;const radarTraffic=[{east:1.6,north:2.25,label:'SIM01',heading:115,speed:220,altitude:12500},{east:-2.5,north:-.75,label:'SIM02',heading:40,speed:195,altitude:11000},{east:1.8,north:-2,label:'SIM03',heading:310,speed:240,altitude:13000}].map(t=>({...t,startEast:t.east,startNorth:t.north,trail:[[t.east,t.north]]}));let radarSelected='USER01',radarHits=[],trafficTrailClock=0;const ownTrail=[[0,0]];
 let gameState='idle',gamePaused=false,gameStep=0,gameHold=0,gameElapsed=0,gameLegElapsed=0,gamePaintClock=0;
 const flightCommands=[{heading:300,altitude:12000,speed:250},{heading:300,altitude:12500,speed:230},{heading:330,altitude:12500,speed:210}];
 const gallery=Array.isArray(window.DK_GALLERY)?window.DK_GALLERY:[];let galleryIndex=0,galleryOpener=null;
@@ -238,9 +238,9 @@ c.save();c.beginPath();c.rect(-92,122,184,25);c.clip();c.fillStyle='#08131e';c.f
 c.font='8px monospace';c.textAlign='center';c.fillStyle='#c2ff8a';c.fillText('HDG '+String(Math.round(heading)%360).padStart(3,'0')+'°',0,-133);c.fillStyle='#8cb0d0';c.fillText('VS '+(verticalSpeed>=0?'+':'')+Math.round(verticalSpeed)+' FPM',0,157);c.textAlign='left';c.restore()}
 
 function radarProject(east,north,cx,cy,r,range){return[cx+east/range*r,cy-north/range*r]}
-function radarOrigin(){return radarCenterOwn?[ownEast,ownNorth]:[0,0]}
+function radarOrigin(){return [ownEast,ownNorth]}
 function radarTargets(){return[{label:'USER01',east:ownEast,north:ownNorth,heading,speed:airspeed,altitude,trail:ownTrail},...radarTraffic]}
-function updateRadarRange(){const [e,n]=radarOrigin(),extent=Math.max(...radarTargets().map(t=>Math.hypot(t.east-e,t.north-n)));radarRange=radarScale==='auto'?Math.max(5,Math.ceil(extent*1.3/5)*5):Number(radarScale)}
+function updateRadarRange(){const [e,n]=radarOrigin(),extent=Math.max(...radarTargets().map(t=>Math.hypot(t.east-e,t.north-n)));radarRange=Math.max(5,Math.ceil(extent*1.3/5)*5)}
 function updateRadarTraffic(dt){trafficTrailClock+=dt;const record=trafficTrailClock>=1000;if(record)trafficTrailClock%=1000;for(const t of radarTraffic){const distance=t.speed*dt/3600000;t.east+=Math.sin(t.heading*D)*distance;t.north+=Math.cos(t.heading*D)*distance;if(record){t.trail.push([t.east,t.north]);if(t.trail.length>60)t.trail.shift()}}}
 function radarTargetDetails(){
 const t=radarTargets().find(t=>t.label===radarSelected),en=lang==='en';if(!t)return;
@@ -248,14 +248,8 @@ const e=t.east-ownEast,n=t.north-ownNorth,distance=Math.hypot(e,n),bearing=(Math
 const metric=(label,value)=>'<div><span>'+label+'</span><strong>'+value+'</strong></div>';
 const markup=metric(en?'Heading':'Курс',hdg+'°')+metric(en?'Altitude':'Высота',Math.round(t.altitude).toLocaleString(en?'en-US':'ru-RU')+' <small>FT</small>')+metric(en?'Speed':'Скорость',t.speed+' <small>KT</small>')+(own?'':metric(en?'Distance from you':'Расстояние от тебя',distance.toFixed(1)+' <small>NM</small>')+metric(en?'Bearing from you':'Направление от тебя',brg+'°'));
 const output=$('#radar-target-data');if(output.innerHTML!==markup)output.innerHTML=markup;
-$('#radar-center').setAttribute('aria-checked',String(radarCenterOwn));
-$('#radar-follow-hint').textContent=radarCenterOwn?(en?'On · The view follows USER01':'Включено · Обзор движется за USER01'):(en?'Off · The centre stays at the starting point':'Выключено · Центр остаётся в начальной точке');
-$('#sim-rate-hint').textContent=en?'1 real second = '+simRate+' simulated second'+(simRate===1?'':'s'):'1 секунда здесь = '+simRate+' '+(simRate===1?'секунда полёта':'секунд полёта');
-$('#radar-range-hint').textContent=(en?'Centre to edge: ':'От центра до края: ')+radarRange+' NM'+(radarScale==='auto'?(en?' · Adjusts automatically':' · Подбирается автоматически'):'');
 const [originE,originN]=radarOrigin(),visible=radarTargets().filter(q=>Math.hypot(q.east-originE,q.north-originN)<=radarRange).length;
-$('#radar-summary').textContent=en?'Aircraft in view: '+visible+' of 4 · Prediction: 1 min':'Видно самолётов: '+visible+' из 4 · Прогноз: 1 мин';
-const outside=Math.hypot(t.east-originE,t.north-originN)>radarRange;
-$('#radar-offscreen').hidden=!outside;$('#radar-offscreen').textContent=en?'This aircraft is outside the view. Choose Auto coverage to see all aircraft.':'Этот самолёт за пределами обзора. Выбери «Авто», чтобы увидеть все самолёты.';
+$('#radar-summary').textContent=en?visible+' of 4 aircraft · '+radarRange+' NM · Auto view':visible+' из 4 самолётов · '+radarRange+' NM · Автообзор';
 }
 function drawRadar(){const c=begin(radar);if(!c)return;const w=radar.w,h=radar.h,r=Math.min(w*.38,h*.34),cx=w/2,cy=h*.47,[originE,originN]=radarOrigin(),project=(e,n)=>radarProject(e-originE,n-originN,cx,cy,r,radarRange),targets=radarTargets();radarHits=[];
 c.strokeStyle='#6ccf8d30';c.lineWidth=.7;for(let i=1;i<=4;i++){c.beginPath();c.arc(cx,cy,r*i/4,0,Math.PI*2);c.stroke();c.fillStyle='#719c85';c.font='7px monospace';c.textAlign='left';c.fillText((radarRange*i/4).toFixed(radarRange<10?1:0),cx+5,cy-r*i/4+10)}
@@ -330,10 +324,8 @@ selectFlight(0,false);routePlaying=false;flightText();hudReadouts();
 function ownshipReadout(){const alt=Math.round(altitude),hdg=String(Math.round(heading)%360).padStart(3,'0');$('#radar-own').textContent='USER01 / HDG '+hdg+'° / '+alt+' FT / '+airspeed+' KT / E '+ownEast.toFixed(2)+' NM / N '+ownNorth.toFixed(2)+' NM';radar.el.setAttribute('aria-label',(lang==='en'?'Your simulated aircraft: ':'Твой самолёт в симуляции: ')+hdg+'° / '+alt+' FT / '+airspeed+' KT')}
 function selectRadarTarget(label){if(!radarTargets().some(t=>t.label===label))return;radarSelected=label;$('#radar-target').value=label;radarTargetDetails();drawRadar()}
 $('#radar-target').addEventListener('change',e=>selectRadarTarget(e.target.value));
-$('#radar-center').addEventListener('click',()=>{radarCenterOwn=!radarCenterOwn;updateRadarRange();drawRadar()});
 radar.el.addEventListener('click',e=>{const rect=radar.el.getBoundingClientRect(),x=(e.clientX-rect.left)*radar.w/rect.width,y=(e.clientY-rect.top)*radar.h/rect.height;const closest=radarHits.map(t=>({...t,d:Math.hypot(t.x-x,t.y-y)})).sort((a,b)=>a.d-b.d)[0];if(closest&&closest.d<16)selectRadarTarget(closest.label)});
-$('#radar-range').addEventListener('change',e=>{if(!['auto','5','10','20','40','80'].includes(e.target.value))return;radarScale=e.target.value;updateRadarRange();drawRadar()});
-$('#sim-rate').addEventListener('change',e=>{const rate=+e.target.value;if([1,5,10].includes(rate))simRate=rate;ownshipReadout();drawRadar()});ownshipReadout();
+ownshipReadout();
 // Local pilot challenge; no live ATC or real-world training assessment.
 function flightCommandChecks(command,actual){return{heading:Math.abs((actual.heading-command.heading+540)%360-180)<=4,altitude:Math.abs(actual.altitude-command.altitude)<=120,speed:Math.abs(actual.speed-command.speed)<=8,stable:Math.abs(actual.bank)<4&&Math.abs(actual.pitch)<1.5}}
 function gameText(){const en=lang==='en',active=gameState==='active',command=flightCommands[gameStep],paused=gamePaused||!motion;const checks=flightCommandChecks(command,{heading,altitude,speed:airspeed,bank,pitch});
@@ -348,7 +340,7 @@ function updateFlightGame(dt){if(gameState!=='active')return;const previousState
 if(gameHold>=5){if(gameStep===flightCommands.length-1){gameState='won';const score=Math.max(0,Math.round(1000-gameElapsed*2));if(score>Number(read('dk-flight-challenge-best')||0))save('dk-flight-challenge-best',String(score))}else{gameStep++;gameHold=0;gameLegElapsed=0}}else if(gameLegElapsed>=120)gameState='failed';gamePaintClock+=dt;if(gamePaintClock>=100||previousState!==gameState||previousStep!==gameStep){gamePaintClock=0;gameText()}}
 function setPilotBank(value){targetBank=Math.max(-30,Math.min(30,Math.round(value)));$('#hud-bank').value=targetBank;$('#bank-output').textContent=targetBank+'°';if(!motion)bank=targetBank;drawHorizon()}
 $('#hud-bank').addEventListener('input',e=>setPilotBank(+e.target.value));
-$('#game-start').addEventListener('click',()=>{if(!motion){gameText();return}resetFlightDeck();simRate=1;$('#sim-rate').value='1';gameState='active';gameText();drawRadar()});
+$('#game-start').addEventListener('click',()=>{if(!motion){gameText();return}resetFlightDeck();gameState='active';gameText();drawRadar()});
 $('#game-pause').addEventListener('click',()=>{if(gameState!=='active')return;gamePaused=!gamePaused;gameText()});
 $('#hud-level').addEventListener('click',()=>{setPilotBank(0);targetPitch=0;$('#hud-pitch').value=0;if(!motion)pitch=0;hudReadouts();drawHorizon()});
 $('.deck-screens').addEventListener('keydown',e=>{if(e.target!==e.currentTarget||e.altKey||e.ctrlKey||e.metaKey)return;const key=e.key.toLowerCase();if(['arrowleft','arrowright'].includes(key))setPilotBank(targetBank+(key==='arrowleft'?-5:5));else if(['arrowup','arrowdown'].includes(key)){targetPitch=Math.max(-10,Math.min(10,targetPitch+(key==='arrowup'?.5:-.5)));$('#hud-pitch').value=targetPitch;if(!motion)pitch=targetPitch;hudReadouts();drawHorizon()}else if(key===' '){$('#game-pause').click()}else return;e.preventDefault()});
