@@ -165,3 +165,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 @media(max-width:650px){.radar-panel{padding:16px}.radar-settings{grid-template-columns:1fr;gap:16px}.radar-selection{grid-template-columns:1fr;gap:8px}.radar-metrics{gap:6px}.radar-metrics>div{padding:11px 8px}.radar-metrics strong{font-size:14px}.radar-panel-heading strong{font-size:15px}}
 @media(prefers-reduced-motion:reduce){.radar-switch:after{transition:none}}
 body.motion-off .radar-switch:after{transition:none}
+
+/* Compact automatic radar: one optional aircraft selector. */
+.radar-panel{padding:14px 18px}.radar-panel-heading strong{font-size:14px}.radar-summary{font-size:11px;margin:5px 0 12px}.radar-selection{display:flex;align-items:center;gap:12px}.radar-selection>label{font:12px/1.5 var(--sans,sans-serif);color:#a9c4d9}.radar-selection .sim-select{width:205px;max-width:calc(100% - 75px);min-width:0}.radar-selection select{min-height:40px;font-size:11px}.radar-metrics{margin:12px 0;gap:6px}.radar-metrics>div{padding:9px 10px}.radar-metrics strong{font-size:14px;margin-top:4px}.radar-metrics span{font-size:10px}.radar-legend{font-size:10px;gap:8px 14px}.radar-explainer{margin-top:10px}.radar-explainer summary{padding:10px 0;min-height:40px;font-size:11px}
+@media(max-width:650px){.radar-panel{padding:12px 14px}.radar-selection{display:flex;gap:10px}.radar-metrics>div{padding:8px 7px}.radar-metrics strong{font-size:13px}}
