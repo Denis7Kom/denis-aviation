@@ -5,7 +5,7 @@ const mainHubCodes=new Set(['UUEE','LIRN','KLAX']);
 function isMainHub(a){return mainHubCodes.has(a[0])}
 const favoriteCodes=new Set(['ULLI','LIRF','KATL','KORD','PHNL']);
 function airportRole(a){return isMainHub(a)?'main':favoriteCodes.has(a[0])?'favorite':'frequent'}
-const fleet=[{code:'B77W',name:'Boeing 777-300ER',len:73.9,span:64.8,r:3.1,winglet:0},{code:'A339',name:'Airbus A330-900',len:63.7,span:64,r:2.82,winglet:3},{code:'A333',name:'Airbus A330-300',len:63.7,span:60.3,r:2.82,winglet:1.4},{code:'A35K',name:'Airbus A350-1000',len:73.8,span:64.75,r:2.98,winglet:3.4}];
+const fleet=[{code:'B77W',name:'Boeing 777-300ER',len:73.9,span:64.8,r:3.1,winglet:0},{code:'A339',name:'Airbus A330-900',len:63.7,span:64,r:2.82,winglet:3},{code:'A333',name:'Airbus A330-300',len:63.7,span:60.3,r:2.82,winglet:1.4},{code:'A35K',name:'Airbus A350-1000',len:73.8,span:64.75,r:2.98,winglet:3.4},{code:'B737',name:'Boeing 737-700',len:33.63,span:35.8,r:1.88,winglet:2.4},{code:'A321',name:'Airbus A321-200',len:44.51,span:34.1,r:1.975,winglet:.8}];
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');function read(k){try{return localStorage.getItem(k)}catch(_){return null}}function save(k,v){try{localStorage.setItem(k,v)}catch(_){}}
 let lang=read('dk-aviation-lang')==='en'?'en':'ru',motion=!reduced.matches&&read('dk-aviation-motion')!=='off';let aircraftIndex=0,airportIndex=0,tabIndex=0,wire=false,angle=26*D,dragging=false;let phase=0,raf=0,last=0,bank=0,targetBank=0,longitude=-20,latitude=30,targetLon=37.4125,targetLat=40.3;
 const flights=[
@@ -75,12 +75,22 @@ const sky=makeSurface('sky'),model=makeSurface('aircraft'),globe=makeSurface('gl
 function drawSky(){const c=begin(sky);if(!c)return;for(let i=0;i<(sky.w<700?25:55);i++){const x=(((i*127.193%997)/997+phase*.000004*(1+i%3))%1)*sky.w,y=(i*271.71%991)/991*sky.h;c.globalAlpha=.17+.1*Math.sin(phase*.0004+i);c.fillStyle=i%9===0?'#c2ff8a':'#b6dcff';c.fillRect(x,y,i%7===0?2:1,1)}c.globalAlpha=1}
 // Procedural display models. Dimensions follow each airframe; not engineering meshes.
 function airframe(a){if(!airframe.specs)airframe.specs={
+ B737:{narrow:true,engine:.94,engineY:-1.65,engineScale:.64,ex:5.0,ez:-5.0,tail:7.2,tip:2.4,axles:1,gearX:2.86,gearZ:-.9,ground:-3.1,tire:.48,noseTire:.34,noseGearD:3.3,noseLength:5.98,doors:[3.6,14.5,29.6],ru:'Короткий фюзеляж · CFM56-7B · Винглеты · Выходы над крылом',en:'Short fuselage · CFM56-7B · Blended winglets · Overwing exits'},
+ A321:{narrow:true,engine:.94,engineY:-2.25,engineScale:.67,ex:5.755,ez:-6.1,tail:6.225,tip:.8,axles:1,gearX:3.795,gearZ:-.285,ground:-3.7,tire:.52,noseTire:.36,noseGearD:5.07,noseLength:7.04,doors:[5.1,12.9,25.8,39.8],ru:'Удлинённый фюзеляж · CFM56-5B · Четыре пары дверей · Концевые шайбы',en:'Stretched fuselage · CFM56-5B · Four door pairs · Wingtip fences'},
  B77W:{engine:2.04,ex:10.6,ez:-7.5,tail:10.8,tip:0,axles:3,gearX:5.5,gearZ:4.8,ground:-5.65,tire:.69,fin:11.4,noseLength:9.2,doors:[6.1,17.3,31.1,48.2,63.2],ru:'Стреловидные законцовки · Крупные GE90 · 6 колёс на основной стойке',en:'Raked wingtips · Large GE90 nacelles · 6-wheel main bogies'},
  A339:{engine:1.78,ex:10.1,ez:-6.7,tail:9.7,tip:3.2,axles:2,gearX:5.3,gearZ:5.8,ground:-5.2,tire:.64,fin:10.1,noseLength:8.8,doors:[5.85,17.74,35.96,50.96],ru:'Плавные винглеты · Trent 7000 · 4 колеса на основной стойке',en:'Blended winglets · Trent 7000 · 4-wheel main bogies'},
  A333:{engine:1.43,ex:9.7,ez:-6.3,tail:9.7,tip:1.6,axles:2,gearX:5.3,gearZ:5.8,ground:-5.2,tire:.64,fin:10.1,noseLength:8.8,doors:[5.85,17.74,35.96,50.96],ru:'Угловые винглеты · Узкие гондолы · 4 колеса на основной стойке',en:'Angled winglets · Slender nacelles · 4-wheel main bogies'},
  A35K:{engine:1.91,ex:10.5,ez:-7.4,tail:10.3,tip:3.7,axles:3,gearX:5.365,gearZ:4.8,ground:-5.55,tire:.69,fin:10.6,noseLength:10.2,doors:[6.82,23.30,42.38,59.53],ru:'Изогнутые законцовки · Маска кабины · 6 колёс на основной стойке',en:'Curved wingtips · Cockpit mask · 6-wheel main bogies'}
  };
  const s=airframe.specs[a.code];
+ if(s.narrow&&!s.nose){
+  const b=a.code==='B737',base=airframe({code:b?'B77W':'A333'}),sx=b?.65:.8,sy=b?a.r/3.1:a.r/2.82;
+  s.nose=base.nose.map(q=>[q[0]*sx,q[1]*sy,q[2]*sy,q[3]*sy]);
+  s.tailStart=a.len-(b?9.0:11.2);s.tailEnd=b?.78:.76;s.fin=b?9.4:8.06;
+  s.finSections=b?[[1.35,8.2,7.7,.44],[2.1,6.9,6.35,.42],[3.1,6.2,5.7,.35],[7.6,3.4,2.7,.16],[9.2,2.3,1.8,.075],[9.4,2.1,1.5,.04]]:[[1.4,9.3,8.6,.48],[2.1,7.8,7.1,.44],[3.3,6.8,6.1,.33],[6.8,3.7,3.0,.15],[7.95,2.6,1.9,.07],[8.06,2.45,1.7,.04]];
+  s.stabilizer=b?[[.8,.8,7.4,5.3,.33],[2.8,1.15,5.3,3.8,.25],[6.6,1.8,2.4,1.4,.09],[7.2,1.9,2.0,.65,.025]]:[[.8,.85,8.3,5.2,.33],[2.8,1.20,6.1,3.7,.25],[5.7,1.65,3.0,1.4,.08],[6.225,1.75,2.6,.65,.025]];
+ }
+
  if(!s.nose){
   const boeing=a.code==='B77W',xwb=a.code==='A35K';
   // Side and plan silhouettes sampled from the Boeing/Airbus airport
@@ -103,7 +113,13 @@ function airframe(a){if(!airframe.specs)airframe.specs={
   s.stabilizer=s.stabilizer.map(q=>[q[0],q[1],q[2],q[3],q[4]*1.4]);
  }
  return s;}
-function wingGeometry(a){const b=a.span/2,s=airframe(a),root=a.code==='B77W'?-9.8:a.code==='A35K'?-9:-8;
+function wingGeometry(a){if(a.code==='B737'||a.code==='A321'){
+ const b=a.span/2,is737=a.code==='B737',root=is737?-5.7:-7.1;
+ const stations=[[a.r*.66,-.40,root,is737?8.1:9.8,.38],[b*.31,-.12,is737?-3.3:-4.3,is737?5.5:6.2,.27],[b*.66,.48,is737?.0:-.2,3.3,.15],[b*.93,1.2,3.1,1.65,.06],[b*.985,1.50,4.1,1.10,.04]];
+ if(is737)stations.push([b*.998,2.65,4.6,.72,.027],[b,3.85,5.1,.32,.014]);else stations.push([b,1.58,4.32,.80,.025]);
+ return {stations,nav:stations[4],tip:stations.at(-1)};
+ }
+const b=a.span/2,s=airframe(a),root=a.code==='B77W'?-9.8:a.code==='A35K'?-9:-8;
  const stations=[[a.r*.65,-.85,root,16,.66],[b*.3,-.55,-4.6,10.8,.46],[b*.64,.25,2.7,6,.22]];
  if(a.code==='B77W')stations.push([b*.86,1.25,8.1,3.4,.12],[b*.94,1.7,11.1,1.8,.06],[b,1.95,14.2,.32,.02]);
  else if(a.code==='A333')stations.push([b*.89,1.25,9.1,2.7,.09],[b*.955,1.6,10.9,2,.055],[b*.98,2.25,11.8,1.45,.04],[b,3.25,12.8,.72,.025]);
@@ -144,7 +160,7 @@ function aircraftLightLayout(a){
   add('nav-'+side,[sign*q[0],q[1]+.06,q[2]+q[3]*.16],[sign*.65,.12,-.45],sign<0?'#ff4358':'#57e58a','navigation');
   add('rear-nav-'+side,[sign*q[0],q[1]+.035,q[2]+q[3]*.92],[sign*.35,.1,.8],'#e8f4ff','navigation',1.05);
   add('strobe-'+side,[sign*q[0],q[1]+.085,q[2]+q[3]*.68],[sign*.55,.25,0],'#e9f6ff','strobe',2.0);
-  for(const [id,x,f,size,color] of [['landing',spec.gearX+.9,.11,2.2,'#f5f2df'],['turnoff',a.r+.8,.12,1.45,'#fff0d1']]){
+  for(const [id,x,f,size,color] of [['landing',spec.gearX+(spec.narrow?.55:.9),.11,2.2,'#f5f2df'],['turnoff',a.r+.8,.12,1.45,'#fff0d1']]){
    const mount=wingMount(x,f),point=[sign*mount.point[0],mount.point[1],mount.point[2]],normal=[sign*mount.normal[0],mount.normal[1],mount.normal[2]];
    add(id+'-'+side,point,[id==='turnoff'?sign*.6:0,-.35,-.9],color,'landing',size);lamps[lamps.length-1].housingNormal=normal;
   }
@@ -158,9 +174,9 @@ function aircraftLightLayout(a){
  add('beacon-lower',[0,bottom.center-bottom.radius*bottom.vertical-.13,bottomZ],[0,-1,0],'#ff344c','lowerBeacon',1.65);
  add('nav-tail',[0,tail.center+.1,half+.18],[0,0,1],'#e6f1ff','navigation',1.1);
  add('strobe-tail',[0,tail.center+.28,half-.28],[0,.2,1],'#edf7ff','strobe',1.65);
- const z=-half+8.6,s=fuselageSection(a,z),pivot=[0,s.center-s.radius*s.vertical-.035,z],part={kind:'noseGear',pivot};
- add('taxi',[0,spec.ground+1.53,z-.2],[0,-.12,-1],'#fff2d8','taxi',1.8,part);
- add('takeoff',[.18,spec.ground+1.53,z-.17],[0,-.16,-1],'#f4f3e7','taxi',1.55,part);
+ const z=-half+(spec.noseGearD||8.6),s=fuselageSection(a,z),pivot=[0,s.center-s.radius*s.vertical-.035,z],part={kind:'noseGear',pivot};
+ add('taxi',[0,spec.ground+(spec.narrow?1.0:1.53),z-.2],[0,-.12,-1],'#fff2d8','taxi',1.8,part);
+ add('takeoff',[.18,spec.ground+(spec.narrow?1.0:1.53),z-.17],[0,-.16,-1],'#f4f3e7','taxi',1.55,part);
  return spec.lights=lamps;
 }
 function aircraftLightVisible(point,normal,a,eye){
@@ -190,7 +206,7 @@ function surfaceNormal(p){const z=p[2],s=fuselageSection(a,z),before=fuselageSec
  return [nx,ny,-(after.radius-before.radius)/.02-ny*(after.center-before.center)/.02-ny*(p[1]-s.center)/s.vertical*(after.vertical-before.vertical)/.02]}
 const stations=(wireframe?[.10,.20]:[.025,.06,.12,.21]).map(d=>-half+d);for(let d=0;d<=spec.noseLength;d+=wireframe?.7:.32)stations.push(-half+d);for(let z=-half+spec.noseLength;z<half;z+=wireframe?2.7:1.35)stations.push(z);stations.push(half);stations.sort((x,y)=>x-y);
 for(let k=1;k<stations.length;k++)for(let j=0;j<N;j++){const p=[surface(j/N*Math.PI*2,stations[k-1]),surface(j/N*Math.PI*2,stations[k]),surface((j+1)/N*Math.PI*2,stations[k]),surface((j+1)/N*Math.PI*2,stations[k-1])];add(p,body,true,p.map(surfaceNormal));}
-function tube(x,y,sections,color=body,n=wireframe?18:36){for(let k=1;k<sections.length;k++)for(let j=0;j<n;j++){const at=(s,t)=>[x+Math.cos(t)*s[1],y+Math.sin(t)*s[1],s[0]],p=[at(sections[k-1],j/n*2*Math.PI),at(sections[k],j/n*2*Math.PI),at(sections[k],(j+1)/n*2*Math.PI),at(sections[k-1],(j+1)/n*2*Math.PI)],slope=(sections[k][1]-sections[k-1][1])/(sections[k][0]-sections[k-1][0]);add(p,color,true,p.map(q=>{const rr=Math.hypot(q[0]-x,q[1]-y)||1;return [(q[0]-x)/rr,(q[1]-y)/rr,-slope]}),.35)}}
+function tube(x,y,sections,color=body,n=wireframe?18:36){for(let k=1;k<sections.length;k++)for(let j=0;j<n;j++){const at=(s,t)=>[x+Math.cos(t)*s[1],y+Math.sin(t)*s[1]*(a.code==='B737'&&Math.abs(x)===spec.ex&&y===spec.engineY&&Math.sin(t)<0?.82:1),s[0]],p=[at(sections[k-1],j/n*2*Math.PI),at(sections[k],j/n*2*Math.PI),at(sections[k],(j+1)/n*2*Math.PI),at(sections[k-1],(j+1)/n*2*Math.PI)],slope=(sections[k][1]-sections[k-1][1])/(sections[k][0]-sections[k-1][0]);add(p,color,true,p.map(q=>{const rr=Math.hypot(q[0]-x,q[1]-y)||1;return [(q[0]-x)/rr,(q[1]-y)/rr,-slope]}),.35)}}
 function foil(stations,sign,color,movable=false){
  const fractions=movable?[0,.075,.38,.72,1]:[0,.055,.28,.68,.695,1],at=(s,f,side=1)=>[sign*s[0],s[1]+side*(movable?Math.sin(Math.PI*f):2.969*Math.sqrt(f)-1.26*f-3.516*f*f+2.843*f*f*f-1.036*f*f*f*f)*s[4],s[2]+f*s[3]];
  for(let k=1;k<stations.length;k++){
@@ -210,25 +226,27 @@ function foil(stations,sign,color,movable=false){
 for(const sign of [-1,1]){
 const stations=wingGeometry(a).stations;
 foil(stations,sign,wingColor,true);
+if(a.code==='A321'){const q=stations.at(-1);for(const side of [-1,1])add([[sign*(q[0]+side*.025),q[1]+.72,q[2]+.06],[sign*(q[0]+side*.025),q[1]+.12,q[2]+q[3]],[sign*(q[0]+side*.025),q[1]-.46,q[2]+.40],[sign*(q[0]+side*.025),q[1],q[2]-.03]],[142,170,201]);}
 foil(spec.stabilizer.map(s=>[s[0],s[1],half-s[2],s[3],s[4]]),sign,[166,185,205]);
-const ex=sign*spec.ex,ey=-3.25,er=spec.engine,z=spec.ez;
+const ex=sign*spec.ex,ey=spec.engineY||-3.25,er=spec.engine,z=spec.ez,es=spec.engineScale||1;
 // Rounded intake lip, recessed fan, tapered exhaust and spinner.
-tube(ex,ey,[[z,er*.88],[z+.25,er],[z+1,er*1.04],[z+3.9,er*.94],[z+5.4,er*.7]],[172,192,215]);
-tube(ex,ey,[[z-.015,er*.88],[z+.55,er*.76]],[74,100,128]);
+tube(ex,ey,[[z,er*.88],[z+.25,er],[z+1*es,er*1.04],[z+3.9*es,er*.94],[z+5.4*es,er*.7]],[172,192,215]);
+tube(ex,ey,[[z-.015*es,er*.88],[z+.55,er*.76]],[74,100,128]);
 const disc=Array.from({length:28},(_,j)=>[ex+Math.cos(j/28*2*Math.PI)*er*.77,ey+Math.sin(j/28*2*Math.PI)*er*.77,z+.6]);add(disc,dark,false);
 part={kind:'fan',x:ex,y:ey};for(let j=0;j<20;j++){const t=j/20*2*Math.PI;add([[ex+Math.cos(t)*er*.22,ey+Math.sin(t)*er*.22,z+.54],[ex+Math.cos(t+.16)*er*.73,ey+Math.sin(t+.16)*er*.73,z+.54],[ex+Math.cos(t+.27)*er*.67,ey+Math.sin(t+.27)*er*.67,z+.54]],[79,109,139],false)}
 tube(ex,ey,[[z+.04,.025],[z+.6,er*.24]],[63,81,103],24);
 // The spiral makes slow fan rotation readable without a high-frequency blur.
-for(let j=0;j<28;j++){const spiral=t=>{const radius=er*(.025+t*.17),angle=t*Math.PI*2.5;return [ex+Math.cos(angle)*radius,ey+Math.sin(angle)*radius,z+.015+.56*radius/(er*.24)]},a=spiral(j/28),b=spiral((j+1)/28),offset=.025;add([[a[0]-offset,a[1],a[2]],[a[0]+offset,a[1],a[2]],[b[0]+offset,b[1],b[2]],[b[0]-offset,b[1],b[2]]],[220,234,244],false)}
+for(let j=0;j<28;j++){const spiral=t=>{const radius=er*(.025+t*.17),angle=t*Math.PI*2.5;return [ex+Math.cos(angle)*radius,ey+Math.sin(angle)*radius,z+.015+.56*es*radius/(er*.24)]},a=spiral(j/28),b=spiral((j+1)/28),offset=.025;add([[a[0]-offset,a[1],a[2]],[a[0]+offset,a[1],a[2]],[b[0]+offset,b[1],b[2]],[b[0]-offset,b[1],b[2]]],[220,234,244],false)}
 part=null;
-tube(ex,ey,[[z+4.9,er*.57],[z+6.3,er*.36]],[58,79,101]);
-add(Array.from({length:24},(_,j)=>[ex+Math.cos(j/12*Math.PI)*er*.36,ey+Math.sin(j/12*Math.PI)*er*.36,z+6.31]),dark,false);
+tube(ex,ey,[[z+4.9*es,er*.57],[z+6.3*es,er*.36]],[58,79,101]);
+add(Array.from({length:24},(_,j)=>[ex+Math.cos(j/12*Math.PI)*er*.36,ey+Math.sin(j/12*Math.PI)*er*.36,z+6.31*es]),dark,false);
 // A closed tapered pylon joins the nacelle to the wing's underside.
-const pylon=side=>[[ex+side*.28,-.45,z+3.0],[ex+side*.25,-.45,z+5.8],[ex+side*.16,-1.85,z+4.7],[ex+side*.18,-1.85,z+1.7]];
+let engineWing=stations[0];if(spec.narrow){let k=1;while(k<stations.length-1&&spec.ex>stations[k][0])k++;const p=stations[k-1],q=stations[k],t=(spec.ex-p[0])/(q[0]-p[0]);engineWing=p.map((v,i)=>v+t*(q[i]-v));}
+const pylon=side=>spec.narrow?[[ex+side*.16,engineWing[1]-.18,engineWing[2]+engineWing[3]*.12],[ex+side*.15,engineWing[1]-.18,engineWing[2]+engineWing[3]*.55],[ex+side*.13,ey+.60,z+4.4*es],[ex+side*.14,ey+.60,z+1.7*es]]:[[ex+side*.28,-.45,z+3.0*es],[ex+side*.25,-.45,z+5.8*es],[ex+side*.16,-1.85,z+4.7*es],[ex+side*.18,-1.85,z+1.7*es]];
 add(pylon(-1),[140,160,182]);add(pylon(1),[164,183,203]);const pl=pylon(-1),pr=pylon(1);for(let i=0;i<4;i++)add([pl[i],pr[i],pr[(i+1)%4],pl[(i+1)%4]],[147,167,189]);
 // Narrow nacelle panel joints and flap-track fairings remain subtle at full scale.
-for(const dz of [1.05,3.85])tube(ex,ey,[[z+dz,er*(dz<2?1.04:.94)+.012],[z+dz+.025,er*(dz<2?1.04:.94)+.012]],[114,135,156]);
-for(const x of [7.8,13.5,Math.min(19.5,stations[2][0]-.65)]){let i=1;while(i<stations.length-1&&x>stations[i][0])i++;const p=stations[i-1],q=stations[i],t=(x-p[0])/(q[0]-p[0]),yy=p[1]+(q[1]-p[1])*t-.3,trailing=p[2]+p[3]+(q[2]+q[3]-p[2]-p[3])*t;
+for(const dz of [1.05,3.85])tube(ex,ey,[[z+dz*es,er*(dz<2?1.04:.94)+.012],[z+(dz+.025)*es,er*(dz<2?1.04:.94)+.012]],[114,135,156]);
+for(const x of (spec.narrow?[a.span*.10,a.span*.20,a.span*.29]:[7.8,13.5,Math.min(19.5,stations[2][0]-.65)])){let i=1;while(i<stations.length-1&&x>stations[i][0])i++;const p=stations[i-1],q=stations[i],t=(x-p[0])/(q[0]-p[0]),yy=p[1]+(q[1]-p[1])*t-.3,trailing=p[2]+p[3]+(q[2]+q[3]-p[2]-p[3])*t;
  // The aft fairing shares its flap's swept hinge and Fowler translation.
  part={kind:'flap',component:'fairing',sign,hinge:p,end:q};
  tube(sign*x,yy,[[trailing-2.1,.02],[trailing-1.1,.16],[trailing+.5,.12],[trailing+1.3,.015]],[130,150,172],12);part=null;}
@@ -253,9 +271,9 @@ function skinPatch(outline,color,lift=.025,material=0){
 }
 function skinStroke(points,color,width=.025,lift=.043){for(let i=1;i<points.length;i++){const [z,y]=points[i-1],[zz,yy]=points[i],len=Math.hypot(zz-z,yy-y)||1,dz=(yy-y)/len*width/2,dy=-(zz-z)/len*width/2;skinPatch([[z+dz,y+dy],[zz+dz,yy+dy],[zz-dz,yy-dy],[z-dz,y-dy]],color,lift)}}
 const rounded=(z,y,w,h,round=.15)=>[[z-w/2+round,y-h/2],[z+w/2-round,y-h/2],[z+w/2,y-h/2+round],[z+w/2,y+h/2-round],[z+w/2-round,y+h/2],[z-w/2+round,y+h/2],[z-w/2,y+h/2-round],[z-w/2,y-h/2+round]];
-const windowStep=a.code==='A35K'?.9:.94,windowWidth=a.code==='A35K'?.42:.36;
+const windowStep=spec.narrow?.65:a.code==='A35K'?.9:.94,windowWidth=spec.narrow?.28:a.code==='A35K'?.42:.36;
 marking='window';
-for(let wz=-half+spec.doors[0]+1.6;wz<half-12;wz+=windowStep){
+for(let wz=-half+spec.doors[0]+1.6;wz<half-(spec.narrow?5:12);wz+=windowStep){
  if(spec.doors.some(d=>Math.abs(wz-(-half+d))<.9))continue;
  skinPatch(rounded(wz,1.0,windowWidth,.48,.11),[61,77,94],.025);
  skinPatch(rounded(wz,1.0,windowWidth-.055,.41,.095),[9,29,43],.038,1);
@@ -271,7 +289,7 @@ function cockpitPatch(corners,color,lift,material=1){
  }
  for(let u=0;u<4;u++)for(let v=0;v<4;v++){const p=[[u/4,v/4],[(u+1)/4,v/4],[(u+1)/4,(v+1)/4],[u/4,(v+1)/4]];triangle([p[0],p[1],p[2]]);triangle([p[0],p[2],p[3]]);}part=null;
 }
-const boeing=a.code==='B77W',xwb=a.code==='A35K',stretch=xwb?1.08:boeing?1:.9;
+const boeing=a.code==='B77W'||a.code==='B737',xwb=a.code==='A35K',stretch=xwb?1.08:boeing?1:.9;
 // Six distinct panes. The front windshield is swept back; side panes follow
 // the shoulder without turning into a continuous roof-wide glass band.
 // Define the window belt by its physical height, not by an angle that
@@ -289,7 +307,7 @@ const paneCharts=boeing?[
  [[1.42,2.80],[1.44,3.21],[.63,3.22],[.66,2.27]],
  [[1.44,3.30],[1.42,3.93],[.61,3.91],[.62,3.30]]
 ];
-const cockpitChart=([y,d])=>{const s=fuselageSection(a,-half+d);return [y===null?1.54:Math.asin(Math.max(-.99,Math.min(.99,(y-s.center)/(s.radius*s.vertical)))),d]},panes=paneCharts.map(p=>p.map(cockpitChart));
+const cockpitChart=([y,d])=>{if(spec.narrow){d*=a.code==='B737'?.65:.8;if(y!==null)y*=a.r/(a.code==='B737'?3.1:2.82);}const s=fuselageSection(a,-half+d);return [y===null?1.54:Math.asin(Math.max(-.99,Math.min(.99,(y-s.center)/(s.radius*s.vertical)))),d]},panes=paneCharts.map(p=>p.map(cockpitChart));
 const masked=xwb||a.code==='A339';
 if(masked){const mask=(xwb?[[null,3.53],[1.94,5.38],[.51,5.30],[null,2.00]]:[[null,2.36],[1.59,4.07],[.45,4.05],[null,1.18]]).map(cockpitChart);cockpitPatch(mask,[17,24,31],.026,0);}
 for(const pane of panes){
@@ -305,7 +323,7 @@ if(!wireframe){const point=q=>surface(sign>0?q[0]:Math.PI-q[0],-half+q[1],.108),
 // Passenger/crew exits: five pairs on the 777-300ER, four on each Airbus.
 marking='exit';
 for(const [i,d] of spec.doors.entries()){
- const z=-half+d,small=a.code==='B77W'&&i===2,w=small?.92:1.06,h=small?1.65:1.96,cy=.53,outline=rounded(z,cy,w,h,.16);
+ const z=-half+d,small=(a.code==='B77W'&&i===2)||(a.code==='B737'&&i===1),w=small?(spec.narrow?.75:.92):spec.narrow?.86:1.06,h=small?(spec.narrow?.92:1.65):spec.narrow?1.80:1.96,cy=small&&spec.narrow?.85:.53,outline=rounded(z,cy,w,h,.16);
  skinPatch(outline,[103,120,137],.034);
  skinPatch(rounded(z,cy,w-.07,h-.07,.14),[195,209,224],.052);
  skinPatch(rounded(z,1.02,.23,.33,.065),[64,83,101],.071);
@@ -318,17 +336,17 @@ for(const [i,d] of spec.doors.entries()){
 }
 // Cargo door outlines are only on the aircraft's right-hand side.
 marking='cargo';
-if(sign>0)for(const d of [spec.doors[1]-4,a.len-20]){const z=-half+d;skinPatch(rounded(z,-1.25,2.8,1.55,.15),[107,124,140],.026);skinPatch(rounded(z,-1.25,2.73,1.48,.13),[190,205,220],.045);skinPatch(rounded(z+.75,-1.16,.28,.12,.03),[71,87,105],.065);}
+if(sign>0)for(const d of (spec.narrow?(a.code==='B737'?[7.5,24.5]:[9.1,32]):[spec.doors[1]-4,a.len-20])){const z=-half+d,c=spec.narrow?.66:1;skinPatch(rounded(z,-1.25*c,2.8*c,1.55*c,.15),[107,124,140],.026);skinPatch(rounded(z,-1.25*c,2.73*c,1.48*c,.13),[190,205,220],.045);skinPatch(rounded(z+.75*c,-1.16*c,.28,.12,.03),[71,87,105],.065);}
 // Pitot probes sit below and behind the radome, clear of the windshield.
-const probe=skinPoint(.05,-half+3.6*stretch,.04);beam(probe,[probe[0]+sign*.17,probe[1]-.04,probe[2]-.56],.025,[162,181,199]);
+const probe=skinPoint(.05,-half+(spec.narrow?2.6:3.6*stretch),.04);beam(probe,[probe[0]+sign*.17,probe[1]-.04,probe[2]-.56],.025,[162,181,199]);
 {const gx=sign*spec.gearX,gz=spec.gearZ,wy=spec.ground+spec.tire;
  function wingBelly(x,z){let i=1;while(i<stations.length-1&&x>stations[i][0])i++;const h=stations[i-1],e=stations[i],t=(x-h[0])/(e[0]-h[0]),s=h.map((v,k)=>v+(e[k]-v)*t),f=Math.max(0,Math.min(1,(z-s[2])/s[3]));return s[1]-Math.sin(Math.PI*f)*s[4]-.025;}
  const mountY=wingBelly(spec.gearX,gz);part={kind:'mainGear',sign,pivot:[gx,mountY,gz]};
  // All exposed braces terminate at fittings beneath the wing. No endpoint is
  // placed inside the fuselage; internal sections are hidden by depth testing.
  beam([gx,mountY,gz],[gx,wy+.98,gz],.17,[133,151,170]);beam([gx,wy+1.3,gz],[gx,wy+.12,gz],.095,[216,226,235]);
- beam([gx,wy+1.0,gz],[sign*3.85,wingBelly(3.85,gz-1.7),gz-1.7],.075,[149,166,185]);
- beam([gx,wy+1.5,gz],[sign*4.15,wingBelly(4.15,gz+1.35),gz+1.35],.07,[144,161,180]);
+ beam([gx,wy+1.0,gz],[sign*(spec.narrow?spec.gearX+.2:3.85),wingBelly(spec.narrow?spec.gearX+.2:3.85,gz-1.7),gz-1.7],.075,[149,166,185]);
+ beam([gx,wy+1.5,gz],[sign*(spec.narrow?spec.gearX+.4:4.15),wingBelly(spec.narrow?spec.gearX+.4:4.15,gz+1.35),gz+1.35],.07,[144,161,180]);
  beam([gx+.13,wy+.65,gz-.15],[gx+.13,wy+1.5,gz+.18],.055,[104,125,148]);
  const spacing=spec.axles===3?1.36:1.4,start=gz-(spec.axles-1)*spacing/2;
  beam([gx,wy,start-.26],[gx,wy,start+(spec.axles-1)*spacing+.26],.16,[98,119,142]);
@@ -352,19 +370,19 @@ const aft=fuselageSection(a,half),apuPoint=(z,rr,t)=>[Math.cos(t)*rr,aft.center+
 for(let j=0;j<apuN;j++){const t=j/apuN*Math.PI*2,u=(j+1)/apuN*Math.PI*2;add([apuPoint(half-.18,aft.radius*1.10,t),apuPoint(half+.10,aft.radius*.94,t),apuPoint(half+.10,aft.radius*.94,u),apuPoint(half-.18,aft.radius*1.10,u)],[105,122,139],false,null,.5);}
 add(Array.from({length:apuN},(_,j)=>apuPoint(half+.105,aft.radius*.85,j/apuN*Math.PI*2)),[14,22,30],false);
 function beam(a,b,radius,color){const axis=b.map((v,i)=>v-a[i]),len=Math.hypot(...axis),n=axis.map(v=>v/len),ref=Math.abs(n[1])<.9?[0,1,0]:[1,0,0],cross=(u,v)=>[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],raw=cross(n,ref),size=Math.hypot(...raw),u=raw.map(v=>v/size),v=cross(n,u),point=(p,t)=>p.map((x,i)=>x+radius*(u[i]*Math.cos(t)+v[i]*Math.sin(t)));for(let j=0;j<8;j++)add([point(a,j*Math.PI/4),point(b,j*Math.PI/4),point(b,(j+1)*Math.PI/4),point(a,(j+1)*Math.PI/4)],color)}
-function wheel(x,y,z,rad,track=.65){for(const side of [-1,1]){const xx=x+side*track,N=24,sections=[[-.27,.83],[-.16,1],[.16,1],[.27,.83]],at=(q,t)=>[xx+q[0],y+Math.cos(t)*rad*q[1],z+Math.sin(t)*rad*q[1]];
+function wheel(x,y,z,rad,track=spec.narrow?.46:.65){for(const side of [-1,1]){const xx=x+side*track,N=24,sections=spec.narrow?[[-.19,.83],[-.12,1],[.12,1],[.19,.83]]:[[-.27,.83],[-.16,1],[.16,1],[.27,.83]],at=(q,t)=>[xx+q[0],y+Math.cos(t)*rad*q[1],z+Math.sin(t)*rad*q[1]];
  for(let k=1;k<sections.length;k++)for(let j=0;j<N;j++)add([at(sections[k-1],j/N*2*Math.PI),at(sections[k],j/N*2*Math.PI),at(sections[k],(j+1)/N*2*Math.PI),at(sections[k-1],(j+1)/N*2*Math.PI)],[20,27,36],false);
- for(const [r,col] of [[.81,[10,16,23]],[.48,[151,174,196]],[.20,[67,90,114]]])add(Array.from({length:N},(_,j)=>[xx+side*(.275+(1-r)*.015),y+Math.cos(j/N*2*Math.PI)*rad*r,z+Math.sin(j/N*2*Math.PI)*rad*r]),col,false);
+ for(const [r,col] of [[.81,[10,16,23]],[.48,[151,174,196]],[.20,[67,90,114]]])add(Array.from({length:N},(_,j)=>[xx+side*((spec.narrow?.195:.275)+(1-r)*.015),y+Math.cos(j/N*2*Math.PI)*rad*r,z+Math.sin(j/N*2*Math.PI)*rad*r]),col,false);
 }}
-{const z=-half+8.6,section=fuselageSection(a,z),rootY=section.center-section.radius*section.vertical-.035,braceSection=fuselageSection(a,z+1.55),braceY=braceSection.center-braceSection.radius*braceSection.vertical-.12,wy=spec.ground+.47;
+{const z=-half+(spec.noseGearD||8.6),section=fuselageSection(a,z),rootY=section.center-section.radius*section.vertical-.035,braceSection=fuselageSection(a,z+1.55),braceY=braceSection.center-braceSection.radius*braceSection.vertical-.12,wy=spec.ground+(spec.noseTire||.47);
  // The visible assembly ends below the actual belly, not at a hard-coded
  // point inside the pressure hull. Use the same fitting as its rotation pivot.
  part={kind:'noseGear',pivot:[0,rootY,z]};
  beam([0,rootY,z],[0,wy+.65,z],.13,[149,168,189]);beam([0,wy+.87,z],[0,wy,z],.075,[224,233,242]);
  beam([0,wy+.62,z],[0,braceY,z+1.55],.065,[151,169,187]);
- beam([-.46,wy,z],[.46,wy,z],.075,[166,186,207]);wheel(0,wy,z,.47,.35);part=null;}
+ beam([-.46,wy,z],[.46,wy,z],.075,[166,186,207]);wheel(0,wy,z,spec.noseTire||.47,spec.narrow?.24:.35);part=null;}
 // Radome seam and small dorsal antennas.
-for(const d of [a.code==='A35K'?1.75:a.code==='B77W'?1.35:1.05,a.len-5.8])for(let j=0;j<N;j++){const t=j/N*Math.PI*2,tt=(j+1)/N*Math.PI*2,z=-half+d;const p=[surface(t,z-.012,.018),surface(tt,z-.012,.018),surface(tt,z+.012,.018),surface(t,z+.012,.018)];add(p,[116,136,154],false,p.map(surfaceNormal));}
+for(const d of [spec.narrow?(a.code==='B737'?.88:.84):a.code==='A35K'?1.75:a.code==='B77W'?1.35:1.05,a.len-5.8])for(let j=0;j<N;j++){const t=j/N*Math.PI*2,tt=(j+1)/N*Math.PI*2,z=-half+d;const p=[surface(t,z-.012,.018),surface(tt,z-.012,.018),surface(tt,z+.012,.018),surface(t,z+.012,.018)];add(p,[116,136,154],false,p.map(surfaceNormal));}
 for(const d of [13,a.len*.52]){const z=-half+d,y=fuselageSection(a,z).center+fuselageSection(a,z).radius*fuselageSection(a,z).vertical;add([[-.055,y,z],[.055,y,z],[.04,y+.56,z+.5],[-.04,y+.56,z+.5]],[127,149,173]);add([[-.04,y+.56,z+.5],[.04,y+.56,z+.5],[.035,y+.12,z+.9],[-.035,y+.12,z+.9]],[168,189,209]);}
 
 if(!wireframe){
@@ -529,7 +547,7 @@ const plan=routePlan(flights[flightIndex]);for(let i=1;i<plan.points.length-1;i+
 const f=flights[flightIndex];for(const [q,name] of [[f.a,f.from],[f.b,f.to]]){const v=p(...q,1.015);if(v[2]<=0)continue;c.fillStyle='#d4eaff';c.beginPath();c.arc(v[0],v[1],3,0,Math.PI*2);c.fill();c.font='11px monospace';c.textAlign='center';c.fillText(name,v[0],v[1]+23)}
 const q=routePoint(routeProgress),v=p(...q,1+Math.sin(routeProgress*Math.PI)*.012);if(v[2]>0){const ahead=Math.min(1,routeProgress+.003),behind=Math.max(0,routeProgress-.003),next=routePoint(ahead),prev=routePoint(behind),n=p(...next,1+Math.sin(ahead*Math.PI)*.012),u=p(...prev,1+Math.sin(behind*Math.PI)*.012);c.save();c.translate(v[0],v[1]);c.rotate(Math.atan2(n[1]-u[1],n[0]-u[0]));c.fillStyle='#c2ff8a';c.shadowColor='#c2ff8a';c.shadowBlur=14;path(c,[[9,0],[-6,-5],[-3,0],[-6,5]],true);c.fill();c.restore()}c.textAlign='left'}
 function fleetLog(){const matches=flights.filter(f=>f.fleet===aircraftIndex);$('#fleet-log-title').textContent=fleet[aircraftIndex].name;$('#fleet-log-description').textContent=matches.length?(lang==='en'?'Selected flights on this aircraft':'Избранные рейсы на этом самолёте'):(lang==='en'?'No matching flights in the selected logbook entries.':'В выбранных записях журнала рейсов на этом самолёте пока нет.');const box=$('#fleet-log-flights');box.innerHTML='';for(const f of matches){const b=document.createElement('button');b.className='fleet-flight';b.textContent=f.from+' → '+f.to+' / '+f.duration+' ↗';b.addEventListener('click',()=>selectFlight(flights.indexOf(f)));box.append(b)}}
-function modelTarget(){return detail==='cockpit'?{focus:[0,.65,-fleet[aircraftIndex].len/2+4.6],zoom:3}:detail==='engines'?{focus:[airframe(fleet[aircraftIndex]).ex,-3.25,airframe(fleet[aircraftIndex]).ez+2.5],zoom:2.25}:detail==='gear'?{focus:[0,-3.2,5.8],zoom:2.15}:{focus:[0,0,0],zoom:1}}
+function modelTarget(){return detail==='cockpit'?{focus:[0,.65,-fleet[aircraftIndex].len/2+(airframe(fleet[aircraftIndex]).narrow?3.1:4.6)],zoom:airframe(fleet[aircraftIndex]).narrow?4.1:3}:detail==='engines'?{focus:[airframe(fleet[aircraftIndex]).ex,airframe(fleet[aircraftIndex]).engineY||-3.25,airframe(fleet[aircraftIndex]).ez+2.5],zoom:2.25}:detail==='gear'?{focus:[0,airframe(fleet[aircraftIndex]).narrow?-1.8:-3.2,airframe(fleet[aircraftIndex]).narrow?airframe(fleet[aircraftIndex]).gearZ:5.8],zoom:airframe(fleet[aircraftIndex]).narrow?3.0:2.15}:{focus:[0,0,0],zoom:airframe(fleet[aircraftIndex]).narrow?1.45:1}}
 function snapModel(){gearPosition=gearDown?1:0;flapPosition=flapsDown?1:0;articulationText();const t=modelTarget();visualZoom=t.zoom*zoom;visualFocus=[...t.focus];visualAngle=angle}
 function updateModel(dt){if(!model.visible)return;systemsClock=(systemsClock+dt)%167400;fanSpeed+=(.0018-fanSpeed)*(1-Math.exp(-dt/850));fanAngle=(fanAngle+fanSpeed*dt)%(Math.PI*2);const approach=(value,target,step)=>value<target?Math.min(target,value+step):Math.max(target,value-step);gearPosition=approach(gearPosition,gearDown?1:0,dt/3200);flapPosition=approach(flapPosition,flapsDown?1:0,dt/2600);articulationText();if(!dragging&&detail==='all'&&phase>=autoTurnResume){angle=((angle+dt*.000032+Math.PI)%(Math.PI*2))-Math.PI;$('#rotation').value=Math.round(angle/D)}const t=modelTarget(),s=Math.min(dt/220,1);visualZoom+=(t.zoom*zoom-visualZoom)*s;visualFocus=visualFocus.map((v,i)=>v+(t.focus[i]-v)*s);visualAngle+=(((angle-visualAngle+Math.PI*3)%(Math.PI*2))-Math.PI)*s}
 $$('[data-detail]').forEach(b=>b.addEventListener('click',()=>{detail=b.dataset.detail;autoTurnResume=phase+3000;angle=(detail==='engines'?-12:detail==='cockpit'?20:detail==='gear'?35:26)*D;$('#rotation').value=Math.round(angle/D);$$('[data-detail]').forEach(n=>n.setAttribute('aria-pressed',String(n===b)));if(!motion)snapModel();drawPlane()}));
@@ -588,11 +606,11 @@ $('#hud-level').addEventListener('click',()=>{setPilotBank(0);targetPitch=0;$('#
 $('.deck-screens').addEventListener('keydown',e=>{if(e.target!==e.currentTarget||e.altKey||e.ctrlKey||e.metaKey)return;const key=e.key.toLowerCase();if(['arrowleft','arrowright'].includes(key))setPilotBank(targetBank+(key==='arrowleft'?-5:5));else if(['arrowup','arrowdown'].includes(key)){targetPitch=Math.max(-10,Math.min(10,targetPitch+(key==='arrowup'?.5:-.5)));$('#hud-pitch').value=targetPitch;if(!motion)pitch=targetPitch;hudReadouts();drawHorizon()}else if(key===' '){$('#game-pause').click()}else return;e.preventDefault()});
 const commandInput=$('#console-input'),commandOutput=$('#console-output');const commandHistory=[];let historyIndex=0,commandDraft='';
 const commandNames=['help','pilot','flights','hangar','fly','wireframe','motion','hud','clear'];
-const planeAliases={'b777':0,'b77w':0,'b777-300er':0,'a330-900':1,'a339':1,'a330-300':2,'a333':2,'a350-1000':3,'a35k':3};
+const planeAliases={'b777':0,'b77w':0,'b777-300er':0,'a330-900':1,'a339':1,'a330-300':2,'a333':2,'a350-1000':3,'a35k':3,'b737':4,'b737-700':4,'b737-7':4,'a321':5,'a321-200':5};
 function consoleLine(text,kind='reply'){const p=document.createElement('p');p.className='console-line '+kind;p.textContent=text;commandOutput.append(p);while(commandOutput.children.length>60)commandOutput.children[0].remove();commandOutput.scrollTop=commandOutput.scrollHeight;return text}
 function runCommand(raw){const text=String(raw).trim().slice(0,120);if(!text)return;commandHistory.push(text);if(commandHistory.length>50)commandHistory.shift();historyIndex=commandHistory.length;commandDraft='';commandInput.value='';consoleLine('> '+text,'echo');const parts=text.toLowerCase().split(/\s+/),cmd=parts.shift();let reply='',error=false;const say=(ru,en)=>lang==='en'?en:ru;const go=id=>$(id).scrollIntoView({behavior:motion?'smooth':'auto',block:'center'});
 if(cmd==='clear'&&!parts.length){commandOutput.innerHTML='';$('#console-status').textContent=say('Консоль очищена.','Console cleared.');return}
-if(cmd==='help'&&!parts.length)reply=say('help — команды\npilot — профиль\nflights — рейсы\nhangar [b777 | a330-900 | a330-300 | a350-1000]\nfly RJFF BIKF — показать рейс\nwireframe — объём / каркас\nmotion on | off — анимации\nhud — управление самолётом\nclear — очистить консоль','help — commands\npilot — profile\nflights — flight log\nhangar [b777 | a330-900 | a330-300 | a350-1000]\nfly RJFF BIKF — explore a flight\nwireframe — solid / wireframe\nmotion on | off — animations\nhud — control your aircraft\nclear — clear console');
+if(cmd==='help'&&!parts.length)reply=say('help — команды\npilot — профиль\nflights — рейсы\nhangar [b777 | a330-900 | a330-300 | a350-1000 | b737-700 | a321-200]\nfly RJFF BIKF — показать рейс\nwireframe — объём / каркас\nmotion on | off — анимации\nhud — управление самолётом\nclear — очистить консоль','help — commands\npilot — profile\nflights — flight log\nhangar [b777 | a330-900 | a330-300 | a350-1000 | b737-700 | a321-200]\nfly RJFF BIKF — explore a flight\nwireframe — solid / wireframe\nmotion on | off — animations\nhud — control your aircraft\nclear — clear console');
 else if(cmd==='pilot'&&!parts.length)reply='Denis Komarov / VATSIM 250+ h / Infinite Flight 600+ h / VATRUS';
 else if(cmd==='flights'&&!parts.length)reply=flights.map(f=>f.from+' → '+f.to+' / '+f.aircraft+' / '+f.duration).join('\n');
 else if(cmd==='hangar'&&parts.length<=1){const index=parts.length?(Object.hasOwn(planeAliases,parts[0])?planeAliases[parts[0]]:undefined):aircraftIndex;if(index===undefined){error=true;reply=say('Самолёт не найден. Введи help.','Aircraft not found. Type help.')}else{$$('[data-aircraft]')[index].click();go('#flying');reply=fleet[index].name+' / '+say('ангар открыт','hangar opened')}}

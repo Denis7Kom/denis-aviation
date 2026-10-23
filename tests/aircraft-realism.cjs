@@ -10,7 +10,8 @@ for(const a of vm.runInContext('fleet',ctx)){
  // a finite cross section through the former common conical nose.
  for(const d of [...spec.nose.map(q=>q[0]),spec.tailStart]){
   const epsilon=d===0?1e-8:1e-5,p=ctx.fuselageSection(a,-half+d-epsilon),q=ctx.fuselageSection(a,-half+d+epsilon);
-  for(const k of ['radius','center','vertical'])assert(Math.abs(p[k]-q[k])<.001,a.code+' continuous loft '+d+' '+k);
+  for(const k of ['radius','center'])assert(Math.abs(p[k]-q[k])<.001,a.code+' continuous loft '+d+' '+k);
+  assert(Math.abs(p.radius*p.vertical-q.radius*q.vertical)<.001,a.code+' continuous crown/belly '+d);
  }
  for(let d=0;d<=a.len;d+=.2){const s=ctx.fuselageSection(a,-half+d);assert(s.radius>0&&s.vertical>0&&Object.values(s).every(Number.isFinite));}
  const faces=ctx.buildPlane(a);let clearance=Infinity;

@@ -205,3 +205,5 @@ body.motion-off .radar-switch:after{transition:none}
 .credential-document{grid-column:1/-1;justify-self:start;gap:14px;font-size:9px;max-width:100%;margin-top:2px}.credential-document svg{width:17px;height:17px;flex:none}.credential-document span{overflow-wrap:anywhere}
 
 .credential-documents{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.credential-documents .credential-document{grid-column:auto;justify-self:stretch;min-width:0;padding:14px 12px;gap:10px;text-align:center}.credential-documents .credential-document span{overflow-wrap:normal}@media(max-width:480px){.credential-documents{grid-template-columns:1fr}}
+
+@media(min-width:761px){.fleet-select .fleet-btn{padding-top:13px;padding-bottom:13px}}

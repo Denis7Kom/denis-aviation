@@ -16,7 +16,7 @@ for(const a of vm.runInContext('fleet',ctx)){
   for(const f of gear)for(const p of f.p){const down=ctx.articulatedPoint(p,f.part,a,1,0);assert(down.every((v,i)=>Math.abs(v-p[i])<1e-9),'extended gear stays at its fittings');}
  }
  // No main-gear brace endpoint should protrude through the side of the fuselage.
- for(const f of faces.filter(f=>f.part?.kind==='mainGear'))for(const p of f.p)assert(Math.abs(p[0])>a.r+.3,a.code+' main gear clears body');
+ for(const f of faces.filter(f=>f.part?.kind==='mainGear'))for(const p of f.p){const section=ctx.fuselageSection(a,p[2]);assert(spec.narrow?Math.hypot(p[0],(p[1]-section.center)/section.vertical)>section.radius:Math.abs(p[0])>a.r+.3,a.code+' main gear clears body');}
  // The cabin window row leaves a gap at every emergency/entry door on both sides.
  const windows=faces.filter(f=>f.part?.marking==='window');assert(windows.some(f=>f.part.sign===1)&&windows.some(f=>f.part.sign===-1));
  for(const f of windows)for(const p of f.p)assert(spec.doors.every(d=>Math.abs(p[2]+a.len/2-d)>.65),a.code+' windows clear exits');
