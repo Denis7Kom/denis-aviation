@@ -218,8 +218,8 @@ function surfaceNormal(p){const z=p[2],s=fuselageSection(a,z),before=fuselageSec
  return [nx,ny,-(after.radius-before.radius)/.02-ny*(after.center-before.center)/.02-ny*(p[1]-s.center)/s.vertical*(after.vertical-before.vertical)/.02]}
 const stations=(wireframe?[.10,.20]:[.025,.06,.12,.21]).map(d=>-half+d);for(let d=0;d<=spec.noseLength;d+=wireframe?.7:.32)stations.push(-half+d);for(let z=-half+spec.noseLength;z<half;z+=wireframe?2.7:1.35)stations.push(z);stations.push(half);stations.sort((x,y)=>x-y);
 for(let k=1;k<stations.length;k++)for(let j=0;j<N;j++){const p=[surface(j/N*Math.PI*2,stations[k-1]),surface(j/N*Math.PI*2,stations[k]),surface((j+1)/N*Math.PI*2,stations[k]),surface((j+1)/N*Math.PI*2,stations[k-1])];add(p,body,true,p.map(surfaceNormal));}
-function tube(x,y,sections,color=body,n=wireframe?18:36){for(let k=1;k<sections.length;k++)for(let j=0;j<n;j++){
- const at=(s,t)=>{const sn=Math.sin(t),flat=a.code==='B737'&&Math.abs(x)===spec.ex&&y===spec.engineY,yy=flat&&sn<-.52?-.52+(sn+.52)*.56:sn;return [x+Math.cos(t)*s[1]*(flat&&sn<0?1-sn*.045:1),y+yy*s[1],s[0]]},p=[at(sections[k-1],j/n*2*Math.PI),at(sections[k],j/n*2*Math.PI),at(sections[k],(j+1)/n*2*Math.PI),at(sections[k-1],(j+1)/n*2*Math.PI)],slope=(sections[k][1]-sections[k-1][1])/(sections[k][0]-sections[k-1][0]);
+function tube(x,y,sections,color=body,n=wireframe?18:36,round=false){for(let k=1;k<sections.length;k++)for(let j=0;j<n;j++){
+ const at=(s,t)=>{const sn=Math.sin(t),flat=!round&&a.code==='B737'&&Math.abs(x)===spec.ex&&y===spec.engineY,yy=flat&&sn<-.52?-.52+(sn+.52)*.56:sn;return [x+Math.cos(t)*s[1]*(flat&&sn<0?1-sn*.045:1),y+yy*s[1],s[0]]},p=[at(sections[k-1],j/n*2*Math.PI),at(sections[k],j/n*2*Math.PI),at(sections[k],(j+1)/n*2*Math.PI),at(sections[k-1],(j+1)/n*2*Math.PI)],slope=(sections[k][1]-sections[k-1][1])/(sections[k][0]-sections[k-1][0]);
  add(p,color,true,p.map(q=>{const rr=Math.hypot(q[0]-x,q[1]-y)||1;return [(q[0]-x)/rr,(q[1]-y)/rr,-slope]}),.35)}}
 function foil(stations,sign,color,movable=false){
  const fractions=movable?[0,.075,.38,.72,1]:[0,.055,.28,.68,.695,1],at=(s,f,side=1)=>[sign*s[0],s[1]+side*(movable?Math.sin(Math.PI*f):2.969*Math.sqrt(f)-1.26*f-3.516*f*f+2.843*f*f*f-1.036*f*f*f*f)*s[4],s[2]+f*s[3]];
@@ -248,18 +248,21 @@ if(spec.narrow){
  // uses a larger round intake and a different fan-cowl / core profile.
  const b=a.code==='B737',contour=b?[[0,.87],[.10,.93],[.32,.99],[.72,1],[1.65,.97],[2.25,.86],[2.70,.70]]:[[0,.91],[.12,.98],[.38,1.025],[1.10,1.02],[1.95,.97],[2.56,.85],[2.93,.72]];
  tube(ex,ey,contour.map(q=>[z+q[0],er*q[1]]),[181,198,217]);
- tube(ex,ey,[[z,.87*er],[z+.10,.93*er],[z+.12,.81*er],[z+.015,.78*er]],[204,216,225]);
- tube(ex,ey,[[z+.015,.78*er],[z+.47,.74*er]],[56,77,97]);
- const fanZ=z+.48,fanR=er*.72;
- add(Array.from({length:wireframe?16:32},(_,j)=>[ex+Math.cos(j/(wireframe?16:32)*Math.PI*2)*fanR,ey+Math.sin(j/(wireframe?16:32)*Math.PI*2)*fanR,fanZ]),dark,false);
- part={kind:'fan',x:ex,y:ey};
+ const fy=ey+(b?.10:0),outer=er*(b?.87:.91),inner=er*(b?.79:.86),lipSegments=wireframe?18:36;
+ // The 737 cowling has a flattened bottom, but its raised fan and duct are
+ // circular. The closed lip joins those different cross sections.
+ for(let j=0;j<lipSegments;j++){const at=(t,inside)=>{const sn=Math.sin(t),yy=b&&sn<-.52?-.52+(sn+.52)*.56:sn;return inside?[ex+Math.cos(t)*inner,fy+sn*inner,z+.025]:[ex+Math.cos(t)*outer*(b&&sn<0?1-sn*.045:1),ey+yy*outer,z]};add([at(j/lipSegments*Math.PI*2,false),at((j+1)/lipSegments*Math.PI*2,false),at((j+1)/lipSegments*Math.PI*2,true),at(j/lipSegments*Math.PI*2,true)],[204,216,225]);}
+ tube(ex,fy,[[z+.025,inner],[z+.47,er*(b?.77:.84)]],[56,77,97],wireframe?18:36,true);
+ const fanZ=z+.48,fanR=er*(b?.76:.82);
+ add(Array.from({length:wireframe?16:32},(_,j)=>[ex+Math.cos(j/(wireframe?16:32)*Math.PI*2)*fanR,fy+Math.sin(j/(wireframe?16:32)*Math.PI*2)*fanR,fanZ]),dark,false);
+ part={kind:'fan',x:ex,y:fy};
  const bladeCount=b?24:36,bladeStep=Math.PI*2/bladeCount;
- if(!wireframe)for(let j=0;j<bladeCount;j++){const t=j*bladeStep;add([[ex+Math.cos(t)*er*.19,ey+Math.sin(t)*er*.19,fanZ-.025],[ex+Math.cos(t+bladeStep*.45)*fanR,ey+Math.sin(t+bladeStep*.45)*fanR,fanZ-.025],[ex+Math.cos(t+bladeStep*.88)*fanR*.94,ey+Math.sin(t+bladeStep*.88)*fanR*.94,fanZ-.025]],[83,109,129],false);}
- tube(ex,ey,[[z+.16,.018],[fanZ,er*.22]],[91,111,131],wireframe?12:24);
+ if(!wireframe)for(let j=0;j<bladeCount;j++){const t=j*bladeStep;add([[ex+Math.cos(t)*er*.19,fy+Math.sin(t)*er*.19,fanZ-.025],[ex+Math.cos(t+bladeStep*.45)*fanR,fy+Math.sin(t+bladeStep*.45)*fanR,fanZ-.025],[ex+Math.cos(t+bladeStep*.88)*fanR*.94,fy+Math.sin(t+bladeStep*.88)*fanR*.94,fanZ-.025]],[83,109,129],false);}
+ tube(ex,fy,[[z+.16,.018],[fanZ,er*.22]],[91,111,131],wireframe?12:24,true);
  part=null;
- tube(ex,ey,[[z+2.45,er*.52],[z+3.18,er*.39],[z+3.62,er*.26]],[84,99,115]);
- add(Array.from({length:24},(_,j)=>[ex+Math.cos(j/12*Math.PI)*er*.25,ey+Math.sin(j/12*Math.PI)*er*.25,z+3.63]),dark,false);
- tube(ex,ey,[[z+3.35,er*.19],[z+3.95,.025]],[132,145,156]);
+ tube(ex,fy,[[z+2.45,er*.52],[z+3.18,er*.39],[z+3.62,er*.26]],[84,99,115],wireframe?18:36,true);
+ add(Array.from({length:24},(_,j)=>[ex+Math.cos(j/12*Math.PI)*er*.25,fy+Math.sin(j/12*Math.PI)*er*.25,z+3.63]),dark,false);
+ tube(ex,fy,[[z+3.35,er*.19],[z+3.95,.025]],[132,145,156],wireframe?18:36,true);
  // Thin cowl and thrust-reverser joints follow the actual outer radius.
  for(const k of [2,4]){const q=contour[k];tube(ex,ey,[[z+q[0],er*q[1]+.007],[z+q[0]+.018,er*q[1]+.007]],[118,135,151]);}
  // CFM pylon top and nacelle strakes stay fixed to the engine assembly.
