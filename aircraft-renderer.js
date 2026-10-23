@@ -196,6 +196,8 @@
         const w=Math.max(1,Math.round(width*dpr)), h=Math.max(1,Math.round(height*dpr));
         if (canvas.width!==w || canvas.height!==h) {canvas.width=w; canvas.height=h;}
         gl.viewport(0,0,w,h); gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
+        // The viewer looks along positive Z; outward front faces are clockwise.
+        gl.frontFace(gl.CW);
         gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
         gl.useProgram(program);
         gl.uniform3fv(uniforms.focus,focus); gl.uniform2f(uniforms.viewport,width,height);
