@@ -142,17 +142,28 @@ const pylon=side=>[[ex+side*.28,-.45,z+3.0],[ex+side*.25,-.45,z+5.8],[ex+side*.1
 add(pylon(-1),[140,160,182]);add(pylon(1),[164,183,203]);const pl=pylon(-1),pr=pylon(1);for(let i=0;i<4;i++)add([pl[i],pr[i],pr[(i+1)%4],pl[(i+1)%4]],[147,167,189]);
 // Narrow nacelle panel joints and flap-track fairings remain subtle at full scale.
 for(const dz of [1.05,3.85])tube(ex,ey,[[z+dz,er*(dz<2?1.04:.94)+.012],[z+dz+.025,er*(dz<2?1.04:.94)+.012]],[114,135,156]);
-for(const x of [7.8,13.5,19.5]){let i=1;while(i<stations.length-1&&x>stations[i][0])i++;const p=stations[i-1],q=stations[i],t=(x-p[0])/(q[0]-p[0]),yy=p[1]+(q[1]-p[1])*t-.3,trailing=p[2]+p[3]+(q[2]+q[3]-p[2]-p[3])*t;tube(sign*x,yy,[[trailing-2.1,.02],[trailing-1.1,.16],[trailing+.5,.12],[trailing+1.3,.015]],[130,150,172],12);}
+for(const x of [7.8,13.5,Math.min(19.5,stations[2][0]-.65)]){let i=1;while(i<stations.length-1&&x>stations[i][0])i++;const p=stations[i-1],q=stations[i],t=(x-p[0])/(q[0]-p[0]),yy=p[1]+(q[1]-p[1])*t-.3,trailing=p[2]+p[3]+(q[2]+q[3]-p[2]-p[3])*t;
+ // The aft fairing shares its flap's swept hinge and Fowler translation.
+ part={kind:'flap',component:'fairing',sign,hinge:p,end:q};
+ tube(sign*x,yy,[[trailing-2.1,.02],[trailing-1.1,.16],[trailing+.5,.12],[trailing+1.3,.015]],[130,150,172],12);part=null;}
 // Every marking follows the same loft as the skin. The depth buffer handles
 // occlusion by wings, the nose and the opposite side of the aircraft.
 function skinPoint(y,z,lift=.025){const q=fuselageSection(a,z),t=Math.asin(Math.max(-.99,Math.min(.99,(y-q.center)/(q.radius*q.vertical))));return surface(sign>0?t:Math.PI-t,z,lift)}
 let marking='panel';
 function skinPatch(outline,color,lift=.025,material=0){
- const pts=outline.map(([z,y])=>skinPoint(y,z,lift));
- part={kind:'decal',marking,sign,normal:surfaceNormal(pts[0])};
- const center=outline.reduce((p,q)=>[p[0]+q[0]/outline.length,p[1]+q[1]/outline.length],[0,0]),cp=skinPoint(center[1],center[0],lift);
- // Subdivide wide panels so a planar door never slices through the curved skin.
- for(let i=0;i<pts.length;i++){const j=(i+1)%pts.length;add([cp,pts[i],pts[j]],color,false,[surfaceNormal(cp),surfaceNormal(pts[i]),surfaceNormal(pts[j])],material)}part=null;
+ if(wireframe)return;
+ const at=q=>skinPoint(q[1],q[0],lift),center=outline.reduce((p,q)=>[p[0]+q[0]/outline.length,p[1]+q[1]/outline.length],[0,0]);
+ part={kind:'decal',marking,sign,normal:surfaceNormal(at(center))};
+ // A large triangle's corners can be outside the skin while its middle is
+ // buried inside it. Split the worst curved edge until the entire panel
+ // follows the surface within 3 mm, keeping nested door outlines separated.
+ function triangle(chart,depth=0){
+  const pts=chart.map(at);let edge=-1,error=0,mid=null;
+  for(let i=0;i<3;i++){const j=(i+1)%3,q=chart[i].map((v,k)=>(v+chart[j][k])/2),p=at(q),deviation=Math.hypot(...p.map((v,k)=>v-(pts[i][k]+pts[j][k])/2));if(deviation>error){error=deviation;edge=i;mid=q;}}
+  if(error>.003&&depth<9){const j=(edge+1)%3,k=(edge+2)%3;triangle([chart[edge],mid,chart[k]],depth+1);triangle([mid,chart[j],chart[k]],depth+1);}
+  else add(pts,color,false,pts.map(surfaceNormal),material);
+ }
+ for(let i=0;i<outline.length;i++)triangle([center,outline[i],outline[(i+1)%outline.length]]);part=null;
 }
 function skinStroke(points,color,width=.025,lift=.043){for(let i=1;i<points.length;i++){const [z,y]=points[i-1],[zz,yy]=points[i],len=Math.hypot(zz-z,yy-y)||1,dz=(yy-y)/len*width/2,dy=-(zz-z)/len*width/2;skinPatch([[z+dz,y+dy],[zz+dz,yy+dy],[zz-dz,yy-dy],[z-dz,y-dy]],color,lift)}}
 const rounded=(z,y,w,h,round=.15)=>[[z-w/2+round,y-h/2],[z+w/2-round,y-h/2],[z+w/2,y-h/2+round],[z+w/2,y+h/2-round],[z+w/2-round,y+h/2],[z-w/2+round,y+h/2],[z-w/2,y+h/2-round],[z-w/2,y-h/2+round]];
@@ -165,6 +176,7 @@ for(let wz=-half+spec.doors[0]+1.6;wz<half-12;wz+=windowStep){
  skinStroke([[wz-windowWidth*.2,1.14],[wz+windowWidth*.18,1.14]],[80,123,147],.023,.052);
 }
 function cockpitPatch(corners,color,lift,material=1){
+ if(wireframe)return;
  const mix=(a,b,t)=>a.map((x,i)=>x+(b[i]-x)*t),at=(u,v)=>{const [t,d]=mix(mix(corners[0],corners[1],u),mix(corners[3],corners[2],u),v);return surface(sign>0?t:Math.PI-t,-half+d,lift)};
  for(let u=0;u<6;u++)for(let v=0;v<5;v++){const p=[at(u/6,v/5),at((u+1)/6,v/5),at((u+1)/6,(v+1)/5),at(u/6,(v+1)/5)];part={kind:'glazing',normal:surfaceNormal(p[0])};add(p,color,false,p.map(surfaceNormal),material)}part=null;
 }
@@ -191,23 +203,25 @@ for(const [i,d] of spec.doors.entries()){
  skinStroke([[z-w*.34,cy-h/2+.08],[z+w*.34,cy-h/2+.08]],[121,139,155],.023,.073);
 }
 // Cargo door outlines are only on the aircraft's right-hand side.
-marking='panel';
+marking='cargo';
 if(sign>0)for(const d of [spec.doors[1]-4,a.len-20]){const z=-half+d;skinPatch(rounded(z,-1.25,2.8,1.55,.15),[107,124,140],.026);skinPatch(rounded(z,-1.25,2.73,1.48,.13),[190,205,220],.045);skinPatch(rounded(z+.75,-1.16,.28,.12,.03),[71,87,105],.065);}
 // Pitot probes sit below and behind the radome, clear of the windshield.
 const probe=skinPoint(.05,-half+3.6*stretch,.04);beam(probe,[probe[0]+sign*.17,probe[1]-.04,probe[2]-.56],.025,[162,181,199]);
-{part={kind:'mainGear',sign};const gx=sign*spec.gearX,gz=spec.gearZ,wy=spec.ground+spec.tire;
+{const gx=sign*spec.gearX,gz=spec.gearZ,wy=spec.ground+spec.tire;
+ function wingBelly(x,z){let i=1;while(i<stations.length-1&&x>stations[i][0])i++;const h=stations[i-1],e=stations[i],t=(x-h[0])/(e[0]-h[0]),s=h.map((v,k)=>v+(e[k]-v)*t),f=Math.max(0,Math.min(1,(z-s[2])/s[3]));return s[1]-Math.sin(Math.PI*f)*s[4]-.025;}
+ const mountY=wingBelly(spec.gearX,gz);part={kind:'mainGear',sign,pivot:[gx,mountY,gz]};
  // All exposed braces terminate at fittings beneath the wing. No endpoint is
  // placed inside the fuselage; internal sections are hidden by depth testing.
- beam([gx,-1.3,gz],[gx,wy+.98,gz],.17,[133,151,170]);beam([gx,wy+1.3,gz],[gx,wy+.12,gz],.095,[216,226,235]);
- beam([gx,wy+1.0,gz],[sign*3.85,-1.32,gz-1.7],.075,[149,166,185]);
- beam([gx,wy+1.5,gz],[sign*4.15,-1.30,gz+1.35],.07,[144,161,180]);
+ beam([gx,mountY,gz],[gx,wy+.98,gz],.17,[133,151,170]);beam([gx,wy+1.3,gz],[gx,wy+.12,gz],.095,[216,226,235]);
+ beam([gx,wy+1.0,gz],[sign*3.85,wingBelly(3.85,gz-1.7),gz-1.7],.075,[149,166,185]);
+ beam([gx,wy+1.5,gz],[sign*4.15,wingBelly(4.15,gz+1.35),gz+1.35],.07,[144,161,180]);
  beam([gx+.13,wy+.65,gz-.15],[gx+.13,wy+1.5,gz+.18],.055,[104,125,148]);
  const spacing=spec.axles===3?1.36:1.4,start=gz-(spec.axles-1)*spacing/2;
  beam([gx,wy,start-.26],[gx,wy,start+(spec.axles-1)*spacing+.26],.16,[98,119,142]);
  for(let k=0;k<spec.axles;k++){const z=start+k*spacing;beam([gx-.84,wy,z],[gx+.84,wy,z],.095,[168,185,202]);wheel(gx,wy,z,spec.tire)}part=null;
  // The hinged outer gear door follows the gear without crossing the body skin.
- part={kind:'gearDoor',sign,pivot:[gx+sign*.42,-1.22,gz]};
- add([[gx+sign*.42,-1.22,gz-1.65],[gx+sign*.42,-1.22,gz+1.65],[gx-sign*.62,-1.22,gz+1.65],[gx-sign*.62,-1.22,gz-1.65]],[175,193,212]);part=null;
+ part={kind:'gearDoor',sign,pivot:[gx+sign*.42,mountY,gz]};
+ add([[gx+sign*.42,mountY,gz-1.65],[gx+sign*.42,mountY,gz+1.65],[gx-sign*.62,mountY,gz+1.65],[gx-sign*.62,mountY,gz-1.65]],[175,193,212]);part=null;
 }
 
 }
@@ -221,9 +235,12 @@ function wheel(x,y,z,rad,track=.65){for(const side of [-1,1]){const xx=x+side*tr
  for(let k=1;k<sections.length;k++)for(let j=0;j<N;j++)add([at(sections[k-1],j/N*2*Math.PI),at(sections[k],j/N*2*Math.PI),at(sections[k],(j+1)/N*2*Math.PI),at(sections[k-1],(j+1)/N*2*Math.PI)],[20,27,36],false);
  for(const [r,col] of [[.81,[10,16,23]],[.48,[151,174,196]],[.20,[67,90,114]]])add(Array.from({length:N},(_,j)=>[xx+side*(.275+(1-r)*.015),y+Math.cos(j/N*2*Math.PI)*rad*r,z+Math.sin(j/N*2*Math.PI)*rad*r]),col,false);
 }}
-{part={kind:'noseGear'};const z=-half+8.6,wy=spec.ground+.47;
- beam([0,-2.1,z],[0,wy+.65,z],.13,[149,168,189]);beam([0,wy+.87,z],[0,wy,z],.075,[224,233,242]);
- beam([0,wy+.62,z],[0,-2.35,z+1.55],.065,[151,169,187]);
+{const z=-half+8.6,section=fuselageSection(a,z),rootY=section.center-section.radius*section.vertical-.035,braceSection=fuselageSection(a,z+1.55),braceY=braceSection.center-braceSection.radius*braceSection.vertical-.12,wy=spec.ground+.47;
+ // The visible assembly ends below the actual belly, not at a hard-coded
+ // point inside the pressure hull. Use the same fitting as its rotation pivot.
+ part={kind:'noseGear',pivot:[0,rootY,z]};
+ beam([0,rootY,z],[0,wy+.65,z],.13,[149,168,189]);beam([0,wy+.87,z],[0,wy,z],.075,[224,233,242]);
+ beam([0,wy+.62,z],[0,braceY,z+1.55],.065,[151,169,187]);
  beam([-.46,wy,z],[.46,wy,z],.075,[166,186,207]);wheel(0,wy,z,.47,.35);part=null;}
 // Radome seam and small dorsal antennas.
 for(const d of [2.35* (a.code==='A35K'?1.08:1),a.len-5.8])for(let j=0;j<N;j++){const t=j/N*Math.PI*2,tt=(j+1)/N*Math.PI*2,z=-half+d;const p=[surface(t,z-.012,.018),surface(tt,z-.012,.018),surface(tt,z+.012,.018),surface(t,z+.012,.018)];add(p,[116,136,154],false,p.map(surfaceNormal));}
@@ -236,8 +253,8 @@ function articulatedPoint(p,part,a,gear=gearPosition,flaps=flapPosition){
  if(!part||part.kind==='glazing')return p;
  if(part.kind==='fan'){const x=p[0]-part.x,y=p[1]-part.y,co=Math.cos(fanAngle),si=Math.sin(fanAngle);return [part.x+x*co-y*si,part.y+x*si+y*co,p[2]]}
  const g=smoothStep(gear),f=smoothStep(flaps);
- if(part.kind==='mainGear'){const spec=airframe(a),pivot=[part.sign*spec.gearX,-1.3,spec.gearZ],q=p.map((v,i)=>v-pivot[i]),t=-part.sign*(1-g)*Math.PI*.49;return [pivot[0]+q[0]*Math.cos(t)-q[1]*Math.sin(t),pivot[1]+q[0]*Math.sin(t)+q[1]*Math.cos(t),p[2]]}
- if(part.kind==='noseGear'){const z=-a.len/2+8.6,y=-2.1,qy=p[1]-y,qz=p[2]-z,t=-(1-g)*Math.PI*.49;return [p[0],y+qy*Math.cos(t)-qz*Math.sin(t),z+qy*Math.sin(t)+qz*Math.cos(t)]}
+ if(part.kind==='mainGear'){const pivot=part.pivot,q=p.map((v,i)=>v-pivot[i]),t=-part.sign*(1-g)*Math.PI*.49;return [pivot[0]+q[0]*Math.cos(t)-q[1]*Math.sin(t),pivot[1]+q[0]*Math.sin(t)+q[1]*Math.cos(t),p[2]]}
+ if(part.kind==='noseGear'){const z=part.pivot[2],y=part.pivot[1],qy=p[1]-y,qz=p[2]-z,t=-(1-g)*Math.PI*.49;return [p[0],y+qy*Math.cos(t)-qz*Math.sin(t)+(1-g)*.95,z+qy*Math.sin(t)+qz*Math.cos(t)]}
  if(part.kind==='gearDoor'){const q=p.map((v,i)=>v-part.pivot[i]),t=part.sign*g*Math.PI*.44;return [part.pivot[0]+q[0]*Math.cos(t)-q[1]*Math.sin(t),part.pivot[1]+q[0]*Math.sin(t)+q[1]*Math.cos(t),p[2]]}
  if(part.kind==='flap'||part.kind==='slat'){const slat=part.kind==='slat',chord=slat?.075:.72;const h=part.hinge,e=part.end,origin=[part.sign*h[0],h[1],h[2]+h[3]*chord],end=[part.sign*e[0],e[1],e[2]+e[3]*chord],axis=end.map((v,i)=>v-origin[i]),n=Math.hypot(...axis),k=axis.map(v=>v/n),q=p.map((v,i)=>v-origin[i]),t=part.sign*f*(slat?-12:32)*D,co=Math.cos(t),si=Math.sin(t),dot=k.reduce((v,x,i)=>v+x*q[i],0),cross=[k[1]*q[2]-k[2]*q[1],k[2]*q[0]-k[0]*q[2],k[0]*q[1]-k[1]*q[0]];return q.map((v,i)=>origin[i]+v*co+cross[i]*si+k[i]*dot*(1-co)+(i===2?(slat?-.48:.9)*f:i===1&&slat?-.065*f:0))}
  return p;
