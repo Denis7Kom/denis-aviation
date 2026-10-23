@@ -1,6 +1,46 @@
 /* Lightweight aircraft renderer. Geometry is local; no model downloads or libraries. */
 (() => {
   'use strict';
+  // Wire view needs edges, not filled polygons, shading or depth sorting.
+  // Build and deduplicate the topology once, then project each vertex once.
+  window.createAircraftWireframe = function () {
+    const cache=new WeakMap(),moving=new Set(['mainGear','noseGear','gearDoor','flap','slat']);
+    const omitted=new Set(['decal','window','glazing','fan']);
+    function compile(faces){
+      const vertices=[],edges=[],points=new Map(),seen=new Set(),parts=new Map();
+      for(const f of faces){
+        const kind=f.part?.kind;if(omitted.has(kind))continue;
+        const dynamic=moving.has(kind),gear=kind==='mainGear'||kind==='noseGear';
+        if(dynamic&&!parts.has(f.part))parts.set(f.part,parts.size+1);
+        const group=dynamic?parts.get(f.part):0;
+        const ids=f.p.map(p=>{
+          const key=Math.round(p[0]*1e5)+','+Math.round(p[1]*1e5)+','+Math.round(p[2]*1e5)+':'+group;
+          if(!points.has(key)){points.set(key,vertices.length);vertices.push({p,part:f.part,dynamic,gear});}
+          return points.get(key);
+        });
+        for(let i=0;i<ids.length;i++){
+          const a=ids[i],b=ids[(i+1)%ids.length];if(a===b)continue;
+          const key=a<b?a+':'+b:b+':'+a;if(seen.has(key))continue;
+          seen.add(key);edges.push([a,b,gear]);
+        }
+      }
+      return {vertices,edges,projected:new Float64Array(vertices.length*2)};
+    }
+    return {mode:'wire-edges',stats:null,draw(context,faces,o){
+      let mesh=cache.get(faces);if(!mesh){mesh=compile(faces);cache.set(faces,mesh);}
+      const ca=Math.cos(o.angle),sa=Math.sin(o.angle),cp=Math.cos(o.pitch),sp=Math.sin(o.pitch),q=mesh.projected;
+      for(let i=0;i<mesh.vertices.length;i++){
+        const v=mesh.vertices[i];if(v.gear&&o.gear<=.005)continue;
+        const p=v.dynamic?o.transform(v.p,v.part):v.p,x=p[0]-o.focus[0],y=p[1]-o.focus[1],z=p[2]-o.focus[2],xx=x*ca+z*sa,zz=-x*sa+z*ca,perspective=155/(155+zz*cp-y*sp);
+        q[i*2]=o.width/2+xx*o.scale*perspective;
+        q[i*2+1]=o.height*.48+(-y*cp-zz*sp)*o.scale*perspective;
+      }
+      context.beginPath();
+      for(const [a,b,gear] of mesh.edges){if(gear&&o.gear<=.005)continue;context.moveTo(q[a*2],q[a*2+1]);context.lineTo(q[b*2],q[b*2+1]);}
+      context.strokeStyle='#85bde066';context.lineWidth=.6;context.stroke();
+      this.stats={vertices:mesh.vertices.length,edges:mesh.edges.length};return true;
+    }};
+  };
   // A depth-buffered fallback is also needed on devices with WebGL disabled.
   // Sorting whole faces by their average depth cannot correctly hide a strut
   // partly behind a curved fuselage, regardless of the sorting order.
