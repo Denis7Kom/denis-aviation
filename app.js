@@ -74,12 +74,31 @@ function begin(s){if(!s.c||!s.w||!s.h)return null;s.c.setTransform(s.d,0,0,s.d,0
 const sky=makeSurface('sky'),model=makeSurface('aircraft'),globe=makeSurface('globe'),horizon=makeSurface('horizon'),radar=makeSurface('radar');
 function drawSky(){const c=begin(sky);if(!c)return;for(let i=0;i<(sky.w<700?25:55);i++){const x=(((i*127.193%997)/997+phase*.000004*(1+i%3))%1)*sky.w,y=(i*271.71%991)/991*sky.h;c.globalAlpha=.17+.1*Math.sin(phase*.0004+i);c.fillStyle=i%9===0?'#c2ff8a':'#b6dcff';c.fillRect(x,y,i%7===0?2:1,1)}c.globalAlpha=1}
 // Procedural display models. Dimensions follow each airframe; not engineering meshes.
-function airframe(a){return ({
+function airframe(a){if(!airframe.specs)airframe.specs={
  B77W:{engine:2.04,ex:10.6,ez:-7.5,tail:10.8,tip:0,axles:3,gearX:5.5,gearZ:4.8,ground:-5.65,tire:.69,fin:11.4,noseLength:9.2,doors:[6.1,17.3,31.1,48.2,63.2],ru:'Стреловидные законцовки · Крупные GE90 · 6 колёс на основной стойке',en:'Raked wingtips · Large GE90 nacelles · 6-wheel main bogies'},
  A339:{engine:1.78,ex:10.1,ez:-6.7,tail:9.7,tip:3.2,axles:2,gearX:5.3,gearZ:5.8,ground:-5.2,tire:.64,fin:10.1,noseLength:8.8,doors:[5.85,17.74,35.96,50.96],ru:'Плавные винглеты · Trent 7000 · 4 колеса на основной стойке',en:'Blended winglets · Trent 7000 · 4-wheel main bogies'},
  A333:{engine:1.43,ex:9.7,ez:-6.3,tail:9.7,tip:1.6,axles:2,gearX:5.3,gearZ:5.8,ground:-5.2,tire:.64,fin:10.1,noseLength:8.8,doors:[5.85,17.74,35.96,50.96],ru:'Угловые винглеты · Узкие гондолы · 4 колеса на основной стойке',en:'Angled winglets · Slender nacelles · 4-wheel main bogies'},
  A35K:{engine:1.91,ex:10.5,ez:-7.4,tail:10.3,tip:3.7,axles:3,gearX:5.365,gearZ:4.8,ground:-5.55,tire:.69,fin:10.6,noseLength:10.2,doors:[6.82,23.30,42.38,59.53],ru:'Изогнутые законцовки · Маска кабины · 6 колёс на основной стойке',en:'Curved wingtips · Cockpit mask · 6-wheel main bogies'}
- })[a.code]}
+ };
+ const s=airframe.specs[a.code];
+ if(!s.nose){
+  const boeing=a.code==='B77W',xwb=a.code==='A35K';
+  // Display lofts fitted to the manufacturer's three-view silhouettes. Each
+  // station is distance / half-width / upper contour / lower contour, in m.
+  s.nose=boeing?[[0,.025,-.38,-.43],[.45,.65,.10,-.95],[1.2,1.20,.67,-1.62],[2.3,1.88,1.45,-2.13],[3.5,2.43,2.21,-2.62],[4.7,2.78,2.80,-2.89],[6.2,3.02,3.00,-3.00],[9.2,3.1,3.007,-3.007]]:
+   xwb?[[0,.025,-.38,-.43],[.55,.70,.08,-.97],[1.4,1.35,.65,-1.66],[2.7,1.97,1.42,-2.23],[4.1,2.43,2.18,-2.61],[5.6,2.75,2.76,-2.84],[7.5,2.93,2.88,-2.89],[10.2,2.98,2.8906,-2.8906]]:
+   [[0,.025,-.32,-.37],[.4,.64,.16,-.88],[1.05,1.19,.72,-1.49],[2.0,1.75,1.36,-2.00],[3.1,2.23,2.03,-2.40],[4.25,2.59,2.60,-2.65],[6.0,2.79,2.73,-2.735],[8.8,2.82,2.7354,-2.7354]];
+  s.tailStart=a.len-(boeing?18.0:xwb?18.8:16.3);
+  s.tailEnd=boeing?1.72:xwb?1.58:1.42;
+  s.fin=boeing?12.87:xwb?11.5:11.5;
+  s.finSections=boeing?[[2.55,14.4,13.3,.63],[3.05,12.1,10.9,.62],[4.25,10.2,8.9,.5],[8.5,6.45,5.4,.30],[12.55,2.75,1.65,.095],[12.87,2.35,1.28,.055]]:
+   xwb?[[2.4,14.5,13.3,.61],[2.95,12.3,11,.57],[4.15,10.55,9.2,.47],[7.9,6.45,5.8,.27],[11.3,2.65,2.0,.09],[11.5,2.35,1.72,.05]]:
+   [[2.28,12.9,11.9,.59],[2.8,11.15,10.1,.54],[3.7,9.95,8.9,.46],[7.7,6.2,5.65,.27],[11.32,2.55,2.17,.09],[11.5,2.35,1.88,.05]];
+  s.stabilizer=boeing?[[1.2,1.32,12.3,8.2,.34],[4.1,1.73,9.4,6.05,.26],[9.7,2.57,3.75,1.8,.085],[10.76,2.72,2.8,.8,.025]]:
+   xwb?[[1.1,1.45,12.7,8.1,.32],[4.1,1.90,9.55,5.8,.24],[9.45,2.70,3.9,1.7,.075],[10.0,2.8,3.3,.92,.022]]:
+   [[1.1,1.16,11.0,7.35,.30],[3.7,1.57,8.55,5.15,.23],[8.9,2.39,3.25,1.6,.075],[9.7,2.52,2.75,.82,.022]];
+ }
+ return s;}
 function wingGeometry(a){const b=a.span/2,s=airframe(a),root=a.code==='B77W'?-9.8:a.code==='A35K'?-9:-8;
  const stations=[[a.r*.65,-.85,root,16,.66],[b*.3,-.55,-4.6,10.8,.46],[b*.64,.25,2.7,6,.22]];
  if(a.code==='B77W')stations.push([b*.86,1.25,8.1,3.4,.12],[b*.94,1.7,11.1,1.8,.06],[b,1.95,14.2,.32,.02]);
@@ -89,12 +108,64 @@ function wingGeometry(a){const b=a.span/2,s=airframe(a),root=a.code==='B77W'?-9.
  const nav=stations[a.code==='B77W'?stations.length-1:4];return {stations,nav,tip:stations[stations.length-1]};
 }
 function fuselageSection(a,z){
- const d=Math.max(0,Math.min(a.len,z+a.len/2)),nose=airframe(a).noseLength;
- // Elliptical radome, a raised flight-deck crown, and an upward-tapering tail cone.
- if(d<nose){const t=d/nose,round=Math.sqrt(Math.max(0,1-(1-t)*(1-t))),taper=a.code==='A35K'?.64:a.code==='B77W'?.52:.48;
-  return {radius:Math.max(.015,a.r*Math.pow(round,1+taper)*(1-.08*Math.sin(Math.PI*t))),center:-.32*(1-t)*(1-t),vertical:.97};}
- const t=Math.max(0,(d-a.len*.68)/(a.len*.32)),s=t*t*(3-2*t);
- return {radius:Math.max(.075,a.r*(1-.977*s)),center:.44*s,vertical:.97};
+ const d=Math.max(0,Math.min(a.len,z+a.len/2)),spec=airframe(a),profile=spec.nose;
+ if(d<spec.noseLength){
+  let i=1;while(i<profile.length-1&&d>profile[i][0])i++;
+  const p=profile[i-1],q=profile[i],h=q[0]-p[0],t=(d-p[0])/h;
+  // Monotone cubic interpolation avoids pointed joins and overshoot near
+  // the radome or crown; top and belly are shaped independently of width.
+  const value=k=>{const slope=(j)=>{if(j===0)return (profile[1][k]-profile[0][k])/(profile[1][0]-profile[0][0]);if(j===profile.length-1)return 0;const v=(profile[j][k]-profile[j-1][k])/(profile[j][0]-profile[j-1][0]),w=(profile[j+1][k]-profile[j][k])/(profile[j+1][0]-profile[j][0]);return v*w<=0?0:2*v*w/(v+w);};return (2*t*t*t-3*t*t+1)*p[k]+(t*t*t-2*t*t+t)*h*slope(i-1)+(-2*t*t*t+3*t*t)*q[k]+(t*t*t-t*t)*h*slope(i);};
+  const radius=Math.max(.025,value(1)),top=value(2),bottom=value(3);return {radius,center:(top+bottom)/2,vertical:(top-bottom)/(2*radius)};
+ }
+ const t=Math.max(0,(d-spec.tailStart)/(a.len-spec.tailStart)),s=t*t*(3-2*t),radius=a.r*(1-s)+.17*s,center=spec.tailEnd*s;
+ return {radius,center,vertical:.97-(a.code==='B77W'?.37:.18)*s};
+}
+// The same positions drive the lamp housings and the inexpensive 2D halos.
+// Points are in aircraft coordinates; gear lamps carry the nose-gear pivot.
+function aircraftLightLayout(a){
+ const spec=airframe(a);if(spec.lights)return spec.lights;
+ const half=a.len/2,geo=wingGeometry(a),q=geo.nav,lamps=[];
+ const add=(id,point,normal,color,group,size=1.35,part=null)=>lamps.push({id,point,normal,color,group,size,part});
+ for(const sign of [-1,1]){
+  const side=sign<0?'left':'right';
+  add('nav-'+side,[sign*q[0],q[1]+.06,q[2]+q[3]*.16],[sign*.65,.12,-.45],sign<0?'#ff4358':'#57e58a','navigation');
+  add('rear-nav-'+side,[sign*q[0],q[1]+.035,q[2]+q[3]*.92],[sign*.35,.1,.8],'#e8f4ff','navigation',1.05);
+  add('strobe-'+side,[sign*q[0],q[1]+.085,q[2]+q[3]*.68],[sign*.55,.25,0],'#e9f6ff','strobe',2.0);
+  const x=spec.gearX+.4,root=geo.stations[0];
+  add('landing-'+side,[sign*x,-1.06,root[2]+1.0],[0,-.22,-1],'#f5f2df','landing',2.2);
+  add('turnoff-'+side,[sign*(a.r+.55),-.91,root[2]+.22],[sign*.65,-.24,-.75],'#fff0d1','landing',1.45);
+  const z=-half+spec.doors[1]-.95,s=fuselageSection(a,z),y=.25;
+  add('wing-scan-'+side,[sign*Math.sqrt(Math.max(0,s.radius*s.radius-((y-s.center)/s.vertical)**2))*.999+sign*.045,y,z],[sign*.9,-.1,.3],'#e3edff','scan',.9);
+  const stab=spec.stabilizer[1];
+  add('tail-flood-'+side,[sign*stab[0],stab[1]+.22,half-stab[2]+stab[3]*.6],[-sign*.8,.65,0],'#dce9ff','scan',1.0);
+ }
+ const topZ=-half+a.len*.44,bottomZ=-half+a.len*.53,top=fuselageSection(a,topZ),bottom=fuselageSection(a,bottomZ),tail=fuselageSection(a,half);
+ add('beacon-upper',[0,top.center+top.radius*top.vertical+.13,topZ],[0,1,0],'#ff344c','beacon',1.65);
+ add('beacon-lower',[0,bottom.center-bottom.radius*bottom.vertical-.13,bottomZ],[0,-1,0],'#ff344c','lowerBeacon',1.65);
+ add('nav-tail',[0,tail.center+.1,half+.18],[0,0,1],'#e6f1ff','navigation',1.1);
+ add('strobe-tail',[0,tail.center+.28,half-.28],[0,.2,1],'#edf7ff','strobe',1.65);
+ const z=-half+8.6,s=fuselageSection(a,z),pivot=[0,s.center-s.radius*s.vertical-.035,z],part={kind:'noseGear',pivot};
+ add('taxi',[0,spec.ground+1.53,z-.2],[0,-.12,-1],'#fff2d8','taxi',1.8,part);
+ add('takeoff',[.18,spec.ground+1.53,z-.17],[0,-.16,-1],'#f4f3e7','taxi',1.55,part);
+ return spec.lights=lamps;
+}
+function aircraftLightVisible(point,normal,a,eye){
+ if(normal.reduce((n,v,i)=>n+v*eye[i],0)<-.04)return false;
+ // Check the hull along the view ray so a lamp on the far side cannot shine
+ // through the nose or tail. This runs for a few lamps, never for mesh faces.
+ for(const t of [.12,.4,.9,1.7,2.8,4.4,6.5,9,13,19,28,42,65,100]){
+  const p=point.map((v,i)=>v+eye[i]*t);if(Math.abs(p[2])>a.len/2||Math.abs(p[0])>a.r||Math.abs(p[1])>a.r+2)continue;
+  const s=fuselageSection(a,p[2]);if(Math.hypot(p[0],(p[1]-s.center)/s.vertical)<s.radius-.025)return false;
+ }
+ // Intersect the wing and stabilizer planes as well: their light housings
+ // must disappear when those surfaces stand between the lamp and camera.
+ const spec=airframe(a),occluders=spec.lightOccluders||(spec.lightOccluders=[wingGeometry(a).stations,spec.stabilizer.map(s=>[s[0],s[1],a.len/2-s[2],s[3],s[4]])]);
+ for(const stations of occluders)for(const sign of [-1,1])for(let k=1;k<stations.length;k++){
+  const p=stations[k-1],q=stations[k],slope=(q[1]-p[1])/(q[0]-p[0]),den=eye[1]-slope*sign*eye[0];if(Math.abs(den)<1e-5)continue;
+  const t=(p[1]+slope*(sign*point[0]-p[0])-point[1])/den;if(t<=.08)continue;
+  const x=sign*(point[0]+eye[0]*t);if(x<p[0]||x>q[0])continue;const u=(x-p[0])/(q[0]-p[0]),z=point[2]+eye[2]*t,le=p[2]+u*(q[2]-p[2]),chord=p[3]+u*(q[3]-p[3]);if(z>le&&z<le+chord)return false;
+ }
+ return true;
 }
 function buildPlane(a,wireframe=false){
 const faces=[],half=a.len/2,r=a.r,spec=airframe(a),N=wireframe?24:48,body=[204,217,232],wingColor=[150,171,194],dark=[12,27,44];
@@ -102,17 +173,18 @@ let part=null;const add=(p,color=body,edge=true,normals=null,material=0)=>faces.
 const radius=z=>fuselageSection(a,z).radius;
 function surface(theta,z,lift=0){const s=fuselageSection(a,z);return [Math.cos(theta)*(s.radius+lift),s.center+Math.sin(theta)*(s.radius+lift)*s.vertical,z]}
 function surfaceNormal(p){const z=p[2],s=fuselageSection(a,z),before=fuselageSection(a,z-.01),after=fuselageSection(a,z+.01),ny=(p[1]-s.center)/(s.radius*s.vertical*s.vertical),nx=p[0]/s.radius;
- return [nx,ny,-(after.radius-before.radius)/.02-ny*(after.center-before.center)/.02]}
+ return [nx,ny,-(after.radius-before.radius)/.02-ny*(after.center-before.center)/.02-ny*(p[1]-s.center)/s.vertical*(after.vertical-before.vertical)/.02]}
 const stations=[];for(let d=0;d<=spec.noseLength;d+=wireframe?.7:.32)stations.push(-half+d);for(let z=-half+spec.noseLength;z<half;z+=wireframe?2.7:1.35)stations.push(z);stations.push(half);stations.sort((x,y)=>x-y);
 for(let k=1;k<stations.length;k++)for(let j=0;j<N;j++){const p=[surface(j/N*Math.PI*2,stations[k-1]),surface(j/N*Math.PI*2,stations[k]),surface((j+1)/N*Math.PI*2,stations[k]),surface((j+1)/N*Math.PI*2,stations[k-1])];add(p,body,true,p.map(surfaceNormal));}
 function tube(x,y,sections,color=body,n=wireframe?18:36){for(let k=1;k<sections.length;k++)for(let j=0;j<n;j++){const at=(s,t)=>[x+Math.cos(t)*s[1],y+Math.sin(t)*s[1],s[0]],p=[at(sections[k-1],j/n*2*Math.PI),at(sections[k],j/n*2*Math.PI),at(sections[k],(j+1)/n*2*Math.PI),at(sections[k-1],(j+1)/n*2*Math.PI)],slope=(sections[k][1]-sections[k-1][1])/(sections[k][0]-sections[k-1][0]);add(p,color,true,p.map(q=>{const rr=Math.hypot(q[0]-x,q[1]-y)||1;return [(q[0]-x)/rr,(q[1]-y)/rr,-slope]}),.35)}}
 function foil(stations,sign,color,movable=false){
- const fractions=[0,.075,.38,.72,1],at=(s,f,side=1)=>[sign*s[0],s[1]+side*Math.sin(Math.PI*f)*s[4],s[2]+f*s[3]];
+ const fractions=movable?[0,.075,.38,.72,1]:[0,.055,.28,.68,.695,1],at=(s,f,side=1)=>[sign*s[0],s[1]+side*Math.sin(Math.PI*f)*s[4],s[2]+f*s[3]];
  for(let k=1;k<stations.length;k++){
   const s=stations[k-1],t=stations[k],slat=movable&&k<=3?{kind:'slat',sign,hinge:s,end:t}:null,flap=movable&&k<=2?{kind:'flap',sign,hinge:s,end:t}:null;
   for(let j=1;j<fractions.length;j++)for(const side of [-1,1]){
    part=j===1?slat:j===fractions.length-1?flap:null;
-   add([at(s,fractions[j-1],side),at(t,fractions[j-1],side),at(t,fractions[j],side),at(s,fractions[j],side)],side>0?color:color.map(v=>v*.65));
+   const shade=!movable&&j===4?.56:!movable&&j===5?.94:1;
+   add([at(s,fractions[j-1],side),at(t,fractions[j-1],side),at(t,fractions[j],side),at(s,fractions[j],side)],color.map(v=>v*(side>0?1:.65)*shade));
   }
   // Close the moving leading edge; the exposed gap remains visible on extension.
   if(slat){part=slat;add([at(s,.075,1),at(t,.075,1),at(t,.075,-1),at(s,.075,-1)],[94,130,165]);part=null;add([at(s,.075,1),at(t,.075,1),at(t,.075,-1),at(s,.075,-1)],[35,60,86]);}
@@ -124,7 +196,7 @@ function foil(stations,sign,color,movable=false){
 for(const sign of [-1,1]){
 const stations=wingGeometry(a).stations;
 foil(stations,sign,wingColor,true);
-foil([[r*.4,1.25,half-12.3,8.7,.38],[spec.tail*.6,2.1,half-7.7,4.7,.2],[spec.tail*.91,2.7,half-4.5,2.2,.09],[spec.tail,3.0,half-3.1,.55,.025]],sign,[144,172,203]);
+foil(spec.stabilizer.map(s=>[s[0],s[1],half-s[2],s[3],s[4]]),sign,[166,185,205]);
 const ex=sign*spec.ex,ey=-3.25,er=spec.engine,z=spec.ez;
 // Rounded intake lip, recessed fan, tapered exhaust and spinner.
 tube(ex,ey,[[z,er*.88],[z+.25,er],[z+1,er*1.04],[z+3.9,er*.94],[z+5.4,er*.7]],[172,192,215]);
@@ -178,16 +250,41 @@ for(let wz=-half+spec.doors[0]+1.6;wz<half-12;wz+=windowStep){
 function cockpitPatch(corners,color,lift,material=1){
  if(wireframe)return;
  const mix=(a,b,t)=>a.map((x,i)=>x+(b[i]-x)*t),at=(u,v)=>{const [t,d]=mix(mix(corners[0],corners[1],u),mix(corners[3],corners[2],u),v);return surface(sign>0?t:Math.PI-t,-half+d,lift)};
- for(let u=0;u<6;u++)for(let v=0;v<5;v++){const p=[at(u/6,v/5),at((u+1)/6,v/5),at((u+1)/6,(v+1)/5),at(u/6,(v+1)/5)];part={kind:'glazing',normal:surfaceNormal(p[0])};add(p,color,false,p.map(surfaceNormal),material)}part=null;
+ function triangle(chart,depth=0){const pts=chart.map(q=>at(...q));let error=0,edge=-1,mid=null;
+  for(let i=0;i<3;i++){const j=(i+1)%3,q=chart[i].map((v,k)=>(v+chart[j][k])/2),p=at(...q),e=Math.hypot(...p.map((v,k)=>v-(pts[i][k]+pts[j][k])/2));if(e>error){error=e;edge=i;mid=q;}}
+  if(error>.003&&depth<8){const j=(edge+1)%3,k=(edge+2)%3;triangle([chart[edge],mid,chart[k]],depth+1);triangle([mid,chart[j],chart[k]],depth+1);}
+  else {part={kind:'glazing',normal:surfaceNormal(pts[0])};add(pts,color,false,pts.map(surfaceNormal),material);}
+ }
+ for(let u=0;u<4;u++)for(let v=0;v<4;v++){const p=[[u/4,v/4],[(u+1)/4,v/4],[(u+1)/4,(v+1)/4],[u/4,(v+1)/4]];triangle([p[0],p[1],p[2]]);triangle([p[0],p[2],p[3]]);}part=null;
 }
-const stretch=a.code==='A35K'?1.08:a.code==='B77W'?1:.9;
-const panes=[[[1.515,4.50],[.98,4.95],[.60,4.0],[1.515,3.25]],[[.94,5.0],[.63,5.10],[.32,4.72],[.55,4.1]],[[.59,5.17],[.43,5.44],[.25,5.35],[.29,4.83]]].map(p=>p.map(([t,d])=>[t,d*stretch]));
-const masked=a.code==='A35K'||a.code==='A339';
-if(masked)cockpitPatch([[1.56,4.64*stretch],[.39,5.60*stretch],[.18,5.45*stretch],[1.56,3.10*stretch]],[15,23,31],.023,0);
-for(const pane of panes){cockpitPatch(pane,masked?[31,41,49]:[104,119,134],.04,0);const mid=pane.reduce((m,p)=>[m[0]+p[0]/4,m[1]+p[1]/4],[0,0]);cockpitPatch(pane.map(p=>p.map((v,i)=>mid[i]+(v-mid[i])*.88)),[18,43,59],.062);}
-// Glazing reflections and a slim windshield wiper, rather than a roof-wide stripe.
-cockpitPatch([[1.46,4.39*stretch],[1.02,4.76*stretch],[.99,4.60*stretch],[1.46,4.21*stretch]],[73,117,141],.081);
-cockpitPatch([[1.42,3.51*stretch],[1.10,3.99*stretch],[1.08,3.94*stretch],[1.42,3.46*stretch]],[21,27,33],.088,0);
+const boeing=a.code==='B77W',xwb=a.code==='A35K',stretch=xwb?1.08:boeing?1:.9;
+// Six distinct panes. The front windshield is swept back; side panes follow
+// the shoulder without turning into a continuous roof-wide glass band.
+const panes=boeing?[
+ [[1.535,4.18],[.89,4.52],[.65,3.62],[1.535,2.89]],
+ [[.85,4.60],[.49,5.10],[.24,4.78],[.59,3.75]],
+ [[.45,5.17],[.33,5.48],[.15,5.29],[.20,4.90]]
+]:xwb?[
+ [[1.54,4.88],[.86,5.25],[.62,4.18],[1.54,3.50]],
+ [[.82,5.33],[.46,5.84],[.23,5.53],[.56,4.32]],
+ [[.42,5.91],[.31,6.18],[.15,5.99],[.19,5.63]]
+]:[
+ [[1.54,3.80],[.96,4.13],[.67,3.40],[1.54,2.69]],
+ [[.91,4.22],[.50,4.75],[.25,4.49],[.60,3.53]],
+ [[.46,4.82],[.33,5.16],[.15,4.98],[.21,4.60]]
+];
+const masked=xwb||a.code==='A339';
+if(masked){const mask=xwb?[[1.57,5.02],[.28,6.25],[.105,6.13],[1.57,3.31]]:[[1.57,3.94],[.30,5.29],[.105,5.12],[1.57,2.53]];cockpitPatch(mask,[17,24,31],.026,0);}
+for(const pane of panes){
+ cockpitPatch(pane,masked?[43,52,59]:[102,117,131],.047,0);
+ const mid=pane.reduce((m,p)=>[m[0]+p[0]/4,m[1]+p[1]/4],[0,0]);
+ cockpitPatch(pane.map(p=>p.map((v,i)=>mid[i]+(v-mid[i])*.90)),[19,41,55],.073);
+}
+const front=panes[0],mix=(p,q,t)=>p.map((v,i)=>v+(q[i]-v)*t);
+// Narrow highlights are clipped to each pane. Raised wipers have a short
+// arm and blade below the pilot's direct line of sight.
+for(const pane of panes.slice(0,2)){const [p,q,r,s]=pane;cockpitPatch([mix(p,s,.14),mix(q,r,.14),mix(q,r,.23),mix(p,s,.23)],[60,94,112],.092);}
+if(!wireframe){const point=q=>surface(sign>0?q[0]:Math.PI-q[0],-half+q[1],.108),p=mix(front[3],front[2],.30),q=mix(front[3],front[2],.72),blade=mix(q,front[1],.22);beam(point(p),point(q),.018,[36,43,49]);beam(point(q),point(blade),.025,[26,32,39]);}
 // Passenger/crew exits: five pairs on the 777-300ER, four on each Airbus.
 marking='exit';
 for(const [i,d] of spec.doors.entries()){
@@ -223,11 +320,20 @@ const probe=skinPoint(.05,-half+3.6*stretch,.04);beam(probe,[probe[0]+sign*.17,p
 }
 
 }
-// Lofted vertical fin, separate rudder and rounded APU exhaust.
-const finSections=[[1.7,half-12.8,9.5,.38],[3.2,half-11.2,8.3,.34],[spec.fin*.64,half-7.1,5.3,.2],[spec.fin-.4,half-3.3,2.45,.085],[spec.fin,half-2.7,1.65,.045]];
-for(let k=1;k<finSections.length;k++)for(const side of [-1,1])for(const [u,v] of [[0,.74],[.74,1]]){const at=(q,f)=>[side*q[3]*Math.sin(Math.PI*f),q[0],q[1]+q[2]*f];add([at(finSections[k-1],u),at(finSections[k],u),at(finSections[k],v),at(finSections[k-1],v)],u>.7?[48,91,147]:side>0?[79,137,202]:[58,111,179])}
-const cap=finSections[finSections.length-1];add([[-.045,cap[0],cap[1]],[.045,cap[0],cap[1]],[.045,cap[0],cap[1]+cap[2]],[-.045,cap[0],cap[1]+cap[2]]],[153,189,224]);
-const apu=Array.from({length:16},(_,j)=>[Math.cos(j*Math.PI/8)*.16,Math.sin(j*Math.PI/8)*.14,half+.02]);add(apu,[18,30,43],false);
+// A swept, closed airfoil fin with a dorsal root fillet and separate rudder.
+// Curved thickness and vertex normals remove the old faceted triangular cap.
+const finSections=spec.finSections.map(q=>[q[0],half-q[1],q[2],q[3]]),fractions=wireframe?[0,.12,.48,.73,1]:[0,.055,.20,.46,.73,.744,.93,1];
+const finPoint=(q,f,side)=>[side*q[3]*Math.sin(Math.PI*f)**.72,q[0],q[1]+q[2]*f];
+for(let k=1;k<finSections.length;k++)for(const side of [-1,1])for(let j=1;j<fractions.length;j++){
+ const u=fractions[j-1],v=fractions[j],lo=finSections[k-1],hi=finSections[k],p=[finPoint(lo,u,side),finPoint(hi,u,side),finPoint(hi,v,side),finPoint(lo,v,side)],rudder=u>=.744,groove=u>=.73&&v<=.744;
+ const normals=p.map((point,i)=>{const f=i<2?u:v,q=i===1||i===2?hi:lo,e=.002,a1=finPoint(q,Math.max(0,f-e),side),b1=finPoint(q,Math.min(1,f+e),side),chord=b1.map((x,k)=>x-a1[k]),span=finPoint(hi,f,side).map((x,k)=>x-finPoint(lo,f,side)[k]);return [side*Math.abs(span[1]*chord[2]),-side*(span[0]*chord[2]-span[2]*chord[0]),-side*span[1]*chord[0]];});
+ add(p,groove?[36,66,99]:rudder?[65,118,174]:[75,132,193],true,normals,.12);
+}
+const cap=finSections.at(-1);for(let j=1;j<fractions.length;j++)add([finPoint(cap,fractions[j-1],-1),finPoint(cap,fractions[j-1],1),finPoint(cap,fractions[j],1),finPoint(cap,fractions[j],-1)],[116,158,203]);
+// The APU outlet belongs to the raised tail cone, not to the body centreline.
+const aft=fuselageSection(a,half),apuPoint=(z,rr,t)=>[Math.cos(t)*rr,aft.center+Math.sin(t)*rr*aft.vertical,z],apuN=wireframe?12:24;
+for(let j=0;j<apuN;j++){const t=j/apuN*Math.PI*2,u=(j+1)/apuN*Math.PI*2;add([apuPoint(half-.18,.20,t),apuPoint(half+.10,.16,t),apuPoint(half+.10,.16,u),apuPoint(half-.18,.20,u)],[105,122,139],false,null,.5);}
+add(Array.from({length:apuN},(_,j)=>apuPoint(half+.105,.145,j/apuN*Math.PI*2)),[14,22,30],false);
 function beam(a,b,radius,color){const axis=b.map((v,i)=>v-a[i]),len=Math.hypot(...axis),n=axis.map(v=>v/len),ref=Math.abs(n[1])<.9?[0,1,0]:[1,0,0],cross=(u,v)=>[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],raw=cross(n,ref),size=Math.hypot(...raw),u=raw.map(v=>v/size),v=cross(n,u),point=(p,t)=>p.map((x,i)=>x+radius*(u[i]*Math.cos(t)+v[i]*Math.sin(t)));for(let j=0;j<8;j++)add([point(a,j*Math.PI/4),point(b,j*Math.PI/4),point(b,(j+1)*Math.PI/4),point(a,(j+1)*Math.PI/4)],color)}
 function wheel(x,y,z,rad,track=.65){for(const side of [-1,1]){const xx=x+side*track,N=24,sections=[[-.27,.83],[-.16,1],[.16,1],[.27,.83]],at=(q,t)=>[xx+q[0],y+Math.cos(t)*rad*q[1],z+Math.sin(t)*rad*q[1]];
  for(let k=1;k<sections.length;k++)for(let j=0;j<N;j++)add([at(sections[k-1],j/N*2*Math.PI),at(sections[k],j/N*2*Math.PI),at(sections[k],(j+1)/N*2*Math.PI),at(sections[k-1],(j+1)/N*2*Math.PI)],[20,27,36],false);
@@ -242,7 +348,20 @@ function wheel(x,y,z,rad,track=.65){for(const side of [-1,1]){const xx=x+side*tr
  beam([-.46,wy,z],[.46,wy,z],.075,[166,186,207]);wheel(0,wy,z,.47,.35);part=null;}
 // Radome seam and small dorsal antennas.
 for(const d of [2.35* (a.code==='A35K'?1.08:1),a.len-5.8])for(let j=0;j<N;j++){const t=j/N*Math.PI*2,tt=(j+1)/N*Math.PI*2,z=-half+d;const p=[surface(t,z-.012,.018),surface(tt,z-.012,.018),surface(tt,z+.012,.018),surface(t,z+.012,.018)];add(p,[116,136,154],false,p.map(surfaceNormal));}
-for(const d of [13,a.len*.52]){const z=-half+d,y=fuselageSection(a,z).radius*.97;add([[-.055,y,z],[.055,y,z],[.04,y+.56,z+.5],[-.04,y+.56,z+.5]],[127,149,173]);add([[-.04,y+.56,z+.5],[.04,y+.56,z+.5],[.035,y+.12,z+.9],[-.035,y+.12,z+.9]],[168,189,209]);}
+for(const d of [13,a.len*.52]){const z=-half+d,y=fuselageSection(a,z).center+fuselageSection(a,z).radius*fuselageSection(a,z).vertical;add([[-.055,y,z],[.055,y,z],[.04,y+.56,z+.5],[-.04,y+.56,z+.5]],[127,149,173]);add([[-.04,y+.56,z+.5],[.04,y+.56,z+.5],[.035,y+.12,z+.9],[-.035,y+.12,z+.9]],[168,189,209]);}
+
+if(!wireframe){
+ // Low silhouette satcom radome and static dischargers; these are omitted
+ // from the lightweight wire mesh.
+ const z=-half+a.len*.39,q=fuselageSection(a,z),y=q.center+q.radius*q.vertical-.04;
+ for(let k=0;k<5;k++)for(let j=0;j<16;j++){const point=(u,t)=>{const f=u/5*Math.PI/2;return [Math.cos(t)*.64*Math.cos(f),y+.40*Math.sin(f),z+Math.sin(t)*1.65*Math.cos(f)]};add([point(k,j/8*Math.PI),point(k+1,j/8*Math.PI),point(k+1,(j+1)/8*Math.PI),point(k,(j+1)/8*Math.PI)],[186,203,220],false);}
+ for(const sign of [-1,1])for(const st of [wingGeometry(a).stations.slice(-3,-1),spec.stabilizer.slice(-2).map(q=>[q[0],q[1],half-q[2],q[3],q[4]])])for(const q of st){const p=[sign*(q[0]-.2),q[1],q[2]+q[3]];beam(p,[p[0],p[1]-.025,p[2]+.36],.014,[71,84,97]);}
+ for(const light of aircraftLightLayout(a)){
+  part=light.part;const n=light.normal,len=Math.hypot(...n),axis=n.map(v=>v/len),ref=Math.abs(axis[1])>.8?[1,0,0]:[0,1,0],u=[axis[1]*ref[2]-axis[2]*ref[1],axis[2]*ref[0]-axis[0]*ref[2],axis[0]*ref[1]-axis[1]*ref[0]],un=Math.hypot(...u),v=[axis[1]*u[2]-axis[2]*u[1],axis[2]*u[0]-axis[0]*u[2],axis[0]*u[1]-axis[1]*u[0]],radius=['landing','taxi'].includes(light.group)?.13:.075;
+  const disc=(rr,lift)=>Array.from({length:8},(_,j)=>light.point.map((x,i)=>x+axis[i]*lift+rr*(u[i]*Math.cos(j*Math.PI/4)+v[i]*Math.sin(j*Math.PI/4))/un));
+  add(disc(radius*1.35,-.015),[69,84,102],false);add(disc(radius,.001),light.group==='beacon'||light.group==='lowerBeacon'?[154,37,48]:[177,196,211],false,null,.5);part=null;
+ }
+}
 
 return faces}
 // Animate rigid parts without rebuilding the airframe on every frame.
@@ -259,21 +378,24 @@ function articulatedPoint(p,part,a,gear=gearPosition,flaps=flapPosition){
 // Small local pulses: navigation lamps stay steady; strobes use a double flash.
 function aircraftLampLevels(time){const pulse=(start,width,t)=>{const x=(t-start)/width;return x>=0&&x<=1?Math.sin(Math.PI*x)**2:0};const strobeTime=time%1550,beaconTime=time%1350;return {strobe:Math.max(pulse(40,85,strobeTime),pulse(205,85,strobeTime)),beacon:pulse(30,240,beaconTime),lowerBeacon:pulse(380,240,beaconTime)}}
 function drawAircraftLights(c,project,ca,sa,pitch,scale){
- if(!lightsOn)return;const a=fleet[aircraftIndex],spec=airframe(a),levels=motion?aircraftLampLevels(systemsClock):{strobe:0,beacon:0,lowerBeacon:0};
- const facing=n=>n[0]*(-sa*Math.cos(pitch))+n[1]*(-Math.sin(pitch))+n[2]*ca*Math.cos(pitch)<.06;
- function lamp(point,color,level,size=1.5){if(level<=.01)return;const p=project(point),radius=size*(.65+.35*level);c.save();c.globalAlpha=Math.min(1,.35+level*.65);c.fillStyle=color;c.shadowColor=color;c.shadowBlur=4+level*10;c.beginPath();c.arc(p[0],p[1],radius,0,Math.PI*2);c.fill();if(level>.65){c.globalAlpha=(level-.65)*.5;c.strokeStyle=color;c.lineWidth=.7;line(c,p[0]-radius*3,p[1],p[0]+radius*3,p[1]);line(c,p[0],p[1]-radius*3,p[0],p[1]+radius*3)}c.restore()}
- const geo=wingGeometry(a);for(const sign of [-1,1]){const q=geo.nav,wingtip=[sign*q[0],q[1]+.04,q[2]+q[3]*.18];if(facing([sign*.7,.4,-.35]))lamp(wingtip,sign<0?'#ff4b60':'#60ed9a',.75,Math.min(2,1.35+scale*.03));if(facing([sign*.5,.7,.2]))lamp([sign*q[0],q[1]+.06,q[2]+q[3]*.78],'#ecf8ff',levels.strobe,2.4)}
-
- if(facing([0,1,0]))lamp([0,a.r*.97+.16,-1.8],'#ff354d',.1+levels.beacon*.9,1.9);
- if(facing([0,-1,0]))lamp([0,-a.r*.97-.18,2.5],'#ff354d',.1+levels.lowerBeacon*.9,1.9);
- if(facing([0,0,1])){lamp([0,.12,a.len/2+.16],'#e4f3ff',.65,1.3);lamp([0,spec.fin-.12,a.len/2-1.1],'#eaf7ff',levels.strobe,1.9)}
+ if(!lightsOn)return;const a=fleet[aircraftIndex],levels=motion?aircraftLampLevels(systemsClock):{strobe:0,beacon:0,lowerBeacon:0},eye=[sa*Math.cos(pitch),Math.sin(pitch),-ca*Math.cos(pitch)];
+ const lamps=aircraftLightLayout(a);
+ for(const light of lamps){
+  if(wire&&!['navigation','strobe','beacon','lowerBeacon'].includes(light.group))continue;
+  if(light.part&&gearPosition<.90)continue;
+  const point=light.part?articulatedPoint(light.point,light.part,a):light.point;
+  if(!aircraftLightVisible(point,light.normal,a,eye))continue;
+  let level=light.group==='strobe'?levels.strobe:light.group==='beacon'||light.group==='lowerBeacon'?.12+.88*levels[light.group]:light.group==='scan'?.36:light.group==='landing'?(gearPosition>.9||flapPosition>.5?.88:.0):.72;
+  if(level<=.01)continue;const p=project(point),radius=light.size*(.65+.35*level)*Math.min(1.3,Math.max(.7,scale/10));
+  c.save();c.globalAlpha=.35+level*.65;c.fillStyle=light.color;c.shadowColor=light.color;c.shadowBlur=3+level*7;c.beginPath();c.arc(p[0],p[1],radius,0,Math.PI*2);c.fill();c.restore();
+ }
 }
 const aircraftRenderer=window.createAircraftRenderer?.()||null,aircraftWireframe=window.createAircraftWireframe?.()||null;
 const planeMeshes=new Map();
 function getPlaneMesh(a,wireframe=false){const key=a.code+(wireframe?':wire':':solid');if(!planeMeshes.has(key))planeMeshes.set(key,buildPlane(a,wireframe));return planeMeshes.get(key)}
 let faces=getPlaneMesh(fleet[0]),planeDrawRequest=0;
 function requestPlaneDraw(){if(!planeDrawRequest)planeDrawRequest=requestAnimationFrame(()=>{planeDrawRequest=0;drawPlane()})}
-function drawPlane(){if(planeDrawRequest){cancelAnimationFrame(planeDrawRequest);planeDrawRequest=0}const c=begin(model);if(!c)return;const w=model.w,h=model.h,rot=visualAngle,ca=Math.cos(rot),sa=Math.sin(rot),pitch=detail==='gear'?-.32:detail==='cockpit'?.3:.5,scale=Math.min(w/94,h/51)*visualZoom;function project(point){const p=point.map((v,i)=>v-visualFocus[i]);const x=p[0]*ca+p[2]*sa,z=-p[0]*sa+p[2]*ca,depth=z*Math.cos(pitch)-p[1]*Math.sin(pitch),perspective=155/(155+depth);return [w/2+x*scale*perspective,h*.48+(-p[1]*Math.cos(pitch)-z*Math.sin(pitch))*scale*perspective,depth]}
+function drawPlane(){if(planeDrawRequest){cancelAnimationFrame(planeDrawRequest);planeDrawRequest=0}const c=begin(model);if(!c)return;const w=model.w,h=model.h,rot=visualAngle,ca=Math.cos(rot),sa=Math.sin(rot),pitch=detail==='gear'?-.32:detail==='tail'?.20:detail==='cockpit'?.3:.5,scale=Math.min(w/94,h/51)*visualZoom;function project(point){const p=point.map((v,i)=>v-visualFocus[i]);const x=p[0]*ca+p[2]*sa,z=-p[0]*sa+p[2]*ca,depth=z*Math.cos(pitch)-p[1]*Math.sin(pitch),perspective=155/(155+depth);return [w/2+x*scale*perspective,h*.48+(-p[1]*Math.cos(pitch)-z*Math.sin(pitch))*scale*perspective,depth]}
 c.strokeStyle='#6baaff1a';c.lineWidth=.7;c.beginPath();c.ellipse(w/2,h*.6,w*.35,h*.27,0,0,Math.PI*2);c.stroke();c.setLineDash([2,8]);c.beginPath();c.ellipse(w/2,h*.6,w*.43,h*.34,0,0,Math.PI*2);c.stroke();c.setLineDash([]);
 const renderer=wire?aircraftWireframe:aircraftRenderer,mesh=wire?getPlaneMesh(fleet[aircraftIndex],true):faces;
 const rendered=renderer?.draw(c,mesh,{width:w,height:h,dpr:model.d,angle:rot,pitch,scale,focus:visualFocus,gear:gearPosition,transform:(p,part)=>articulatedPoint(p,part,fleet[aircraftIndex])});
@@ -390,10 +512,10 @@ const plan=routePlan(flights[flightIndex]);for(let i=1;i<plan.points.length-1;i+
 const f=flights[flightIndex];for(const [q,name] of [[f.a,f.from],[f.b,f.to]]){const v=p(...q,1.015);if(v[2]<=0)continue;c.fillStyle='#d4eaff';c.beginPath();c.arc(v[0],v[1],3,0,Math.PI*2);c.fill();c.font='11px monospace';c.textAlign='center';c.fillText(name,v[0],v[1]+23)}
 const q=routePoint(routeProgress),v=p(...q,1+Math.sin(routeProgress*Math.PI)*.012);if(v[2]>0){const ahead=Math.min(1,routeProgress+.003),behind=Math.max(0,routeProgress-.003),next=routePoint(ahead),prev=routePoint(behind),n=p(...next,1+Math.sin(ahead*Math.PI)*.012),u=p(...prev,1+Math.sin(behind*Math.PI)*.012);c.save();c.translate(v[0],v[1]);c.rotate(Math.atan2(n[1]-u[1],n[0]-u[0]));c.fillStyle='#c2ff8a';c.shadowColor='#c2ff8a';c.shadowBlur=14;path(c,[[9,0],[-6,-5],[-3,0],[-6,5]],true);c.fill();c.restore()}c.textAlign='left'}
 function fleetLog(){const matches=flights.filter(f=>f.fleet===aircraftIndex);$('#fleet-log-title').textContent=fleet[aircraftIndex].name;$('#fleet-log-description').textContent=matches.length?(lang==='en'?'Selected flights on this aircraft':'Избранные рейсы на этом самолёте'):(lang==='en'?'No matching flights in the selected logbook entries.':'В выбранных записях журнала рейсов на этом самолёте пока нет.');const box=$('#fleet-log-flights');box.innerHTML='';for(const f of matches){const b=document.createElement('button');b.className='fleet-flight';b.textContent=f.from+' → '+f.to+' / '+f.duration+' ↗';b.addEventListener('click',()=>selectFlight(flights.indexOf(f)));box.append(b)}}
-function modelTarget(){return detail==='cockpit'?{focus:[0,.65,-fleet[aircraftIndex].len/2+4.6],zoom:3}:detail==='engines'?{focus:[airframe(fleet[aircraftIndex]).ex,-3.25,airframe(fleet[aircraftIndex]).ez+2.5],zoom:2.25}:detail==='gear'?{focus:[0,-3.2,5.8],zoom:2.15}:{focus:[0,0,0],zoom:1}}
+function modelTarget(){return detail==='cockpit'?{focus:[0,.65,-fleet[aircraftIndex].len/2+4.6],zoom:3}:detail==='engines'?{focus:[airframe(fleet[aircraftIndex]).ex,-3.25,airframe(fleet[aircraftIndex]).ez+2.5],zoom:2.25}:detail==='tail'?{focus:[0,5.1,fleet[aircraftIndex].len/2-6],zoom:2.65}:detail==='gear'?{focus:[0,-3.2,5.8],zoom:2.15}:{focus:[0,0,0],zoom:1}}
 function snapModel(){gearPosition=gearDown?1:0;flapPosition=flapsDown?1:0;articulationText();const t=modelTarget();visualZoom=t.zoom*zoom;visualFocus=[...t.focus];visualAngle=angle}
 function updateModel(dt){if(!model.visible)return;systemsClock=(systemsClock+dt)%167400;fanSpeed+=(.0018-fanSpeed)*(1-Math.exp(-dt/850));fanAngle=(fanAngle+fanSpeed*dt)%(Math.PI*2);const approach=(value,target,step)=>value<target?Math.min(target,value+step):Math.max(target,value-step);gearPosition=approach(gearPosition,gearDown?1:0,dt/3200);flapPosition=approach(flapPosition,flapsDown?1:0,dt/2600);articulationText();if(!dragging&&detail==='all'&&phase>=autoTurnResume){angle=((angle+dt*.000032+Math.PI)%(Math.PI*2))-Math.PI;$('#rotation').value=Math.round(angle/D)}const t=modelTarget(),s=Math.min(dt/220,1);visualZoom+=(t.zoom*zoom-visualZoom)*s;visualFocus=visualFocus.map((v,i)=>v+(t.focus[i]-v)*s);visualAngle+=(((angle-visualAngle+Math.PI*3)%(Math.PI*2))-Math.PI)*s}
-$$('[data-detail]').forEach(b=>b.addEventListener('click',()=>{detail=b.dataset.detail;autoTurnResume=phase+3000;angle=(detail==='engines'?-12:detail==='cockpit'?20:detail==='gear'?35:26)*D;$('#rotation').value=Math.round(angle/D);$$('[data-detail]').forEach(n=>n.setAttribute('aria-pressed',String(n===b)));if(!motion)snapModel();drawPlane()}));
+$$('[data-detail]').forEach(b=>b.addEventListener('click',()=>{detail=b.dataset.detail;autoTurnResume=phase+3000;angle=(detail==='engines'?-12:detail==='cockpit'?20:detail==='tail'?135:detail==='gear'?35:26)*D;$('#rotation').value=Math.round(angle/D);$$('[data-detail]').forEach(n=>n.setAttribute('aria-pressed',String(n===b)));if(!motion)snapModel();drawPlane()}));
 $('#model-zoom').addEventListener('input',e=>{zoom=+e.target.value/100;if(!motion)snapModel();drawPlane()});
 function articulationText(){const en=lang==='en',gearMoving=Math.abs(gearPosition-(gearDown?1:0))>.001,flapMoving=Math.abs(flapPosition-(flapsDown?1:0))>.001;
  for(const [id,on,moving,label,state] of [['gear-toggle',gearDown,gearMoving,en?'GEAR':'ШАССИ',gearMoving?(gearDown?(en?'EXTENDING':'ВЫПУСК'):(en?'RETRACTING':'УБОРКА')):(gearDown?(en?'DOWN':'ВЫПУЩЕНЫ'):(en?'UP':'УБРАНЫ'))],['flaps-toggle',flapsDown,flapMoving,en?'FLAPS':'ЗАКРЫЛКИ',Math.round(smoothStep(flapPosition)*32)+'°']]){const b=$('#'+id);b.setAttribute('aria-pressed',String(on));b.querySelector('.control-name').textContent=label;const output=b.querySelector('output');if(output.textContent!==state)output.textContent=state}

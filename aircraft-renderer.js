@@ -127,7 +127,7 @@
         vNormal = normal;
         vColor = color;
         vMaterial = material;
-        vec3 eye = focus + vec3(-rotation.y * elevation.x,
+        vec3 eye = focus + vec3(rotation.y * elevation.x,
           elevation.y, -rotation.x * elevation.x) * 155.0;
         vView = eye - position;
       }`;

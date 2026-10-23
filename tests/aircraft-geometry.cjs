@@ -4,7 +4,7 @@ function fn(name){const start=src.indexOf('function '+name+'(');assert(start>=0,
 const ctx={Math,D:Math.PI/180,fanAngle:.3,gearPosition:1,flapPosition:0};
 vm.createContext(ctx);
 vm.runInContext(src.slice(src.indexOf('const fleet='),src.indexOf('const reduced=')),ctx);
-for(const name of ['airframe','wingGeometry','fuselageSection','buildPlane','smoothStep','articulatedPoint'])vm.runInContext(fn(name),ctx);
+for(const name of ['airframe','wingGeometry','fuselageSection','aircraftLightLayout','buildPlane','smoothStep','articulatedPoint'])vm.runInContext(fn(name),ctx);
 for(const a of vm.runInContext('fleet',ctx)){
  const spec=ctx.airframe(a),faces=ctx.buildPlane(a);
  assert(faces.length>3000,a.code+' has a detailed surface');

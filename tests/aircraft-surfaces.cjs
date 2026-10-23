@@ -3,7 +3,7 @@ const src=fs.readFileSync(path.join(__dirname,'..','app.js'),'utf8');
 function fn(name){const start=src.indexOf('function '+name+'(');assert(start>=0,name);let i=src.indexOf('{',start)+1,n=1;while(n){if(src[i]==='{')n++;if(src[i]==='}')n--;i++;}return src.slice(start,i);}
 const ctx={Math,D:Math.PI/180,fanAngle:0,gearPosition:1,flapPosition:0};vm.createContext(ctx);
 vm.runInContext(src.slice(src.indexOf('const fleet='),src.indexOf('const reduced=')),ctx);
-for(const n of ['airframe','wingGeometry','fuselageSection','buildPlane','smoothStep','articulatedPoint'])vm.runInContext(fn(n),ctx);
+for(const n of ['airframe','wingGeometry','fuselageSection','aircraftLightLayout','buildPlane','smoothStep','articulatedPoint'])vm.runInContext(fn(n),ctx);
 function clearance(a,p){const s=ctx.fuselageSection(a,p[2]);return Math.hypot(p[0],(p[1]-s.center)/s.vertical)-s.radius;}
 for(const a of vm.runInContext('fleet',ctx)){
  const faces=ctx.buildPlane(a),fairings=[...new Set(faces.filter(f=>f.part?.component==='fairing').map(f=>f.part))];
