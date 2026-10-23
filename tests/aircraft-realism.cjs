@@ -22,6 +22,14 @@ for(const a of vm.runInContext('fleet',ctx)){
  const lamps=ctx.aircraftLightLayout(a);assert.equal(new Set(lamps.map(l=>l.id)).size,lamps.length);for(const group of ['navigation','strobe','beacon','lowerBeacon','landing','scan','taxi'])assert(lamps.some(l=>l.group===group));
  assert(lamps.find(l=>l.id==='nav-left').color.startsWith('#ff'));assert(lamps.find(l=>l.id==='nav-right').color.startsWith('#57'));
  for(const lamp of lamps){assert([...lamp.point,...lamp.normal].every(Number.isFinite));assert(Math.hypot(...lamp.normal)>.2);}
+ // Regress the floating-light bug against rendered wing triangles, not
+ // against the mount helper: the lens centre must be within 2 cm of them.
+ const wing=faces.filter(f=>!f.part&&Math.abs(f.color[0]-97.5)<1e-6);
+ function distanceToTriangle(p,a,b,c){const sub=(p,q)=>p.map((v,i)=>v-q[i]),dot=(p,q)=>p.reduce((s,v,i)=>s+v*q[i],0),u=sub(b,a),v=sub(c,a),n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],nn=dot(n,n);if(nn<1e-12)return Infinity;const h=dot(sub(p,a),n)/nn,q=p.map((x,i)=>x-h*n[i]),w=sub(q,a),uu=dot(u,u),uv=dot(u,v),vv=dot(v,v),wu=dot(w,u),wv=dot(w,v),den=uu*vv-uv*uv,x=(wu*vv-wv*uv)/den,y=(wv*uu-wu*uv)/den;return x>=-1e-7&&y>=-1e-7&&x+y<=1+1e-7?Math.abs(h)*Math.sqrt(nn):Infinity;}
+ for(const lamp of lamps.filter(l=>l.group==='landing')){
+  const distances=wing.flatMap(f=>f.p.slice(2).map((p,i)=>distanceToTriangle(lamp.point,f.p[0],f.p[i+1],p)));
+  assert(Math.min(...distances)<.0201,a.code+' '+lamp.id+' sits on the lower wing, not in open air');
+ }
  for(const lamp of lamps.filter(l=>l.part)){const q=ctx.articulatedPoint(lamp.point,lamp.part,a,1,0);assert(q.every((v,i)=>Math.abs(v-lamp.point[i])<1e-9));}
  assert(!ctx.aircraftLightVisible([0,0,0],[0,0,-1],a,[0,0,-1]),'hull occludes a source inside it');
  assert(ctx.aircraftLightVisible([0,spec.fin+1,0],[0,1,0],a,[0,1,0]),'unobstructed light stays visible');

@@ -70,7 +70,7 @@
         }
         projected=new Float64Array(vertices.length*6);
       }
-      const ca=Math.cos(o.angle),sa=Math.sin(o.angle),cp=Math.cos(o.pitch),sp=Math.sin(o.pitch),eye=[-sa*cp,sp,-ca*cp];
+      const ca=Math.cos(o.angle),sa=Math.sin(o.angle),cp=Math.cos(o.pitch),sp=Math.sin(o.pitch),eye=[sa*cp,sp,-ca*cp];
       for(let i=0;i<vertices.length;i++){
           const f=vertices[i];if(f.gear&&o.gear<=.005)continue;
           const p=f.dynamic?o.transform(f.p,f.part):f.p,v=p.map((x,i)=>x-o.focus[i]),x=v[0]*ca+v[2]*sa,z=-v[0]*sa+v[2]*ca,d=155+z*cp-v[1]*sp,inv=1/d;

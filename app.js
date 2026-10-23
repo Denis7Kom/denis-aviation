@@ -83,11 +83,11 @@ function airframe(a){if(!airframe.specs)airframe.specs={
  const s=airframe.specs[a.code];
  if(!s.nose){
   const boeing=a.code==='B77W',xwb=a.code==='A35K';
-  // Display lofts fitted to the manufacturer's three-view silhouettes. Each
-  // station is distance / half-width / upper contour / lower contour, in m.
-  s.nose=boeing?[[0,.025,-.26,-.31],[.45,.38,-.02,-.75],[1.2,.94,.38,-1.32],[2.3,1.64,1.13,-1.98],[3.5,2.24,2.02,-2.51],[4.7,2.68,2.79,-2.88],[6.2,3.01,3.00,-3.00],[9.2,3.1,3.007,-3.007]]:
-   xwb?[[0,.025,-.48,-.53],[.55,.57,-.04,-1.12],[1.4,1.16,.62,-1.85],[2.7,1.91,1.57,-2.42],[4.1,2.44,2.44,-2.73],[5.6,2.79,2.84,-2.88],[7.5,2.95,2.89,-2.89],[10.2,2.98,2.8906,-2.8906]]:
-   [[0,.025,-.38,-.43],[.4,.78,.30,-1.06],[1.05,1.40,1.02,-1.78],[2.0,1.99,1.77,-2.27],[3.1,2.43,2.39,-2.59],[4.25,2.67,2.70,-2.71],[6.0,2.80,2.735,-2.735],[8.8,2.82,2.7354,-2.7354]];
+  // Side and plan silhouettes sampled from the Boeing/Airbus airport
+  // planning drawings and A350 photo contours. Units: distance, half-width, top, belly.
+  s.nose=boeing?[[0,.025,-.50,-.55],[.25,.48,.04,-1.17],[.5,.68,.20,-1.33],[1,1.07,.52,-1.57],[1.5,1.31,1.01,-1.81],[2,1.55,1.41,-1.97],[2.5,1.71,1.65,-2.13],[3,1.95,1.89,-2.29],[3.5,2.11,2.05,-2.46],[4,2.27,2.29,-2.54],[5,2.50,2.54,-2.78],[6,2.74,2.78,-2.94],[7,2.98,2.94,-3.007],[8,3.1,3.007,-3.007],[9.2,3.1,3.007,-3.007]]:
+   xwb?[[0,.025,-.78,-.83],[.25,.40,-.24,-1.15],[.5,.63,.03,-1.38],[1,1.02,.46,-1.72],[1.5,1.30,.89,-1.99],[2,1.54,1.35,-2.20],[2.8,1.91,1.89,-2.45],[3.8,2.25,2.27,-2.65],[5,2.60,2.62,-2.82],[6.5,2.84,2.82,-2.89],[8,2.96,2.89,-2.89],[10.2,2.98,2.8906,-2.8906]]:
+   [[0,.025,-.32,-.37],[.25,.42,.16,-.88],[.5,.65,.36,-1.07],[1,.93,.55,-1.33],[1.5,1.16,1.00,-1.52],[2,1.40,1.46,-1.72],[2.5,1.58,1.72,-1.91],[3,1.77,1.91,-2.04],[3.5,1.91,2.04,-2.17],[4,2.05,2.17,-2.30],[5,2.33,2.43,-2.43],[6,2.51,2.56,-2.63],[7,2.65,2.69,-2.69],[8,2.79,2.7354,-2.7354],[8.8,2.82,2.7354,-2.7354]];
   s.tailStart=a.len-(boeing?18.0:xwb?18.8:16.3);
   s.tailEnd=boeing?1.32:xwb?1.24:1.12;
   s.fin=boeing?12.87:xwb?11.5:11.5;
@@ -131,14 +131,23 @@ function aircraftLightLayout(a){
  const spec=airframe(a);if(spec.lights)return spec.lights;
  const half=a.len/2,geo=wingGeometry(a),q=geo.nav,lamps=[];
  const add=(id,point,normal,color,group,size=1.35,part=null)=>lamps.push({id,point,normal,color,group,size,part});
+ // Locate a lamp on an actual fixed lower-wing triangle. Using the same
+ // diagonal as the renderer avoids floating fixtures on the swept wing.
+ function wingMount(x,f){
+  const stations=geo.stations;let k=1;while(k<stations.length-1&&x>stations[k][0])k++;
+  const p=stations[k-1],q=stations[k],w=(x-p[0])/(q[0]-p[0]),u=(f-.075)/(.38-.075),at=(s,t)=>[s[0],s[1]-Math.sin(Math.PI*t)*s[4],s[2]+t*s[3]],corners=[at(p,.075),at(q,.075),at(q,.38),at(p,.38)],indices=u<=w?[0,1,2]:[0,2,3],weights=u<=w?[1-w,w-u,u]:[1-u,w,u-w],v=indices.map(i=>corners[i]),anchor=[0,1,2].map(i=>v.reduce((s,p,k)=>s+p[i]*weights[k],0)),a1=v[1].map((x,i)=>x-v[0][i]),b1=v[2].map((x,i)=>x-v[0][i]),n=[a1[1]*b1[2]-a1[2]*b1[1],a1[2]*b1[0]-a1[0]*b1[2],a1[0]*b1[1]-a1[1]*b1[0]],len=Math.hypot(...n),normal=n.map(x=>x/len*(n[1]>0?-1:1));
+  return {point:anchor.map((x,i)=>x+normal[i]*.018),normal};
+ }
+
  for(const sign of [-1,1]){
   const side=sign<0?'left':'right';
   add('nav-'+side,[sign*q[0],q[1]+.06,q[2]+q[3]*.16],[sign*.65,.12,-.45],sign<0?'#ff4358':'#57e58a','navigation');
   add('rear-nav-'+side,[sign*q[0],q[1]+.035,q[2]+q[3]*.92],[sign*.35,.1,.8],'#e8f4ff','navigation',1.05);
   add('strobe-'+side,[sign*q[0],q[1]+.085,q[2]+q[3]*.68],[sign*.55,.25,0],'#e9f6ff','strobe',2.0);
-  const x=spec.gearX+.4,root=geo.stations[0];
-  add('landing-'+side,[sign*x,-1.06,root[2]+1.0],[0,-.22,-1],'#f5f2df','landing',2.2);
-  add('turnoff-'+side,[sign*(a.r+.55),-.91,root[2]+.22],[sign*.65,-.24,-.75],'#fff0d1','landing',1.45);
+  for(const [id,x,f,size,color] of [['landing',spec.gearX+.9,.11,2.2,'#f5f2df'],['turnoff',a.r+.8,.12,1.45,'#fff0d1']]){
+   const mount=wingMount(x,f),point=[sign*mount.point[0],mount.point[1],mount.point[2]],normal=[sign*mount.normal[0],mount.normal[1],mount.normal[2]];
+   add(id+'-'+side,point,[id==='turnoff'?sign*.6:0,-.35,-.9],color,'landing',size);lamps[lamps.length-1].housingNormal=normal;
+  }
   const z=-half+spec.doors[1]-.95,s=fuselageSection(a,z),y=.25;
   add('wing-scan-'+side,[sign*Math.sqrt(Math.max(0,s.radius*s.radius-((y-s.center)/s.vertical)**2))*.999+sign*.045,y,z],[sign*.9,-.1,.3],'#e3edff','scan',.9);
   const stab=spec.stabilizer[1];
@@ -265,21 +274,24 @@ function cockpitPatch(corners,color,lift,material=1){
 const boeing=a.code==='B77W',xwb=a.code==='A35K',stretch=xwb?1.08:boeing?1:.9;
 // Six distinct panes. The front windshield is swept back; side panes follow
 // the shoulder without turning into a continuous roof-wide glass band.
-const panes=boeing?[
- [[1.535,4.18],[.89,4.52],[.65,3.62],[1.535,2.89]],
- [[.85,4.60],[.49,5.10],[.24,4.78],[.59,3.75]],
- [[.45,5.17],[.33,5.48],[.15,5.29],[.20,4.90]]
+// Define the window belt by its physical height, not by an angle that
+// drops along the widening fuselage. The lateral pane sills stay aligned.
+const paneCharts=boeing?[
+ [[null,2.63],[1.62,3.06],[.70,2.40],[null,1.64]],
+ [[1.64,3.15],[1.62,3.56],[.61,3.60],[.71,2.53]],
+ [[1.62,3.65],[1.57,4.06],[.62,4.05],[.61,3.70]]
 ]:xwb?[
- [[1.54,4.88],[.86,5.25],[.62,4.18],[1.54,3.50]],
- [[.82,5.33],[.46,5.84],[.23,5.53],[.56,4.32]],
- [[.42,5.91],[.31,6.18],[.15,5.99],[.19,5.63]]
+ [[null,3.39],[1.71,3.95],[.75,3.10],[null,2.18]],
+ [[1.73,4.04],[1.80,4.48],[.66,4.45],[.77,3.25]],
+ [[1.80,4.56],[1.76,5.23],[.69,5.15],[.64,4.52]]
 ]:[
- [[1.54,3.80],[.96,4.13],[.67,3.40],[1.54,2.69]],
- [[.91,4.22],[.50,4.75],[.25,4.49],[.60,3.53]],
- [[.46,4.82],[.33,5.16],[.15,4.98],[.21,4.60]]
+ [[null,2.22],[1.40,2.71],[.65,2.15],[null,1.34]],
+ [[1.42,2.80],[1.44,3.21],[.63,3.22],[.66,2.27]],
+ [[1.44,3.30],[1.42,3.93],[.61,3.91],[.62,3.30]]
 ];
+const cockpitChart=([y,d])=>{const s=fuselageSection(a,-half+d);return [y===null?1.54:Math.asin(Math.max(-.99,Math.min(.99,(y-s.center)/(s.radius*s.vertical)))),d]},panes=paneCharts.map(p=>p.map(cockpitChart));
 const masked=xwb||a.code==='A339';
-if(masked){const mask=xwb?[[1.57,5.02],[.28,6.25],[.105,6.13],[1.57,3.31]]:[[1.57,3.94],[.30,5.29],[.105,5.12],[1.57,2.53]];cockpitPatch(mask,[17,24,31],.026,0);}
+if(masked){const mask=(xwb?[[null,3.53],[1.94,5.38],[.51,5.30],[null,2.00]]:[[null,2.36],[1.59,4.07],[.45,4.05],[null,1.18]]).map(cockpitChart);cockpitPatch(mask,[17,24,31],.026,0);}
 for(const pane of panes){
  cockpitPatch(pane,masked?[43,52,59]:[102,117,131],.047,0);
  const mid=pane.reduce((m,p)=>[m[0]+p[0]/4,m[1]+p[1]/4],[0,0]);
@@ -352,7 +364,7 @@ function wheel(x,y,z,rad,track=.65){for(const side of [-1,1]){const xx=x+side*tr
  beam([0,wy+.62,z],[0,braceY,z+1.55],.065,[151,169,187]);
  beam([-.46,wy,z],[.46,wy,z],.075,[166,186,207]);wheel(0,wy,z,.47,.35);part=null;}
 // Radome seam and small dorsal antennas.
-for(const d of [2.35* (a.code==='A35K'?1.08:1),a.len-5.8])for(let j=0;j<N;j++){const t=j/N*Math.PI*2,tt=(j+1)/N*Math.PI*2,z=-half+d;const p=[surface(t,z-.012,.018),surface(tt,z-.012,.018),surface(tt,z+.012,.018),surface(t,z+.012,.018)];add(p,[116,136,154],false,p.map(surfaceNormal));}
+for(const d of [a.code==='A35K'?1.75:a.code==='B77W'?1.35:1.05,a.len-5.8])for(let j=0;j<N;j++){const t=j/N*Math.PI*2,tt=(j+1)/N*Math.PI*2,z=-half+d;const p=[surface(t,z-.012,.018),surface(tt,z-.012,.018),surface(tt,z+.012,.018),surface(t,z+.012,.018)];add(p,[116,136,154],false,p.map(surfaceNormal));}
 for(const d of [13,a.len*.52]){const z=-half+d,y=fuselageSection(a,z).center+fuselageSection(a,z).radius*fuselageSection(a,z).vertical;add([[-.055,y,z],[.055,y,z],[.04,y+.56,z+.5],[-.04,y+.56,z+.5]],[127,149,173]);add([[-.04,y+.56,z+.5],[.04,y+.56,z+.5],[.035,y+.12,z+.9],[-.035,y+.12,z+.9]],[168,189,209]);}
 
 if(!wireframe){
@@ -362,9 +374,9 @@ if(!wireframe){
  for(let k=0;k<5;k++)for(let j=0;j<16;j++){const point=(u,t)=>{const f=u/5*Math.PI/2;return [Math.cos(t)*.64*Math.cos(f),y+.40*Math.sin(f),z+Math.sin(t)*1.65*Math.cos(f)]};add([point(k,j/8*Math.PI),point(k+1,j/8*Math.PI),point(k+1,(j+1)/8*Math.PI),point(k,(j+1)/8*Math.PI)],[186,203,220],false);}
  for(const sign of [-1,1])for(const st of [wingGeometry(a).stations.slice(-3,-1),spec.stabilizer.slice(-2).map(q=>[q[0],q[1],half-q[2],q[3],q[4]])])for(const q of st){const p=[sign*(q[0]-.2),q[1],q[2]+q[3]];beam(p,[p[0],p[1]-.025,p[2]+.36],.014,[71,84,97]);}
  for(const light of aircraftLightLayout(a)){
-  part=light.part;const n=light.normal,len=Math.hypot(...n),axis=n.map(v=>v/len),ref=Math.abs(axis[1])>.8?[1,0,0]:[0,1,0],u=[axis[1]*ref[2]-axis[2]*ref[1],axis[2]*ref[0]-axis[0]*ref[2],axis[0]*ref[1]-axis[1]*ref[0]],un=Math.hypot(...u),v=[axis[1]*u[2]-axis[2]*u[1],axis[2]*u[0]-axis[0]*u[2],axis[0]*u[1]-axis[1]*u[0]],radius=['landing','taxi'].includes(light.group)?.13:.075;
+  part=light.part;const n=light.housingNormal||light.normal,len=Math.hypot(...n),axis=n.map(v=>v/len),ref=Math.abs(axis[1])>.8?[1,0,0]:[0,1,0],u=[axis[1]*ref[2]-axis[2]*ref[1],axis[2]*ref[0]-axis[0]*ref[2],axis[0]*ref[1]-axis[1]*ref[0]],un=Math.hypot(...u),v=[axis[1]*u[2]-axis[2]*u[1],axis[2]*u[0]-axis[0]*u[2],axis[0]*u[1]-axis[1]*u[0]],radius=['landing','taxi'].includes(light.group)?.13:.075;
   const disc=(rr,lift)=>Array.from({length:8},(_,j)=>light.point.map((x,i)=>x+axis[i]*lift+rr*(u[i]*Math.cos(j*Math.PI/4)+v[i]*Math.sin(j*Math.PI/4))/un));
-  add(disc(radius*1.35,-.015),[69,84,102],false);add(disc(radius,.001),light.group==='beacon'||light.group==='lowerBeacon'?[154,37,48]:[177,196,211],false,null,.5);part=null;
+  const back=disc(radius*1.35,light.housingNormal?-.026:-.015),lens=disc(radius,.001);add(back,[69,84,102],false);for(let j=0;j<8;j++)add([back[j],back[(j+1)%8],lens[(j+1)%8],lens[j]],[82,98,115],false);add(lens,light.group==='beacon'||light.group==='lowerBeacon'?[154,37,48]:[177,196,211],false,null,.5);part=null;
  }
 }
 
