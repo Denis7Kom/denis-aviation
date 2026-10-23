@@ -1,10 +1,62 @@
 /* Lightweight aircraft renderer. Geometry is local; no model downloads or libraries. */
 (() => {
   'use strict';
+  // A depth-buffered fallback is also needed on devices with WebGL disabled.
+  // Sorting whole faces by their average depth cannot correctly hide a strut
+  // partly behind a curved fuselage, regardless of the sorting order.
+  function softwareRenderer() {
+    const canvas=document.createElement('canvas'), ctx=canvas.getContext('2d');
+    let source=null, triangles=[], vertices=[], projected=null, pixels=null, depth=null;
+    const moving=new Set(['mainGear','noseGear','gearDoor','flap','slat','fan']);
+    const normalize=v=>{const n=Math.hypot(...v)||1;return v.map(x=>x/n);};
+    function normal(p){const u=p[1].map((v,i)=>v-p[0][i]),v=p[2].map((v,i)=>v-p[0][i]);return normalize([u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]]);}
+    return {mode:'software-depth',draw(context,faces,o){
+      const width=Math.max(1,Math.min(1100,Math.round(o.width*o.dpr))),height=Math.max(1,Math.round(o.height*width/o.width)),ratio=width/o.width;
+      if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;pixels=ctx.createImageData(width,height);depth=new Float32Array(width*height);}
+      if(!pixels){pixels=ctx.createImageData(width,height);depth=new Float32Array(width*height);}
+      pixels.data.fill(0);depth.fill(0);
+      if(source!==faces){
+        source=faces;triangles=[];vertices=[];
+        const shared=new Map(),parts=new Map();
+        for(const f of faces){
+          const flat=normal(f.p),dynamic=moving.has(f.part?.kind),gear=['mainGear','noseGear'].includes(f.part?.kind);
+          if(dynamic&&!parts.has(f.part))parts.set(f.part,parts.size+1);
+          const ids=f.p.map((p,i)=>{
+            const n=f.normals?f.normals[i]:flat,key=[...p,...n,...f.color,dynamic?parts.get(f.part):0].join(',');
+            if(!shared.has(key)){shared.set(key,vertices.length);vertices.push({p,n,color:f.color,part:f.part,dynamic,gear});}
+            return shared.get(key);
+          });
+          for(let k=1;k<ids.length-1;k++)triangles.push({indices:[ids[0],ids[k],ids[k+1]],gear});
+        }
+        projected=new Float64Array(vertices.length*6);
+      }
+      const ca=Math.cos(o.angle),sa=Math.sin(o.angle),cp=Math.cos(o.pitch),sp=Math.sin(o.pitch),eye=[-sa*cp,sp,-ca*cp];
+      for(let i=0;i<vertices.length;i++){
+          const f=vertices[i];if(f.gear&&o.gear<=.005)continue;
+          const p=f.dynamic?o.transform(f.p,f.part):f.p,v=p.map((x,i)=>x-o.focus[i]),x=v[0]*ca+v[2]*sa,z=-v[0]*sa+v[2]*ca,d=155+z*cp-v[1]*sp,inv=1/d;
+          let n=f.n;
+          if(f.dynamic){const np=o.transform(f.p.map((x,i)=>x+n[i]*.01),f.part);n=np.map((x,i)=>x-p[i]);}
+          n=normalize(n);if(n.reduce((s,x,i)=>s+x*eye[i],0)<0)n=n.map(x=>-x);
+          const key=Math.max(0,(-.4*n[0]+.85*n[1]-.5*n[2])/1.064),fill=Math.max(0,(.75*n[0]+.25*n[1]+.4*n[2])/.887),light=.34+.48*key+.13*fill+.1*(.5+.5*n[1]);
+          projected.set([width/2+x*o.scale*155*inv*ratio,height*.48-(v[1]*cp+z*sp)*o.scale*155*inv*ratio,inv,...f.color.map(c=>Math.min(255,c*light)*inv)],i*6);
+      }
+      for(const {indices,gear} of triangles){
+        if(gear&&o.gear<=.005)continue;
+        const [a,b,c]=indices.map(i=>projected.subarray(i*6,i*6+6)),den=(b[1]-c[1])*(a[0]-c[0])+(c[0]-b[0])*(a[1]-c[1]);if(Math.abs(den)<.00001)continue;
+        const x0=Math.max(0,Math.ceil(Math.min(a[0],b[0],c[0])-.5)),x1=Math.min(width-1,Math.floor(Math.max(a[0],b[0],c[0])-.5)),y0=Math.max(0,Math.ceil(Math.min(a[1],b[1],c[1])-.5)),y1=Math.min(height-1,Math.floor(Math.max(a[1],b[1],c[1])-.5));
+        const ax=(b[1]-c[1])/den,ay=(c[0]-b[0])/den,bx=(c[1]-a[1])/den,by=(a[0]-c[0])/den;
+        for(let y=y0;y<=y1;y++){
+          let u=((b[1]-c[1])*(x0+.5-c[0])+(c[0]-b[0])*(y+.5-c[1]))/den,v=((c[1]-a[1])*(x0+.5-c[0])+(a[0]-c[0])*(y+.5-c[1]))/den;
+          for(let x=x0;x<=x1;x++,u+=ax,v+=bx){const w=1-u-v;if(u<-.00001||v<-.00001||w<-.00001)continue;const z=u*a[2]+v*b[2]+w*c[2],index=y*width+x;if(z<=depth[index])continue;depth[index]=z;const k=index*4;pixels.data[k]=(u*a[3]+v*b[3]+w*c[3])/z;pixels.data[k+1]=(u*a[4]+v*b[4]+w*c[4])/z;pixels.data[k+2]=(u*a[5]+v*b[5]+w*c[5])/z;pixels.data[k+3]=255;}
+        }
+      }
+      ctx.putImageData(pixels,0,0);context.drawImage(canvas,0,0,o.width,o.height);return true;
+    }};
+  }
   window.createAircraftRenderer = function () {
     const canvas = document.createElement('canvas');
     const gl = canvas.getContext('webgl', {alpha: true, antialias: true, premultipliedAlpha: true});
-    if (!gl) return null;
+    if (!gl) return softwareRenderer();
     let lost = false, mesh = null, source = null;
     canvas.addEventListener('webglcontextlost', event => {event.preventDefault(); lost = true;});
 
@@ -76,8 +128,8 @@
       const vs = shader(gl.VERTEX_SHADER, vertexSource), fs = shader(gl.FRAGMENT_SHADER, fragmentSource);
       gl.attachShader(program, vs); gl.attachShader(program, fs); gl.linkProgram(program);
       gl.deleteShader(vs); gl.deleteShader(fs);
-      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return null;
-    } catch (_) {return null;}
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return softwareRenderer();
+    } catch (_) {return softwareRenderer();}
     const attrs = ['position', 'normal', 'color', 'material'].map(name => gl.getAttribLocation(program, name));
     const uniforms = Object.fromEntries(['focus', 'viewport', 'rotation', 'elevation', 'scale'].map(name => [name, gl.getUniformLocation(program, name)]));
     const moving = new Set(['mainGear', 'noseGear', 'gearDoor', 'flap', 'slat', 'fan']);
@@ -135,9 +187,11 @@
       });
       gl.drawArrays(gl.TRIANGLES,0,group.triangles.length*3);
     }
+    const fallback=softwareRenderer();
     return {
+      mode:'webgl',
       draw(context, faces, options) {
-        if (lost || gl.isContextLost()) return false;
+        if (lost || gl.isContextLost()) {this.mode='software-depth';return fallback.draw(context,faces,options);}
         const {width,height,dpr,angle,pitch,scale,focus,transform,gear} = options;
         const w=Math.max(1,Math.round(width*dpr)), h=Math.max(1,Math.round(height*dpr));
         if (canvas.width!==w || canvas.height!==h) {canvas.width=w; canvas.height=h;}

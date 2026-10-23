@@ -20,6 +20,7 @@ for(const a of vm.runInContext('fleet',ctx)){
  // The cabin window row leaves a gap at every emergency/entry door on both sides.
  const windows=faces.filter(f=>f.part?.marking==='window');assert(windows.some(f=>f.part.sign===1)&&windows.some(f=>f.part.sign===-1));
  for(const f of windows)for(const p of f.p)assert(spec.doors.every(d=>Math.abs(p[2]+a.len/2-d)>.65),a.code+' windows clear exits');
+ for(const f of faces.filter(f=>f.part?.kind==='glazing'))for(const p of f.p)assert(p[2]+a.len/2<spec.doors[0]-.53,a.code+' flight-deck glazing clears forward exit');
  for(const g of [0,.25,.5,.75,1])for(const f of faces.filter(f=>['mainGear','noseGear','gearDoor','flap','slat'].includes(f.part?.kind)))for(const p of f.p)assert(ctx.articulatedPoint(p,f.part,a,g,g).every(Number.isFinite));
  console.log('PASS '+a.code+': finite mesh, aligned wheels, external main-gear fittings, window/exit clearance, articulation');
 }
