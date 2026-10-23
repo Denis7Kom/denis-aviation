@@ -219,9 +219,7 @@ const probe=skinPoint(.05,-half+3.6*stretch,.04);beam(probe,[probe[0]+sign*.17,p
  const spacing=spec.axles===3?1.36:1.4,start=gz-(spec.axles-1)*spacing/2;
  beam([gx,wy,start-.26],[gx,wy,start+(spec.axles-1)*spacing+.26],.16,[98,119,142]);
  for(let k=0;k<spec.axles;k++){const z=start+k*spacing;beam([gx-.84,wy,z],[gx+.84,wy,z],.095,[168,185,202]);wheel(gx,wy,z,spec.tire)}part=null;
- // The hinged outer gear door follows the gear without crossing the body skin.
- part={kind:'gearDoor',sign,pivot:[gx+sign*.42,mountY,gz]};
- add([[gx+sign*.42,mountY,gz-1.65],[gx+sign*.42,mountY,gz+1.65],[gx-sign*.62,mountY,gz+1.65],[gx-sign*.62,mountY,gz-1.65]],[175,193,212]);part=null;
+
 }
 
 }
@@ -255,7 +253,6 @@ function articulatedPoint(p,part,a,gear=gearPosition,flaps=flapPosition){
  const g=smoothStep(gear),f=smoothStep(flaps);
  if(part.kind==='mainGear'){const pivot=part.pivot,q=p.map((v,i)=>v-pivot[i]),t=-part.sign*(1-g)*Math.PI*.49;return [pivot[0]+q[0]*Math.cos(t)-q[1]*Math.sin(t),pivot[1]+q[0]*Math.sin(t)+q[1]*Math.cos(t),p[2]]}
  if(part.kind==='noseGear'){const z=part.pivot[2],y=part.pivot[1],qy=p[1]-y,qz=p[2]-z,t=-(1-g)*Math.PI*.49;return [p[0],y+qy*Math.cos(t)-qz*Math.sin(t)+(1-g)*.95,z+qy*Math.sin(t)+qz*Math.cos(t)]}
- if(part.kind==='gearDoor'){const q=p.map((v,i)=>v-part.pivot[i]),t=part.sign*g*Math.PI*.44;return [part.pivot[0]+q[0]*Math.cos(t)-q[1]*Math.sin(t),part.pivot[1]+q[0]*Math.sin(t)+q[1]*Math.cos(t),p[2]]}
  if(part.kind==='flap'||part.kind==='slat'){const slat=part.kind==='slat',chord=slat?.075:.72;const h=part.hinge,e=part.end,origin=[part.sign*h[0],h[1],h[2]+h[3]*chord],end=[part.sign*e[0],e[1],e[2]+e[3]*chord],axis=end.map((v,i)=>v-origin[i]),n=Math.hypot(...axis),k=axis.map(v=>v/n),q=p.map((v,i)=>v-origin[i]),t=part.sign*f*(slat?-12:32)*D,co=Math.cos(t),si=Math.sin(t),dot=k.reduce((v,x,i)=>v+x*q[i],0),cross=[k[1]*q[2]-k[2]*q[1],k[2]*q[0]-k[0]*q[2],k[0]*q[1]-k[1]*q[0]];return q.map((v,i)=>origin[i]+v*co+cross[i]*si+k[i]*dot*(1-co)+(i===2?(slat?-.48:.9)*f:i===1&&slat?-.065*f:0))}
  return p;
 }
