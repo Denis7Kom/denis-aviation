@@ -17,7 +17,7 @@ for(const a of vm.runInContext('fleet',ctx)){
  const faces=ctx.buildPlane(a);let clearance=Infinity;
  for(const f of faces.filter(f=>f.part?.kind==='glazing')){
   for(const weights of [[1/3,1/3,1/3],[.5,.5,0],[0,.5,.5],[.5,0,.5]]){
-   const p=f.p[0].map((_,i)=>f.p.reduce((s,p,k)=>s+p[i]*weights[k],0)),s=ctx.fuselageSection(a,p[2]);const gap=Math.hypot(p[0],(p[1]-s.center)/s.vertical)-s.radius;clearance=Math.min(clearance,gap);assert(gap>.003,a.code+' cockpit glazing above the skin '+gap);
+   const p=f.p[0].map((_,i)=>f.p.reduce((s,p,k)=>s+p[i]*weights[k],0)),s=ctx.fuselageSection(a,p[2]);const v=(p[1]-s.center)/(s.radius*s.vertical),gap=a.code==='B737'&&Math.abs(v)<1?Math.abs(p[0])-Math.abs(ctx.fuselageSection(a,p[2],Math.asin(v))[0]):Math.hypot(p[0],(p[1]-s.center)/s.vertical)-s.radius;clearance=Math.min(clearance,gap);assert(gap>.003,a.code+' cockpit glazing above the skin '+gap);
   }
  }
  const lamps=ctx.aircraftLightLayout(a);assert.equal(new Set(lamps.map(l=>l.id)).size,lamps.length);for(const group of ['navigation','strobe','beacon','lowerBeacon','landing','scan','taxi'])assert(lamps.some(l=>l.group===group));
