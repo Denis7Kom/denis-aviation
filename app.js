@@ -262,7 +262,7 @@ function surfaceNormal(p){if(a.code==='B737'){
  const n=[u[1]*w[2]-u[2]*w[1],u[2]*w[0]-u[0]*w[2],u[0]*w[1]-u[1]*w[0]],len=Math.hypot(...n)||1;return n.map(v=>v/len);
  }const z=p[2],s=fuselageSection(a,z),before=fuselageSection(a,z-.01),after=fuselageSection(a,z+.01),ny=(p[1]-s.center)/(s.radius*s.vertical*s.vertical),nx=p[0]/s.radius;
  return [nx,ny,-(after.radius-before.radius)/.02-ny*(after.center-before.center)/.02-ny*(p[1]-s.center)/s.vertical*(after.vertical-before.vertical)/.02]}
-const stations=(wireframe?[.10,.20]:[.025,.06,.12,.21]).map(d=>-half+d);for(let d=0;d<=spec.noseLength;d+=wireframe?.7:.32)stations.push(-half+d);for(let z=-half+spec.noseLength;z<half;z+=wireframe?2.7:1.35)stations.push(z);if(a.code==='B737')for(const d of [1.05,1.4,1.8,2.2,2.6,3.2,3.6,4.6])stations.push(-half+d);stations.push(half);stations.sort((x,y)=>x-y);
+const stations=(wireframe?[.10,.20]:[.025,.06,.12,.21]).map(d=>-half+d);for(let d=0;d<=spec.noseLength;d+=wireframe?.7:.32)stations.push(-half+d);for(let z=-half+spec.noseLength;z<half;z+=wireframe?2.7:1.35)stations.push(z);if(a.code==='B737')for(const d of [1.05,1.4,1.8,2.2,2.6,3.2,3.6,4.6])stations.push(-half+d);if(!wireframe&&['A339','A35K'].includes(a.code))for(let d=.9;d<(a.code==='A339'?3.6:4.5);d+=.10)stations.push(-half+d);stations.push(half);stations.sort((x,y)=>x-y);
 for(let k=1;k<stations.length;k++)for(let j=0;j<N;j++){const p=[surface(j/N*Math.PI*2,stations[k-1]),surface(j/N*Math.PI*2,stations[k]),surface((j+1)/N*Math.PI*2,stations[k]),surface((j+1)/N*Math.PI*2,stations[k-1])];add(p,body,true,p.map(surfaceNormal));}
 function tube(x,y,sections,color=body,n=wireframe?18:36,round=false){for(let k=1;k<sections.length;k++)for(let j=0;j<n;j++){
  const at=(s,t)=>{const sn=Math.sin(t),flat=!round&&a.code==='B737'&&Math.abs(x)===spec.ex&&y===spec.engineY,yy=flat&&sn<-.52?-.52+(sn+.52)*.56:sn;return [x+Math.cos(t)*s[1]*(flat&&sn<0?1-sn*.045:1),y+yy*s[1],s[0]]},p=[at(sections[k-1],j/n*2*Math.PI),at(sections[k],j/n*2*Math.PI),at(sections[k],(j+1)/n*2*Math.PI),at(sections[k-1],(j+1)/n*2*Math.PI)],slope=(sections[k][1]-sections[k-1][1])/(sections[k][0]-sections[k-1][0]);
@@ -365,14 +365,16 @@ for(let wz=-half+spec.doors[0]+1.6;wz<half-(spec.narrow?(a.code==='B737'?6.0:6.1
  skinPatch(rounded(wz,1.0,windowWidth-.055,.41,.095),[9,29,43],.038,1);
  skinStroke([[wz-windowWidth*.2,1.14],[wz+windowWidth*.18,1.14]],[80,123,147],.023,.052);
 }
-function cockpitPatch(corners,color,lift,material=1){
+function cockpitPatch(corners,color,lift,material=1,outline=false){
  if(wireframe)return;
- const mix=(a,b,t)=>a.map((x,i)=>x+(b[i]-x)*t),flat=a.code==='B737'?corners.map(([t,d])=>surface(sign>0?t:Math.PI-t,-half+d,lift)):null,at=(u,v)=>{if(flat)return flat[0].map((x,i)=>u>=v?x*(1-u)+flat[1][i]*(u-v)+flat[2][i]*v:x*(1-v)+flat[2][i]*u+flat[3][i]*(v-u));const [t,d]=mix(mix(corners[0],corners[1],u),mix(corners[3],corners[2],u),v);return surface(sign>0?t:Math.PI-t,-half+d,lift)};
+ const mix=(a,b,t)=>a.map((x,i)=>x+(b[i]-x)*t),flat=a.code==='B737'?corners.map(([t,d])=>surface(sign>0?t:Math.PI-t,-half+d,lift)):null,physical=['A339','A35K'].includes(a.code)?corners.map(([t,d])=>[surface(t,-half+d)[1],d]):null,fromHeight=(y,d)=>{const q=fuselageSection(a,-half+d),t=Math.asin(Math.max(-1,Math.min(1,(y-q.center)/(q.radius*q.vertical))));return surface(sign>0?t:Math.PI-t,-half+d,lift)},at=(u,v)=>{if(outline)return fromHeight(u,v);if(physical){let [y,d]=mix(mix(physical[0],physical[1],u),mix(physical[3],physical[2],u),v);if(Math.abs(corners[0][0]-1.54)<.001&&Math.abs(corners[3][0]-1.54)<.001){const dd=physical[0][1]*(1-v)+physical[3][1]*v,actual=surface(1.54,-half+dd)[1],linear=physical[0][0]*(1-v)+physical[3][0]*v;y+=(actual-linear)*(1-u);}return fromHeight(y,d);}if(flat)return flat[0].map((x,i)=>u>=v?x*(1-u)+flat[1][i]*(u-v)+flat[2][i]*v:x*(1-v)+flat[2][i]*u+flat[3][i]*(v-u));const [t,d]=mix(mix(corners[0],corners[1],u),mix(corners[3],corners[2],u),v);return surface(sign>0?t:Math.PI-t,-half+d,lift)};
  function triangle(chart,depth=0){const pts=chart.map(q=>at(...q));let error=0,edge=-1,mid=null;
   for(let i=0;i<3;i++){const j=(i+1)%3,q=chart[i].map((v,k)=>(v+chart[j][k])/2),p=at(...q),e=Math.hypot(...p.map((v,k)=>v-(pts[i][k]+pts[j][k])/2));if(e>error){error=e;edge=i;mid=q;}}
-  if(error>.003&&depth<8){const j=(edge+1)%3,k=(edge+2)%3;triangle([chart[edge],mid,chart[k]],depth+1);triangle([mid,chart[j],chart[k]],depth+1);}
-  else {part={kind:'glazing',normal:surfaceNormal(pts[0])};add(pts,color,false,pts.map(surfaceNormal),material);}
+  if(physical&&depth<10){const center=chart[0].map((v,i)=>(v+chart[1][i]+chart[2][i])/3),sample=at(...center),deviation=Math.hypot(...sample.map((v,i)=>v-(pts[0][i]+pts[1][i]+pts[2][i])/3));if(deviation>.002&&deviation>error){for(let i=0;i<3;i++)triangle([chart[i],chart[(i+1)%3],center],depth+1);return;}}
+  if(error>(physical?.002:.003)&&depth<(physical?10:8)){const j=(edge+1)%3,k=(edge+2)%3;triangle([chart[edge],mid,chart[k]],depth+1);triangle([mid,chart[j],chart[k]],depth+1);}
+  else {part=outline?{kind:'glazing',component:'mask',normal:surfaceNormal(pts[0])}:{kind:'glazing',normal:surfaceNormal(pts[0])};add(pts,color,false,pts.map(surfaceNormal),material);}
  }
+ if(outline){const center=corners.reduce((m,p)=>[m[0]+p[0]/corners.length,m[1]+p[1]/corners.length],[0,0]);for(let i=0;i<corners.length;i++)triangle([center,corners[i],corners[(i+1)%corners.length]]);part=null;return;}
  for(let u=0;u<4;u++)for(let v=0;v<4;v++){const p=[[u/4,v/4],[(u+1)/4,v/4],[(u+1)/4,(v+1)/4],[u/4,(v+1)/4]];triangle([p[0],p[1],p[2]]);triangle([p[0],p[2],p[3]]);}part=null;
 }
 const boeing=a.code==='B77W'||a.code==='B737',xwb=a.code==='A35K',stretch=xwb?1.08:boeing?1:.9;
@@ -389,21 +391,32 @@ const paneCharts=a.code==='B737'?spec.cockpit:a.code==='A321'?[
  [[1.64,3.15],[1.62,3.56],[.61,3.60],[.71,2.53]],
  [[1.62,3.65],[1.57,4.06],[.62,4.05],[.61,3.70]]
 ]:xwb?[
- [[null,3.39],[1.71,3.95],[.75,3.10],[null,2.18]],
+ [[null,2.75],[1.71,3.95],[.75,3.10],[null,1.35]],
  [[1.73,4.04],[1.80,4.48],[.66,4.45],[.77,3.25]],
  [[1.80,4.56],[1.76,5.23],[.69,5.15],[.64,4.52]]
 ]:[
- [[null,2.22],[1.40,2.71],[.65,2.15],[null,1.34]],
+ [[null,a.code==='A339'?1.91:2.22],[1.40,2.71],[.65,2.15],[null,a.code==='A339'?1.05:1.34]],
  [[1.42,2.80],[1.44,3.21],[.63,3.22],[.66,2.27]],
  [[1.44,3.30],[1.42,3.93],[.61,3.91],[.62,3.30]]
 ];
 const cockpitChart=([y,d])=>{const s=fuselageSection(a,-half+d);return [y===null?1.54:Math.asin(Math.max(-.99,Math.min(.99,(y-s.center)/(s.radius*s.vertical)))),d]},panes=paneCharts.map(p=>p.map(cockpitChart));
 const masked=xwb||a.code==='A339';
-if(masked){const mask=(xwb?[[null,3.53],[1.94,5.38],[.51,5.30],[null,2.00]]:[[null,2.36],[1.59,4.07],[.45,4.05],[null,1.18]]).map(cockpitChart);cockpitPatch(mask,[17,24,31],.026,0);}
+if(masked){
+ // Follow the entire glazing perimeter. The centreline reaches pi/2 so
+ // the two halves form one continuous mask, without a white nose seam.
+ const border=xwb?[[null,2.92],[1.91,3.94],[1.99,4.55],[1.94,5.10],[1.83,5.36],[1.54,5.45],[.91,5.40],[.57,5.22],[.50,4.49],[.56,3.12],[null,1.23]]:
+  [[null,2.02],[1.55,2.73],[1.60,3.28],[1.58,3.73],[1.49,4.02],[1.21,4.13],[.80,4.10],[.48,3.94],[.46,3.27],[.50,2.15],[null,.95]];
+ const mask=border.map(([y,d])=>[y===null?surface(Math.PI/2,-half+d)[1]:y,d]);
+ for(let d=border.at(-1)[1]+.12;d<border[0][1];d+=.12)mask.push([surface(Math.PI/2,-half+d)[1],d]);
+ cockpitPatch(mask,[17,24,31],.036,0,true);
+ // A narrow centre mullion closes the joint between the mirrored halves.
+ // It follows the actual crown curve at each station, not its end chord.
+ for(let d=border.at(-1)[1];d<border[0][1];d+=.08){const end=Math.min(border[0][1],d+.08),at=(t,z)=>surface(sign>0?t:Math.PI-t,-half+z,.09),p=[at(Math.PI/2-.055,d),at(Math.PI/2,d),at(Math.PI/2,end),at(Math.PI/2-.055,end)];for(const ids of [[0,1,2],[0,2,3]]){const q=ids.map(i=>p[i]);part={kind:'glazing',component:'mask',normal:surfaceNormal(q[0])};add(q,[17,24,31],false,q.map(surfaceNormal));}part=null;}
+}
 for(const pane of panes){
- cockpitPatch(pane,masked?[43,52,59]:a.code==='B737'?[173,188,202]:[102,117,131],.047,0);
+ cockpitPatch(pane,masked?[43,52,59]:a.code==='B737'?[173,188,202]:[102,117,131],masked?.057:.047,0);
  const mid=pane.reduce((m,p)=>[m[0]+p[0]/4,m[1]+p[1]/4],[0,0]);
- cockpitPatch(pane.map(p=>p.map((v,i)=>mid[i]+(v-mid[i])*(a.code==='B737'?.94:.90))),[19,41,55],.073);
+ cockpitPatch(pane.map(p=>p.map((v,i)=>mid[i]+(v-mid[i])*(a.code==='B737'?.94:.90))),[19,41,55],masked?.083:.073);
 }
 const front=panes[0],mix=(p,q,t)=>p.map((v,i)=>v+(q[i]-v)*t);
 // Narrow highlights are clipped to each pane. Raised wipers have a short
