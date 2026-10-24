@@ -1,0 +1,33 @@
+{
+  "name": "denis-aviation",
+  "version": "1.0.0",
+  "description": "Static aviation portfolio with procedural aircraft, flight-network visualisation and a local flight simulation.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:check": "node scripts/build.mjs --check",
+    "format": "prettier --write src scripts tests aircraft-renderer.js README.md docs .github/workflows .prettierrc.json package.json",
+    "format:check": "prettier --check src scripts tests aircraft-renderer.js README.md docs .github/workflows .prettierrc.json package.json",
+    "test": "node scripts/test.mjs",
+    "check": "npm run build:check && npm run format:check && npm test",
+    "dev": "python3 -m http.server 8000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Denis7Kom/denis-aviation.git"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Denis7Kom/denis-aviation/issues"
+  },
+  "homepage": "https://github.com/Denis7Kom/denis-aviation#readme",
+  "devDependencies": {
+    "acorn": "8.15.0",
+    "esbuild": "0.25.10",
+    "prettier": "3.6.2"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  }
+}

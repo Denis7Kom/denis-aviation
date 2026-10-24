@@ -1,0 +1,7 @@
+app.js
+node_modules/
+assets/
+index.html
+style.css
+gallery-data.js
+package-lock.json
