@@ -18,9 +18,9 @@
     "f66a9fe3cd18f25ba5325bdc05f4716df6e6aaf3e252da9e983afa47a5d4f79b"
   ],
   "static": {
-    "index.html": "56360e15ba4a29ee1a28ded8b344d87979d20c3bfac2b7c3692dca437efe3894",
-    "style.css": "4898d72ff5bc9f6885e98c0d274a744169f8dfb2c9259331a78e2957516e11e4",
-    "gallery-data.js": "42764505c9a8f50d43d29ac3e3b2c4e3888a39ed2d208980fba0ea742e534ab7"
+    "index.html": "56360e15ba4a29ee1a28ded8b344d87979d20c3bfac2b7c3692dca437efe3894"
   },
-  "renderer": "6bbc59884b96e07de6083f4b5a7534b3b6c02d1f64a8e936000f1dcd3d64e28b"
+  "renderer": "6bbc59884b96e07de6083f4b5a7534b3b6c02d1f64a8e936000f1dcd3d64e28b",
+  "stylesheet": "c3692ec2ae6b8beb6aae5efe0a88ce7a8b91b6fd0ca2c5c9e52cf956b7d2ed6e",
+  "gallery": "d64e546e53bb908b95d37bd85d18213f34d84f7d93522e6d333e8e243e35788b"
 }

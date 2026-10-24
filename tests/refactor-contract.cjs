@@ -44,4 +44,24 @@ assert.equal(
   contract.renderer,
   'Renderer behaviour or shader text changed',
 );
-console.log('PASS: original application statements, data, renderer, HTML and CSS preserved');
+// Compare formatter-normalised baselines so layout-only edits are permitted.
+// The hashes were calculated from the original commit, not the formatted files.
+async function checkFormattedAssets() {
+  const { format } = await import('prettier');
+  const options = JSON.parse(read('.prettierrc.json'));
+  for (const [file, parser, expected] of [
+    ['style.css', 'css', contract.stylesheet],
+    ['gallery-data.js', 'babel', contract.gallery],
+  ]) {
+    assert.equal(
+      hash(await format(read(file), { ...options, parser })),
+      expected,
+      `${file} changed beyond formatting`,
+    );
+  }
+  console.log('PASS: original application statements, data, renderer, HTML and CSS preserved');
+}
+checkFormattedAssets().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

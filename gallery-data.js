@@ -1,17 +1,17 @@
 window.DK_GALLERY = [
   {
-    "src": "assets/if-refueling.jpg",
-    "alt": {
-      "ru": "Самолёт-заправщик и два истребителя в Infinite Flight",
-      "en": "Tanker aircraft and two fighters in Infinite Flight"
+    src: 'assets/if-refueling.jpg',
+    alt: {
+      ru: 'Самолёт-заправщик и два истребителя в Infinite Flight',
+      en: 'Tanker aircraft and two fighters in Infinite Flight',
     },
-    "title": {
-      "ru": "",
-      "en": ""
+    title: {
+      ru: '',
+      en: '',
     },
-    "caption": {
-      "ru": "",
-      "en": ""
-    }
-  }
+    caption: {
+      ru: '',
+      en: '',
+    },
+  },
 ];

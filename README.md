@@ -20,13 +20,13 @@ published website does not need Node.js, a backend or third-party JavaScript at 
 
 ## Commands
 
-| Command               | Purpose                                                         |
-| --------------------- | --------------------------------------------------------------- |
-| `npm run build`       | Bundle source modules into the published `app.js`               |
-| `npm run build:check` | Fail if the committed bundle differs from the source            |
-| `npm run format`      | Format authored JavaScript, tests and development documentation |
-| `npm run check`       | Check the bundle, formatting and regression tests               |
-| `npm run dev`         | Serve the repository on port 8000                               |
+| Command               | Purpose                                                  |
+| --------------------- | -------------------------------------------------------- |
+| `npm run build`       | Bundle source modules into the published `app.js`        |
+| `npm run build:check` | Fail if the committed bundle differs from the source     |
+| `npm run format`      | Format authored JavaScript, CSS, tests and documentation |
+| `npm run check`       | Check the bundle, formatting and regression tests        |
+| `npm run dev`         | Serve the repository on port 8000                        |
 
 Run `npm run build` after editing `src/` and commit both the source and generated bundle.
 Do not edit `app.js` directly.
@@ -59,7 +59,8 @@ and flight-game rules. Tests extract functions from the **shipped bundle** using
 JavaScript parser, so formatting and braces inside strings do not break fixtures.
 
 A separate preservation contract checks that the structural refactor retains the
-original authored statements, data, renderer and published HTML/CSS. Browser checks
+original authored statements, data, renderer and published HTML/CSS. Local resource
+checks also catch missing images, documents and scripts before deployment. Browser checks
 remain necessary for visual appearance, responsive layout and GPU/driver differences.
 
 ## Copyright

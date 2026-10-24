@@ -44,7 +44,8 @@ introduced by extracting modules.
 `tests/fixtures/refactor-contract.json` records the pre-refactor statement sequence for
 the application shell and a multiset of extracted geometry/data statements. Parsed syntax
 trees ignore source locations and literal spelling, so indentation can change without
-weakening the check. HTML and CSS are checked byte for byte; renderer syntax includes its
-shader string literals. Review a deliberate behaviour change before updating this contract.
+weakening the check. HTML is checked byte for byte because translations capture its inner markup. CSS and
+gallery data are compared after parsing and formatting with the pinned Prettier version;
+only formatting changes are permitted. Renderer syntax includes its shader string literals. Review a deliberate behaviour change before updating this contract.
 
 The contract is a refactor guard, not a replacement for functional or browser tests.

@@ -5,8 +5,8 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "build:check": "node scripts/build.mjs --check",
-    "format": "prettier --write src scripts tests aircraft-renderer.js README.md docs .github/workflows .prettierrc.json package.json",
-    "format:check": "prettier --check src scripts tests aircraft-renderer.js README.md docs .github/workflows .prettierrc.json package.json",
+    "format": "prettier --write src scripts tests aircraft-renderer.js README.md docs .github/workflows .prettierrc.json package.json style.css gallery-data.js QA_CHECKLIST.md",
+    "format:check": "prettier --check src scripts tests aircraft-renderer.js README.md docs .github/workflows .prettierrc.json package.json style.css gallery-data.js QA_CHECKLIST.md",
     "test": "node scripts/test.mjs",
     "check": "npm run build:check && npm run format:check && npm test",
     "dev": "python3 -m http.server 8000"
