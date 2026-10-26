@@ -17,14 +17,14 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx prettier --write src/aircraft/geometry.js tests/aircraft-wing-detail.cjs
+      - run: npx prettier --write src/aircraft/geometry.js tests/aircraft-wing-detail.cjs tests/fixtures/refactor-contract.json
       - run: npm run build
       - run: npm run check
       - name: Commit verified generated bundle
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/aircraft/geometry.js tests/aircraft-wing-detail.cjs app.js
+          git add src/aircraft/geometry.js tests/aircraft-wing-detail.cjs tests/fixtures/refactor-contract.json app.js
           if ! git diff --cached --quiet; then
             git commit -m "build: sync aircraft geometry bundle and formatting"
             git push origin HEAD:main
