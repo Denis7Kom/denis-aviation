@@ -27,7 +27,7 @@ const shell = main.body.find((node) => node.type === 'ExpressionStatement').expr
 assert.equal(
   hash(syntax(shell)),
   contract.shell,
-  'Application shell changed beyond module extraction',
+  'Application shell changed beyond the reviewed baseline',
 );
 const extracted = contract.modules
   .flatMap((file) => {
@@ -59,7 +59,9 @@ async function checkFormattedAssets() {
       `${file} changed beyond formatting`,
     );
   }
-  console.log('PASS: original application statements, data, renderer, HTML and CSS preserved');
+  console.log(
+    'PASS: reviewed application, geometry, reference data, renderer, HTML and CSS preserved',
+  );
 }
 checkFormattedAssets().catch((error) => {
   console.error(error);

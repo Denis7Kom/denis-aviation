@@ -41,7 +41,7 @@ introduced by extracting modules.
 
 ## Preservation contract
 
-`tests/fixtures/refactor-contract.json` records the pre-refactor statement sequence for
+`tests/fixtures/refactor-contract.json` records the reviewed statement sequence for
 the application shell and a multiset of extracted geometry/data statements. Parsed syntax
 trees ignore source locations and literal spelling, so indentation can change without
 weakening the check. HTML is checked byte for byte because translations capture its inner markup. CSS and
@@ -49,3 +49,11 @@ gallery data are compared after parsing and formatting with the pinned Prettier 
 only formatting changes are permitted. Renderer syntax includes its shader string literals. Review a deliberate behaviour change before updating this contract.
 
 The contract is a refactor guard, not a replacement for functional or browser tests.
+
+## Wing and lamp detail update - 26 October 2026
+
+The wing loft shares its triangulated surface with lamp mounts and clipped panel skins.
+Narrowbody secondary flap elements carry their own chord pivot and Fowler travel.
+Slat rails share the parent hinge; fine skins and lamp bezels are omitted from wire mode.
+The preservation fixture was deliberately refreshed for these geometry and lamp changes;
+airport/fleet data, unrelated UI, renderer and styles retain their existing guards.

@@ -745,7 +745,7 @@ import {
     }
     if (part.kind === 'flap' || part.kind === 'slat') {
       const slat = part.kind === 'slat',
-        chord = slat ? 0.075 : 0.72;
+        chord = part.chord ?? (slat ? 0.075 : 0.72);
       const h = part.hinge,
         e = part.end,
         origin = [part.sign * h[0], h[1], h[2] + h[3] * chord],
@@ -754,7 +754,7 @@ import {
         n = Math.hypot(...axis),
         k = axis.map((v) => v / n),
         q = p.map((v, i) => v - origin[i]),
-        t = part.sign * f * (slat ? -12 : 32) * D,
+        t = part.sign * f * (part.deflection ?? (slat ? -16 : 32)) * D,
         co = Math.cos(t),
         si = Math.sin(t),
         dot = k.reduce((v, x, i) => v + x * q[i], 0),
@@ -765,13 +765,18 @@ import {
           v * co +
           cross[i] * si +
           k[i] * dot * (1 - co) +
-          (i === 2 ? (slat ? -0.48 : 0.9) * f : i === 1 && slat ? -0.065 * f : 0),
+          (i === 2
+            ? (part.extension ?? (slat ? -(a.r * 0.12 + 0.12) : airframe(a).narrow ? 0.62 : 0.9)) *
+              f
+            : i === 1
+              ? (slat ? -0.1 : part.component === 'aft-element' ? -0.09 : 0) * f
+              : 0),
       );
     }
     return p;
   }
   // Small local pulses: navigation lamps stay steady; strobes use a double flash.
-  function aircraftLampLevels(time) {
+  function aircraftLampLevels(time, code = 'A339') {
     const pulse = (start, width, t) => {
       const x = (t - start) / width;
       return x >= 0 && x <= 1 ? Math.sin(Math.PI * x) ** 2 : 0;
@@ -779,7 +784,10 @@ import {
     const strobeTime = time % 1550,
       beaconTime = time % 1350;
     return {
-      strobe: Math.max(pulse(40, 85, strobeTime), pulse(205, 85, strobeTime)),
+      strobe: Math.max(
+        pulse(40, 75, strobeTime),
+        code.startsWith('A') ? pulse(205, 75, strobeTime) : 0,
+      ),
       beacon: pulse(30, 240, beaconTime),
       lowerBeacon: pulse(380, 240, beaconTime),
     };
@@ -787,7 +795,9 @@ import {
   function drawAircraftLights(c, project, ca, sa, pitch, scale) {
     if (!lightsOn) return;
     const a = fleet[aircraftIndex],
-      levels = motion ? aircraftLampLevels(systemsClock) : { strobe: 0, beacon: 0, lowerBeacon: 0 },
+      levels = motion
+        ? aircraftLampLevels(systemsClock, a.code)
+        : { strobe: 0, beacon: 0, lowerBeacon: 0 },
       eye = [sa * Math.cos(pitch), Math.sin(pitch), -ca * Math.cos(pitch)];
     const lamps = aircraftLightLayout(a);
     for (const light of lamps) {
@@ -810,15 +820,57 @@ import {
                 : 0.72;
       if (level <= 0.01) continue;
       const p = project(point),
-        radius = light.size * (0.65 + 0.35 * level) * Math.min(1.3, Math.max(0.7, scale / 10));
+        axis = light.normal,
+        facing = Math.max(
+          0,
+          axis.reduce((value, n, i) => value + n * eye[i], 0) / Math.hypot(...axis),
+        ),
+        directional = light.group === 'landing' || light.group === 'taxi',
+        intensity = level * (directional ? 0.28 + 0.72 * facing ** 4 : 0.68 + 0.32 * facing),
+        radius = light.size * Math.min(1.35, Math.max(0.65, scale / 10)),
+        glowRadius = radius * (directional ? 4.5 : light.group === 'strobe' ? 4 : 3.2);
       c.save();
-      c.globalAlpha = 0.35 + level * 0.65;
-      c.fillStyle = light.color;
-      c.shadowColor = light.color;
-      c.shadowBlur = 3 + level * 7;
+      // A compact optical halo keeps the wingtip readable. All projections use
+      // the same mount as the physical lens and the existing occlusion test.
+      const halo = c.createRadialGradient(p[0], p[1], 0, p[0], p[1], glowRadius);
+      halo.addColorStop(
+        0,
+        light.color +
+          Math.round(intensity * 155)
+            .toString(16)
+            .padStart(2, '0'),
+      );
+      halo.addColorStop(
+        0.28,
+        light.color +
+          Math.round(intensity * 48)
+            .toString(16)
+            .padStart(2, '0'),
+      );
+      halo.addColorStop(1, light.color + '00');
+      c.fillStyle = halo;
       c.beginPath();
-      c.arc(p[0], p[1], radius, 0, Math.PI * 2);
+      c.arc(p[0], p[1], glowRadius, 0, Math.PI * 2);
       c.fill();
+      c.globalAlpha = Math.min(1, intensity * 1.25);
+      c.fillStyle = light.color;
+      c.beginPath();
+      c.arc(p[0], p[1], radius * 0.7, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = '#ffffff';
+      c.globalAlpha = intensity * (directional ? 0.96 : 0.72);
+      c.beginPath();
+      c.arc(p[0], p[1], radius * 0.24, 0, Math.PI * 2);
+      c.fill();
+      if (directional && facing > 0.65) {
+        c.strokeStyle = light.color;
+        c.globalAlpha = intensity * 0.28;
+        c.lineWidth = 0.7;
+        c.beginPath();
+        c.moveTo(p[0] - radius * 3.2, p[1]);
+        c.lineTo(p[0] + radius * 3.2, p[1]);
+        c.stroke();
+      }
       c.restore();
     }
   }

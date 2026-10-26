@@ -15,6 +15,21 @@ Run `npm ci` and `npm run check` before publishing. The checks cover:
 These checks do not replace browser tests or validate the factual contents of documents.
 External destinations and remote font availability are outside the local resource check.
 
+## Wing and lighting check - 26 October 2026
+
+- All six aircraft selected correctly in Chromium with the software depth renderer.
+- Solid and cached wire modes, flap/slat deployment, gear and lights responded.
+- A 375 px iframe (360 CSS px after the scrollbar) was checked for mobile controls
+  and horizontal overflow; its document width equalled its scroll width.
+- No application errors appeared for the local site origin in the inspected logs.
+- Narrowbody secondary flap slots and slat-track attachment have dedicated regressions.
+- Wing-panel fills and borders are adjacent, avoiding the coplanar overlap found
+  during visual review. Lamp fixtures use the same wing surface as their halos.
+- New fine details remain excluded from wire mode. Meshes/topology are cached.
+
+These checks used a desktop Chromium viewport and an iframe at mobile width.
+Physical phones and the WebGL driver path were not tested in this session.
+
 ## Latest browser check — 24 October 2026
 
 The published site was checked in Chromium after the source-module refactor:

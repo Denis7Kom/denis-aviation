@@ -723,6 +723,19 @@
     return s;
   }
   function wingGeometry(a) {
+    const spec = airframe(a);
+    if (spec.wing) return spec.wing;
+    const finish = (stations2, nav2, tip) => spec.wing = {
+      stations: stations2,
+      nav: nav2,
+      tip,
+      fractions: [0, 0.012, 0.035, 0.075, 0.16, 0.38, 0.56, 0.7, 0.72, 0.86, 0.94, 1],
+      point(s2, f, sign = 1, side = 1) {
+        const thickness = 2.969 * Math.sqrt(f) - 1.26 * f - 3.516 * f * f + 2.843 * f * f * f - 1.036 * f * f * f * f;
+        const camber = 0.12 * Math.sin(Math.PI * f);
+        return [sign * s2[0], s2[1] + (camber + side * thickness) * s2[4], s2[2] + f * s2[3]];
+      }
+    };
     if (a.code === "B737" || a.code === "A321") {
       const is737 = a.code === "B737";
       const stations2 = is737 ? [
@@ -743,7 +756,7 @@
         [16.78, 0.91, 3.47, 1.22, 0.041],
         [17.05, 0.95, 3.64, 0.82, 0.025]
       ];
-      return { stations: stations2, nav: stations2[4], tip: stations2.at(-1) };
+      return finish(stations2, stations2[4], stations2.at(-1));
     }
     const b = a.span / 2, s = airframe(a), root = a.code === "B77W" ? -9.8 : a.code === "A35K" ? -9 : -8;
     const stations = [
@@ -783,7 +796,7 @@
         [b, 5.25, 13.8, 0.36, 0.015]
       );
     const nav = stations[a.code === "B77W" ? stations.length - 1 : 4];
-    return { stations, nav, tip: stations[stations.length - 1] };
+    return finish(stations, nav, stations[stations.length - 1]);
   }
   function fuselageSection(a, z, theta = null, lift = 0) {
     if (theta !== null) {
@@ -864,42 +877,46 @@
     if (spec.lights) return spec.lights;
     const half = a.len / 2, geo = wingGeometry(a), q = geo.nav, lamps = [];
     const add = (id, point, normal, color, group, size = 1.35, part2 = null) => lamps.push({ id, point, normal, color, group, size, part: part2 });
-    function wingMount(x, f) {
+    function wingMount(x, f, side = -1) {
       const stations = geo.stations;
       let k = 1;
       while (k < stations.length - 1 && x > stations[k][0]) k++;
-      const p = stations[k - 1], q2 = stations[k], w = (x - p[0]) / (q2[0] - p[0]), u = (f - 0.075) / (0.38 - 0.075), at = (s2, t) => [s2[0], s2[1] - Math.sin(Math.PI * t) * s2[4], s2[2] + t * s2[3]], corners = [at(p, 0.075), at(q2, 0.075), at(q2, 0.38), at(p, 0.38)], indices = u <= w ? [0, 1, 2] : [0, 2, 3], weights = u <= w ? [1 - w, w - u, u] : [1 - u, w, u - w], v = indices.map((i) => corners[i]), anchor = [0, 1, 2].map((i) => v.reduce((s2, p2, k2) => s2 + p2[i] * weights[k2], 0)), a1 = v[1].map((x2, i) => x2 - v[0][i]), b1 = v[2].map((x2, i) => x2 - v[0][i]), n = [
+      const p = stations[k - 1], q2 = stations[k], w = (x - p[0]) / (q2[0] - p[0]), j = geo.fractions.findIndex((value) => value >= f), lo = geo.fractions[Math.max(0, j - 1)], hi = geo.fractions[j], u = (f - lo) / (hi - lo), at = (s2, t) => geo.point(s2, t, 1, side), corners = [at(p, lo), at(q2, lo), at(q2, hi), at(p, hi)], indices = u <= w ? [0, 1, 2] : [0, 2, 3], weights = u <= w ? [1 - w, w - u, u] : [1 - u, w, u - w], v = indices.map((i) => corners[i]), anchor = [0, 1, 2].map((i) => v.reduce((s2, p2, k2) => s2 + p2[i] * weights[k2], 0)), a1 = v[1].map((x2, i) => x2 - v[0][i]), b1 = v[2].map((x2, i) => x2 - v[0][i]), n = [
         a1[1] * b1[2] - a1[2] * b1[1],
         a1[2] * b1[0] - a1[0] * b1[2],
         a1[0] * b1[1] - a1[1] * b1[0]
-      ], len = Math.hypot(...n), normal = n.map((x2) => x2 / len * (n[1] > 0 ? -1 : 1));
+      ], len = Math.hypot(...n), normal = n.map((x2) => x2 / len * (n[1] * side < 0 ? -1 : 1));
       return { point: anchor.map((x2, i) => x2 + normal[i] * 0.018), normal };
     }
     for (const sign of [-1, 1]) {
       const side = sign < 0 ? "left" : "right";
+      const tipMount = (f) => {
+        const mount = wingMount(q[0] - 0.035, f, 1);
+        return {
+          point: [sign * mount.point[0], mount.point[1], mount.point[2]],
+          normal: [sign * mount.normal[0], mount.normal[1], mount.normal[2]]
+        };
+      };
+      const navMount = tipMount(0.16), rearMount = tipMount(0.92), strobeMount = tipMount(0.68);
       add(
         "nav-" + side,
-        [sign * q[0], q[1] + 0.06, q[2] + q[3] * 0.16],
+        navMount.point,
         [sign * 0.65, 0.12, -0.45],
         sign < 0 ? "#ff4358" : "#57e58a",
         "navigation"
       );
+      lamps.at(-1).housingNormal = navMount.normal;
       add(
         "rear-nav-" + side,
-        [sign * q[0], q[1] + 0.035, q[2] + q[3] * 0.92],
+        rearMount.point,
         [sign * 0.35, 0.1, 0.8],
         "#e8f4ff",
         "navigation",
         1.05
       );
-      add(
-        "strobe-" + side,
-        [sign * q[0], q[1] + 0.085, q[2] + q[3] * 0.68],
-        [sign * 0.55, 0.25, 0],
-        "#e9f6ff",
-        "strobe",
-        2
-      );
+      lamps.at(-1).housingNormal = rearMount.normal;
+      add("strobe-" + side, strobeMount.point, [sign * 0.55, 0.25, 0], "#e9f6ff", "strobe", 2);
+      lamps.at(-1).housingNormal = strobeMount.normal;
       for (const [id, x, f, size, color] of [
         ["landing", spec.gearX + (spec.narrow ? 0.55 : 0.9), 0.11, 2.2, "#f5f2df"],
         ["turnoff", a.r + 0.8, 0.12, 1.45, "#fff0d1"]
@@ -919,7 +936,7 @@
       add(
         "wing-scan-" + side,
         [
-          sign * Math.sqrt(Math.max(0, s2.radius * s2.radius - ((y - s2.center) / s2.vertical) ** 2)) * 0.999 + sign * 0.045,
+          sign * Math.sqrt(Math.max(0, s2.radius * s2.radius - ((y - s2.center) / s2.vertical) ** 2)) * 0.999 + sign * 0.018,
           y,
           z2
         ],
@@ -928,20 +945,21 @@
         "scan",
         0.9
       );
-      const stab = spec.stabilizer[1];
+      const stab = spec.stabilizer[1], sf = 0.6, foilHeight = 2.969 * Math.sqrt(sf) - 1.26 * sf - 3.516 * sf * sf + 2.843 * sf ** 3 - 1.036 * sf ** 4;
       add(
         "tail-flood-" + side,
-        [sign * stab[0], stab[1] + 0.22, half - stab[2] + stab[3] * 0.6],
+        [sign * stab[0], stab[1] + foilHeight * stab[4] + 0.018, half - stab[2] + stab[3] * sf],
         [-sign * 0.8, 0.65, 0],
         "#dce9ff",
         "scan",
         1
       );
+      lamps.at(-1).housingNormal = [0, 1, 0];
     }
-    const topZ = -half + a.len * 0.44, bottomZ = -half + a.len * 0.53, top = fuselageSection(a, topZ), bottom = fuselageSection(a, bottomZ), tail = fuselageSection(a, half);
+    const topZ = -half + a.len * 0.44, bottomZ = -half + a.len * 0.53, top = fuselageSection(a, topZ), bottom = fuselageSection(a, bottomZ);
     add(
       "beacon-upper",
-      [0, top.center + top.radius * top.vertical + 0.13, topZ],
+      [0, top.center + top.radius * top.vertical + 0.025, topZ],
       [0, 1, 0],
       "#ff344c",
       "beacon",
@@ -949,14 +967,27 @@
     );
     add(
       "beacon-lower",
-      [0, bottom.center - bottom.radius * bottom.vertical - 0.13, bottomZ],
+      [0, bottom.center - bottom.radius * bottom.vertical - 0.025, bottomZ],
       [0, -1, 0],
       "#ff344c",
       "lowerBeacon",
       1.65
     );
-    add("nav-tail", [0, tail.center + 0.1, half + 0.18], [0, 0, 1], "#e6f1ff", "navigation", 1.1);
-    add("strobe-tail", [0, tail.center + 0.28, half - 0.28], [0, 0.2, 1], "#edf7ff", "strobe", 1.65);
+    for (const [id, dz, color, group, size] of [
+      ["nav-tail", 0.19, "#e6f1ff", "navigation", 1.1],
+      ["strobe-tail", 0.42, "#edf7ff", "strobe", 1.65]
+    ]) {
+      const tail = fuselageSection(a, half - dz);
+      add(
+        id,
+        [0, tail.center + tail.radius * tail.vertical + 0.018, half - dz],
+        [0, 0.2, 1],
+        color,
+        group,
+        size
+      );
+      lamps.at(-1).housingNormal = [0, 1, 0];
+    }
     const z = -half + (spec.noseGearD || 8.6), s = fuselageSection(a, z), pivot = [0, s.center - s.radius * s.vertical - 0.035, z], part = { kind: "noseGear", pivot };
     add(
       "taxi",
@@ -1079,18 +1110,154 @@
           );
         }
     }
+    function wingFoil(stations2, sign, color) {
+      const geo = wingGeometry(a), fractions2 = wireframe ? [0, 0.075, 0.38, 0.72, 0.86, 1] : geo.fractions, doubleSlotted = a.code === "B737" || a.code === "A321", at = (s, f, side = 1) => geo.point(s, f, sign, side), interpolate = (s, t, u) => s.map((v, i) => v + (t[i] - v) * u);
+      for (let k = 1; k < stations2.length; k++) {
+        const s = stations2[k - 1], t = stations2[k], slat = k <= 3 ? { kind: "slat", sign, hinge: s, end: t } : null, flap = k <= 2 ? { kind: "flap", sign, hinge: s, end: t } : null, aft2 = flap && doubleSlotted ? { ...flap, component: "aft-element", chord: 0.86, deflection: 43, extension: 1.12 } : null, surfacePart = (f) => f < 0.075 ? slat : f >= 0.86 && aft2 ? aft2 : f >= 0.72 ? flap : null;
+        for (let j = 1; j < fractions2.length; j++) {
+          const lo = fractions2[j - 1], hi = fractions2[j];
+          part = surfacePart((lo + hi) / 2);
+          for (const side of [-1, 1]) {
+            const points = [at(s, lo, side), at(t, lo, side), at(t, hi, side), at(s, hi, side)], normals = [s, t, t, s].map((station, i) => {
+              const f = i < 2 ? lo : hi, left = at(station, Math.max(0, f - 1e-3), side), right = at(station, Math.min(1, f + 1e-3), side), chord = right.map((v, n2) => v - left[n2]), span = at(t, f, side).map((v, n2) => v - at(s, f, side)[n2]), n = [
+                span[1] * chord[2] - span[2] * chord[1],
+                span[2] * chord[0] - span[0] * chord[2],
+                span[0] * chord[1] - span[1] * chord[0]
+              ], length = Math.hypot(...n) || 1;
+              return n.map((v) => v / length * (n[1] * side < 0 ? -1 : 1));
+            });
+            add(
+              points,
+              color.map((v) => v * (side > 0 ? 1 : 0.65)),
+              true,
+              normals,
+              0.22
+            );
+          }
+        }
+        for (const [lo, hi, moving] of [
+          [0, 0.075, slat],
+          [0.72, aft2 ? 0.86 : 1, flap],
+          ...aft2 ? [[0.86, 1, aft2]] : []
+        ]) {
+          if (!moving) continue;
+          part = moving;
+          for (const station of [s, t]) {
+            const middle = (lo + hi) / 2;
+            for (const [f0, f1] of [
+              [lo, middle],
+              [middle, hi]
+            ])
+              add(
+                [at(station, f0, 1), at(station, f1, 1), at(station, f1, -1), at(station, f0, -1)],
+                [112, 133, 153]
+              );
+          }
+          for (const f2 of [lo, hi])
+            add([at(s, f2, 1), at(t, f2, 1), at(t, f2, -1), at(s, f2, -1)], [73, 94, 117]);
+          part = null;
+          const f = lo === 0 ? hi : lo;
+          if (f !== 0.86) add([at(s, f, 1), at(t, f, 1), at(t, f, -1), at(s, f, -1)], [37, 54, 72]);
+        }
+        if (wireframe) continue;
+        const strip = (u0, u1, lo, hi, shade, attachment = null, lift = 0.012) => {
+          part = attachment || { kind: "decal", marking: "wing-panel" };
+          for (let j = 1; j < geo.fractions.length; j++) {
+            const low = geo.fractions[j - 1], high = geo.fractions[j];
+            if (lo >= high || hi <= low) continue;
+            const bottom = (Math.max(lo, low) - low) / (high - low), top = (Math.min(hi, high) - low) / (high - low), corners = [at(s, low), at(t, low), at(t, high), at(s, high)], rectangle = [
+              [u0, bottom],
+              [u1, bottom],
+              [u1, top],
+              [u0, top]
+            ];
+            for (const side of [-1, 1]) {
+              const polygon = [];
+              for (let n = 0; n < rectangle.length; n++) {
+                const p = rectangle[n], q = rectangle[(n + 1) % rectangle.length], dp = (p[1] - p[0]) * side, dq = (q[1] - q[0]) * side;
+                if (dp >= 0) polygon.push(p);
+                if (dp < 0 !== dq < 0) {
+                  const f = dp / (dp - dq);
+                  polygon.push(p.map((v, i) => v + (q[i] - v) * f));
+                }
+              }
+              if (polygon.length < 3) continue;
+              add(
+                polygon.map(([u, v]) => {
+                  const weights = side < 0 ? [1 - u, u - v, v, 0] : [1 - v, 0, u, v - u];
+                  return [0, 1, 2].map(
+                    (i) => corners.reduce((sum, p, n) => sum + p[i] * weights[n], 0) + (i === 1 ? lift : 0)
+                  );
+                }),
+                shade,
+                false
+              );
+            }
+          }
+          part = null;
+        };
+        strip(8e-3, 0.992, 0.014, 0.069, [181, 198, 214], slat);
+        if (k <= 3) {
+          const count = k <= 2 ? 3 : 2;
+          for (let n = 0; n < count; n++) {
+            const u = n / count + 0.018, v = (n + 1) / count - 0.018;
+            strip(u, v, 0.45, 0.455, [82, 103, 124]);
+            strip(u, v, 0.682, 0.69, [82, 103, 124]);
+            strip(u, u + 8e-3, 0.455, 0.682, [82, 103, 124]);
+            strip(v - 8e-3, v, 0.455, 0.682, [82, 103, 124]);
+            strip(u + 8e-3, v - 8e-3, 0.455, 0.682, [155, 176, 197]);
+            if (slat && n > 0) strip(u, u + 4e-3, 0.014, 0.072, [73, 95, 117], slat, 0.02);
+          }
+        }
+        if (flap) {
+          strip(0.012, 0.988, 0.721, 0.727, [68, 91, 115], flap);
+          strip(0.012, 0.988, 0.982, 0.994, [190, 204, 217], aft2 || flap);
+          for (const u of [0.02, 0.5, 0.98])
+            strip(u, u + 4e-3, 0.73, aft2 ? 0.855 : 0.99, [93, 116, 139], flap);
+        } else if (k === 3) {
+          strip(0.03, 0.97, 0.724, 0.735, [72, 95, 118]);
+          strip(0.03, 0.038, 0.735, 0.985, [72, 95, 118]);
+          strip(0.962, 0.97, 0.735, 0.985, [72, 95, 118]);
+        }
+        if (slat)
+          for (const u of [0.22, 0.76]) {
+            const st = interpolate(s, t, u), anchor = at(st, 0.1, -1);
+            part = { ...slat, component: "slat-track" };
+            beam(
+              [anchor[0], anchor[1] - 0.025, anchor[2] - 0.2],
+              [anchor[0], anchor[1] - 0.025, anchor[2] + 0.16],
+              spec.narrow ? 0.018 : 0.026,
+              [106, 125, 144]
+            );
+            part = null;
+          }
+      }
+      const tip = stations2.at(-1);
+      part = null;
+      for (let j = 1; j < fractions2.length; j++)
+        add(
+          [
+            at(tip, fractions2[j - 1], 1),
+            at(tip, fractions2[j], 1),
+            at(tip, fractions2[j], -1),
+            at(tip, fractions2[j - 1], -1)
+          ],
+          [133, 157, 182]
+        );
+    }
     function foil(stations2, sign, color, movable = false) {
-      const fractions2 = movable ? [0, 0.075, 0.38, 0.72, 1] : [0, 0.055, 0.28, 0.68, 0.695, 1], at = (s, f, side = 1) => [
+      if (movable) return wingFoil(stations2, sign, color);
+      const fractions2 = [0, 0.055, 0.28, 0.68, 0.695, 1], at = (s, f, side) => [
         sign * s[0],
-        s[1] + side * (movable ? Math.sin(Math.PI * f) : 2.969 * Math.sqrt(f) - 1.26 * f - 3.516 * f * f + 2.843 * f * f * f - 1.036 * f * f * f * f) * s[4],
+        s[1] + side * (2.969 * Math.sqrt(f) - 1.26 * f - 3.516 * f * f + 2.843 * f ** 3 - 1.036 * f ** 4) * s[4],
         s[2] + f * s[3]
       ];
       for (let k = 1; k < stations2.length; k++) {
-        const s = stations2[k - 1], t = stations2[k], slat = movable && k <= 3 ? { kind: "slat", sign, hinge: s, end: t } : null, flap = movable && k <= 2 ? { kind: "flap", sign, hinge: s, end: t } : null;
+        const s = stations2[k - 1], t = stations2[k];
+        part = null;
         for (let j = 1; j < fractions2.length; j++)
           for (const side of [-1, 1]) {
-            part = j === 1 ? slat : j === fractions2.length - 1 ? flap : null;
-            const shade = !movable && j === 4 ? 0.56 : !movable && j === 5 ? 0.94 : 1;
+            const shade = j === 4 ? 0.56 : j === 5 ? 0.94 : 1;
             add(
               [
                 at(s, fractions2[j - 1], side),
@@ -1101,13 +1268,6 @@
               color.map((v) => v * (side > 0 ? 1 : 0.65) * shade)
             );
           }
-        if (slat) {
-          part = slat;
-          add([at(s, 0.075, 1), at(t, 0.075, 1), at(t, 0.075, -1), at(s, 0.075, -1)], [94, 130, 165]);
-          part = null;
-          add([at(s, 0.075, 1), at(t, 0.075, 1), at(t, 0.075, -1), at(s, 0.075, -1)], [35, 60, 86]);
-        }
-        part = flap;
         add(
           [
             [sign * s[0], s[1], s[2] + s[3]],
@@ -1117,29 +1277,6 @@
           ],
           [63, 99, 140]
         );
-        part = null;
-        if (movable && k <= 3) {
-          const p = [at(s, 0.43), at(t, 0.43), at(t, 0.62), at(s, 0.62)].map((p2) => [
-            p2[0],
-            p2[1] + 0.018,
-            p2[2]
-          ]);
-          add(
-            p,
-            color.map((v) => v * 0.88),
-            false
-          );
-          const q = [at(s, 0.435), at(t, 0.435), at(t, 0.615), at(s, 0.615)].map((p2) => [
-            p2[0],
-            p2[1] + 0.027,
-            p2[2]
-          ]);
-          add(
-            q,
-            color.map((v) => v * 0.97),
-            false
-          );
-        }
       }
     }
     for (const sign of [-1, 1]) {
@@ -2091,24 +2228,45 @@
           axis[1] * u[2] - axis[2] * u[1],
           axis[2] * u[0] - axis[0] * u[2],
           axis[0] * u[1] - axis[1] * u[0]
-        ], radius2 = ["landing", "taxi"].includes(light.group) ? 0.13 : 0.075;
+        ], projector = ["landing", "taxi"].includes(light.group), beacon = light.group === "beacon" || light.group === "lowerBeacon", radius2 = (projector ? 0.14 : beacon ? 0.105 : light.group === "strobe" ? 0.065 : 0.075) * (spec.narrow ? 0.8 : 1), depth = beacon ? 0.11 : projector ? 0.028 : 0.035, rgb = light.color.match(/[a-f\d]{2}/gi).map((v2) => parseInt(v2, 16));
         const disc = (rr, lift) => Array.from(
-          { length: 8 },
+          { length: 10 },
           (_, j) => light.point.map(
-            (x, i) => x + axis[i] * lift + rr * (u[i] * Math.cos(j * Math.PI / 4) + v[i] * Math.sin(j * Math.PI / 4)) / un
+            (x, i) => x + axis[i] * lift + rr * (u[i] * Math.cos(j * Math.PI / 5) + v[i] * Math.sin(j * Math.PI / 5)) / un
           )
         );
-        const back = disc(radius2 * 1.35, light.housingNormal ? -0.026 : -0.015), lens = disc(radius2, 1e-3);
-        add(back, [69, 84, 102], false);
-        for (let j = 0; j < 8; j++)
-          add([back[j], back[(j + 1) % 8], lens[(j + 1) % 8], lens[j]], [82, 98, 115], false);
+        const rings = [
+          disc(radius2 * 1.3, -0.014),
+          disc(radius2 * 1.18, 0),
+          disc(radius2, 8e-3),
+          disc(radius2 * 0.82, depth)
+        ];
+        for (let k = 1; k < rings.length; k++)
+          for (let j = 0; j < 10; j++)
+            add(
+              [rings[k - 1][j], rings[k - 1][(j + 1) % 10], rings[k][(j + 1) % 10], rings[k][j]],
+              k === 1 ? [65, 78, 93] : k === 2 ? [169, 187, 203] : rgb.map((v2) => v2 * (beacon ? 0.58 : 0.78)),
+              false,
+              null,
+              k === 2 ? 0.85 : 0.55
+            );
         add(
-          lens,
-          light.group === "beacon" || light.group === "lowerBeacon" ? [154, 37, 48] : [177, 196, 211],
+          rings.at(-1),
+          rgb.map((v2) => v2 * 0.85),
           false,
           null,
-          0.5
+          0.8
         );
+        if (projector) {
+          const centre = light.point.map((v2, i) => v2 + axis[i] * (depth + 2e-3));
+          add(disc(radius2 * 0.34, depth + 3e-3), [224, 229, 225], false, null, 0.7);
+          beam(
+            centre.map((v2, i) => v2 - u[i] * radius2 * 0.75 / un),
+            centre.map((v2, i) => v2 + u[i] * radius2 * 0.75 / un),
+            7e-3,
+            [105, 121, 135]
+          );
+        }
         part = null;
       }
     }
@@ -2687,29 +2845,32 @@
         ];
       }
       if (part.kind === "flap" || part.kind === "slat") {
-        const slat = part.kind === "slat", chord = slat ? 0.075 : 0.72;
-        const h = part.hinge, e = part.end, origin = [part.sign * h[0], h[1], h[2] + h[3] * chord], end = [part.sign * e[0], e[1], e[2] + e[3] * chord], axis = end.map((v, i) => v - origin[i]), n = Math.hypot(...axis), k = axis.map((v) => v / n), q = p.map((v, i) => v - origin[i]), t = part.sign * f * (slat ? -12 : 32) * D, co = Math.cos(t), si = Math.sin(t), dot = k.reduce((v, x, i) => v + x * q[i], 0), cross = [k[1] * q[2] - k[2] * q[1], k[2] * q[0] - k[0] * q[2], k[0] * q[1] - k[1] * q[0]];
+        const slat = part.kind === "slat", chord = part.chord ?? (slat ? 0.075 : 0.72);
+        const h = part.hinge, e = part.end, origin = [part.sign * h[0], h[1], h[2] + h[3] * chord], end = [part.sign * e[0], e[1], e[2] + e[3] * chord], axis = end.map((v, i) => v - origin[i]), n = Math.hypot(...axis), k = axis.map((v) => v / n), q = p.map((v, i) => v - origin[i]), t = part.sign * f * (part.deflection ?? (slat ? -16 : 32)) * D, co = Math.cos(t), si = Math.sin(t), dot = k.reduce((v, x, i) => v + x * q[i], 0), cross = [k[1] * q[2] - k[2] * q[1], k[2] * q[0] - k[0] * q[2], k[0] * q[1] - k[1] * q[0]];
         return q.map(
-          (v, i) => origin[i] + v * co + cross[i] * si + k[i] * dot * (1 - co) + (i === 2 ? (slat ? -0.48 : 0.9) * f : i === 1 && slat ? -0.065 * f : 0)
+          (v, i) => origin[i] + v * co + cross[i] * si + k[i] * dot * (1 - co) + (i === 2 ? (part.extension ?? (slat ? -(a.r * 0.12 + 0.12) : airframe(a).narrow ? 0.62 : 0.9)) * f : i === 1 ? (slat ? -0.1 : part.component === "aft-element" ? -0.09 : 0) * f : 0)
         );
       }
       return p;
     }
-    function aircraftLampLevels(time) {
+    function aircraftLampLevels(time, code = "A339") {
       const pulse = (start2, width, t) => {
         const x = (t - start2) / width;
         return x >= 0 && x <= 1 ? Math.sin(Math.PI * x) ** 2 : 0;
       };
       const strobeTime = time % 1550, beaconTime = time % 1350;
       return {
-        strobe: Math.max(pulse(40, 85, strobeTime), pulse(205, 85, strobeTime)),
+        strobe: Math.max(
+          pulse(40, 75, strobeTime),
+          code.startsWith("A") ? pulse(205, 75, strobeTime) : 0
+        ),
         beacon: pulse(30, 240, beaconTime),
         lowerBeacon: pulse(380, 240, beaconTime)
       };
     }
     function drawAircraftLights(c, project, ca, sa, pitch2, scale) {
       if (!lightsOn) return;
-      const a = fleet[aircraftIndex], levels = motion ? aircraftLampLevels(systemsClock) : { strobe: 0, beacon: 0, lowerBeacon: 0 }, eye = [sa * Math.cos(pitch2), Math.sin(pitch2), -ca * Math.cos(pitch2)];
+      const a = fleet[aircraftIndex], levels = motion ? aircraftLampLevels(systemsClock, a.code) : { strobe: 0, beacon: 0, lowerBeacon: 0 }, eye = [sa * Math.cos(pitch2), Math.sin(pitch2), -ca * Math.cos(pitch2)];
       const lamps = aircraftLightLayout(a);
       for (const light of lamps) {
         if (wire && !["navigation", "strobe", "beacon", "lowerBeacon"].includes(light.group))
@@ -2719,15 +2880,44 @@
         if (!aircraftLightVisible(point, light.normal, a, eye)) continue;
         let level = light.group === "strobe" ? levels.strobe : light.group === "beacon" || light.group === "lowerBeacon" ? 0.12 + 0.88 * levels[light.group] : light.group === "scan" ? 0.36 : light.group === "landing" ? gearPosition > 0.9 || flapPosition > 0.5 ? 0.88 : 0 : 0.72;
         if (level <= 0.01) continue;
-        const p = project(point), radius = light.size * (0.65 + 0.35 * level) * Math.min(1.3, Math.max(0.7, scale / 10));
+        const p = project(point), axis = light.normal, facing = Math.max(
+          0,
+          axis.reduce((value, n, i) => value + n * eye[i], 0) / Math.hypot(...axis)
+        ), directional = light.group === "landing" || light.group === "taxi", intensity = level * (directional ? 0.28 + 0.72 * facing ** 4 : 0.68 + 0.32 * facing), radius = light.size * Math.min(1.35, Math.max(0.65, scale / 10)), glowRadius = radius * (directional ? 4.5 : light.group === "strobe" ? 4 : 3.2);
         c.save();
-        c.globalAlpha = 0.35 + level * 0.65;
-        c.fillStyle = light.color;
-        c.shadowColor = light.color;
-        c.shadowBlur = 3 + level * 7;
+        const halo = c.createRadialGradient(p[0], p[1], 0, p[0], p[1], glowRadius);
+        halo.addColorStop(
+          0,
+          light.color + Math.round(intensity * 155).toString(16).padStart(2, "0")
+        );
+        halo.addColorStop(
+          0.28,
+          light.color + Math.round(intensity * 48).toString(16).padStart(2, "0")
+        );
+        halo.addColorStop(1, light.color + "00");
+        c.fillStyle = halo;
         c.beginPath();
-        c.arc(p[0], p[1], radius, 0, Math.PI * 2);
+        c.arc(p[0], p[1], glowRadius, 0, Math.PI * 2);
         c.fill();
+        c.globalAlpha = Math.min(1, intensity * 1.25);
+        c.fillStyle = light.color;
+        c.beginPath();
+        c.arc(p[0], p[1], radius * 0.7, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#ffffff";
+        c.globalAlpha = intensity * (directional ? 0.96 : 0.72);
+        c.beginPath();
+        c.arc(p[0], p[1], radius * 0.24, 0, Math.PI * 2);
+        c.fill();
+        if (directional && facing > 0.65) {
+          c.strokeStyle = light.color;
+          c.globalAlpha = intensity * 0.28;
+          c.lineWidth = 0.7;
+          c.beginPath();
+          c.moveTo(p[0] - radius * 3.2, p[1]);
+          c.lineTo(p[0] + radius * 3.2, p[1]);
+          c.stroke();
+        }
         c.restore();
       }
     }

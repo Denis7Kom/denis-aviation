@@ -345,6 +345,25 @@ export function airframe(a) {
 }
 
 export function wingGeometry(a) {
+  const spec = airframe(a);
+  if (spec.wing) return spec.wing;
+  const finish = (stations, nav, tip) =>
+    (spec.wing = {
+      stations,
+      nav,
+      tip,
+      fractions: [0, 0.012, 0.035, 0.075, 0.16, 0.38, 0.56, 0.7, 0.72, 0.86, 0.94, 1],
+      point(s, f, sign = 1, side = 1) {
+        const thickness =
+          2.969 * Math.sqrt(f) -
+          1.26 * f -
+          3.516 * f * f +
+          2.843 * f * f * f -
+          1.036 * f * f * f * f;
+        const camber = 0.12 * Math.sin(Math.PI * f);
+        return [sign * s[0], s[1] + (camber + side * thickness) * s[4], s[2] + f * s[3]];
+      },
+    });
   if (a.code === 'B737' || a.code === 'A321') {
     const is737 = a.code === 'B737';
     const stations = is737
@@ -367,7 +386,7 @@ export function wingGeometry(a) {
           [16.78, 0.91, 3.47, 1.22, 0.041],
           [17.05, 0.95, 3.64, 0.82, 0.025],
         ];
-    return { stations, nav: stations[4], tip: stations.at(-1) };
+    return finish(stations, stations[4], stations.at(-1));
   }
   const b = a.span / 2,
     s = airframe(a),
@@ -409,7 +428,7 @@ export function wingGeometry(a) {
       [b, 5.25, 13.8, 0.36, 0.015],
     );
   const nav = stations[a.code === 'B77W' ? stations.length - 1 : 4];
-  return { stations, nav, tip: stations[stations.length - 1] };
+  return finish(stations, nav, stations[stations.length - 1]);
 }
 
 export function fuselageSection(a, z, theta = null, lift = 0) {
@@ -543,16 +562,19 @@ export function aircraftLightLayout(a) {
     lamps.push({ id, point, normal, color, group, size, part });
   // Locate a lamp on an actual fixed lower-wing triangle. Using the same
   // diagonal as the renderer avoids floating fixtures on the swept wing.
-  function wingMount(x, f) {
+  function wingMount(x, f, side = -1) {
     const stations = geo.stations;
     let k = 1;
     while (k < stations.length - 1 && x > stations[k][0]) k++;
     const p = stations[k - 1],
       q = stations[k],
       w = (x - p[0]) / (q[0] - p[0]),
-      u = (f - 0.075) / (0.38 - 0.075),
-      at = (s, t) => [s[0], s[1] - Math.sin(Math.PI * t) * s[4], s[2] + t * s[3]],
-      corners = [at(p, 0.075), at(q, 0.075), at(q, 0.38), at(p, 0.38)],
+      j = geo.fractions.findIndex((value) => value >= f),
+      lo = geo.fractions[Math.max(0, j - 1)],
+      hi = geo.fractions[j],
+      u = (f - lo) / (hi - lo),
+      at = (s, t) => geo.point(s, t, 1, side),
+      corners = [at(p, lo), at(q, lo), at(q, hi), at(p, hi)],
       indices = u <= w ? [0, 1, 2] : [0, 2, 3],
       weights = u <= w ? [1 - w, w - u, u] : [1 - u, w, u - w],
       v = indices.map((i) => corners[i]),
@@ -565,35 +587,41 @@ export function aircraftLightLayout(a) {
         a1[0] * b1[1] - a1[1] * b1[0],
       ],
       len = Math.hypot(...n),
-      normal = n.map((x) => (x / len) * (n[1] > 0 ? -1 : 1));
+      normal = n.map((x) => (x / len) * (n[1] * side < 0 ? -1 : 1));
     return { point: anchor.map((x, i) => x + normal[i] * 0.018), normal };
   }
 
   for (const sign of [-1, 1]) {
     const side = sign < 0 ? 'left' : 'right';
+    const tipMount = (f) => {
+      const mount = wingMount(q[0] - 0.035, f, 1);
+      return {
+        point: [sign * mount.point[0], mount.point[1], mount.point[2]],
+        normal: [sign * mount.normal[0], mount.normal[1], mount.normal[2]],
+      };
+    };
+    const navMount = tipMount(0.16),
+      rearMount = tipMount(0.92),
+      strobeMount = tipMount(0.68);
     add(
       'nav-' + side,
-      [sign * q[0], q[1] + 0.06, q[2] + q[3] * 0.16],
+      navMount.point,
       [sign * 0.65, 0.12, -0.45],
       sign < 0 ? '#ff4358' : '#57e58a',
       'navigation',
     );
+    lamps.at(-1).housingNormal = navMount.normal;
     add(
       'rear-nav-' + side,
-      [sign * q[0], q[1] + 0.035, q[2] + q[3] * 0.92],
+      rearMount.point,
       [sign * 0.35, 0.1, 0.8],
       '#e8f4ff',
       'navigation',
       1.05,
     );
-    add(
-      'strobe-' + side,
-      [sign * q[0], q[1] + 0.085, q[2] + q[3] * 0.68],
-      [sign * 0.55, 0.25, 0],
-      '#e9f6ff',
-      'strobe',
-      2.0,
-    );
+    lamps.at(-1).housingNormal = rearMount.normal;
+    add('strobe-' + side, strobeMount.point, [sign * 0.55, 0.25, 0], '#e9f6ff', 'strobe', 2.0);
+    lamps.at(-1).housingNormal = strobeMount.normal;
     for (const [id, x, f, size, color] of [
       ['landing', spec.gearX + (spec.narrow ? 0.55 : 0.9), 0.11, 2.2, '#f5f2df'],
       ['turnoff', a.r + 0.8, 0.12, 1.45, '#fff0d1'],
@@ -620,7 +648,7 @@ export function aircraftLightLayout(a) {
         sign *
           Math.sqrt(Math.max(0, s.radius * s.radius - ((y - s.center) / s.vertical) ** 2)) *
           0.999 +
-          sign * 0.045,
+          sign * 0.018,
         y,
         z,
       ],
@@ -629,24 +657,27 @@ export function aircraftLightLayout(a) {
       'scan',
       0.9,
     );
-    const stab = spec.stabilizer[1];
+    const stab = spec.stabilizer[1],
+      sf = 0.6,
+      foilHeight =
+        2.969 * Math.sqrt(sf) - 1.26 * sf - 3.516 * sf * sf + 2.843 * sf ** 3 - 1.036 * sf ** 4;
     add(
       'tail-flood-' + side,
-      [sign * stab[0], stab[1] + 0.22, half - stab[2] + stab[3] * 0.6],
+      [sign * stab[0], stab[1] + foilHeight * stab[4] + 0.018, half - stab[2] + stab[3] * sf],
       [-sign * 0.8, 0.65, 0],
       '#dce9ff',
       'scan',
       1.0,
     );
+    lamps.at(-1).housingNormal = [0, 1, 0];
   }
   const topZ = -half + a.len * 0.44,
     bottomZ = -half + a.len * 0.53,
     top = fuselageSection(a, topZ),
-    bottom = fuselageSection(a, bottomZ),
-    tail = fuselageSection(a, half);
+    bottom = fuselageSection(a, bottomZ);
   add(
     'beacon-upper',
-    [0, top.center + top.radius * top.vertical + 0.13, topZ],
+    [0, top.center + top.radius * top.vertical + 0.025, topZ],
     [0, 1, 0],
     '#ff344c',
     'beacon',
@@ -654,14 +685,27 @@ export function aircraftLightLayout(a) {
   );
   add(
     'beacon-lower',
-    [0, bottom.center - bottom.radius * bottom.vertical - 0.13, bottomZ],
+    [0, bottom.center - bottom.radius * bottom.vertical - 0.025, bottomZ],
     [0, -1, 0],
     '#ff344c',
     'lowerBeacon',
     1.65,
   );
-  add('nav-tail', [0, tail.center + 0.1, half + 0.18], [0, 0, 1], '#e6f1ff', 'navigation', 1.1);
-  add('strobe-tail', [0, tail.center + 0.28, half - 0.28], [0, 0.2, 1], '#edf7ff', 'strobe', 1.65);
+  for (const [id, dz, color, group, size] of [
+    ['nav-tail', 0.19, '#e6f1ff', 'navigation', 1.1],
+    ['strobe-tail', 0.42, '#edf7ff', 'strobe', 1.65],
+  ]) {
+    const tail = fuselageSection(a, half - dz);
+    add(
+      id,
+      [0, tail.center + tail.radius * tail.vertical + 0.018, half - dz],
+      [0, 0.2, 1],
+      color,
+      group,
+      size,
+    );
+    lamps.at(-1).housingNormal = [0, 1, 0];
+  }
   const z = -half + (spec.noseGearD || 8.6),
     s = fuselageSection(a, z),
     pivot = [0, s.center - s.radius * s.vertical - 0.035, z],
@@ -831,31 +875,201 @@ export function buildPlane(a, wireframe = false) {
         );
       }
   }
+  function wingFoil(stations, sign, color) {
+    const geo = wingGeometry(a),
+      fractions = wireframe ? [0, 0.075, 0.38, 0.72, 0.86, 1] : geo.fractions,
+      doubleSlotted = a.code === 'B737' || a.code === 'A321',
+      at = (s, f, side = 1) => geo.point(s, f, sign, side),
+      interpolate = (s, t, u) => s.map((v, i) => v + (t[i] - v) * u);
+    for (let k = 1; k < stations.length; k++) {
+      const s = stations[k - 1],
+        t = stations[k],
+        slat = k <= 3 ? { kind: 'slat', sign, hinge: s, end: t } : null,
+        flap = k <= 2 ? { kind: 'flap', sign, hinge: s, end: t } : null,
+        aft =
+          flap && doubleSlotted
+            ? { ...flap, component: 'aft-element', chord: 0.86, deflection: 43, extension: 1.12 }
+            : null,
+        surfacePart = (f) => (f < 0.075 ? slat : f >= 0.86 && aft ? aft : f >= 0.72 ? flap : null);
+      for (let j = 1; j < fractions.length; j++) {
+        const lo = fractions[j - 1],
+          hi = fractions[j];
+        part = surfacePart((lo + hi) / 2);
+        for (const side of [-1, 1]) {
+          const points = [at(s, lo, side), at(t, lo, side), at(t, hi, side), at(s, hi, side)],
+            normals = [s, t, t, s].map((station, i) => {
+              const f = i < 2 ? lo : hi,
+                left = at(station, Math.max(0, f - 0.001), side),
+                right = at(station, Math.min(1, f + 0.001), side),
+                chord = right.map((v, n) => v - left[n]),
+                span = at(t, f, side).map((v, n) => v - at(s, f, side)[n]),
+                n = [
+                  span[1] * chord[2] - span[2] * chord[1],
+                  span[2] * chord[0] - span[0] * chord[2],
+                  span[0] * chord[1] - span[1] * chord[0],
+                ],
+                length = Math.hypot(...n) || 1;
+              return n.map((v) => (v / length) * (n[1] * side < 0 ? -1 : 1));
+            });
+          add(
+            points,
+            color.map((v) => v * (side > 0 ? 1 : 0.65)),
+            true,
+            normals,
+            0.22,
+          );
+        }
+      }
+      // Close both sides of every moving element. Their exposed cove is visible
+      // during travel rather than showing through an open, paper-thin surface.
+      for (const [lo, hi, moving] of [
+        [0, 0.075, slat],
+        [0.72, aft ? 0.86 : 1, flap],
+        ...(aft ? [[0.86, 1, aft]] : []),
+      ]) {
+        if (!moving) continue;
+        part = moving;
+        for (const station of [s, t]) {
+          const middle = (lo + hi) / 2;
+          for (const [f0, f1] of [
+            [lo, middle],
+            [middle, hi],
+          ])
+            add(
+              [at(station, f0, 1), at(station, f1, 1), at(station, f1, -1), at(station, f0, -1)],
+              [112, 133, 153],
+            );
+        }
+        for (const f of [lo, hi])
+          add([at(s, f, 1), at(t, f, 1), at(t, f, -1), at(s, f, -1)], [73, 94, 117]);
+        part = null;
+        const f = lo === 0 ? hi : lo;
+        if (f !== 0.86) add([at(s, f, 1), at(t, f, 1), at(t, f, -1), at(s, f, -1)], [37, 54, 72]);
+      }
+      if (wireframe) continue;
+      const strip = (u0, u1, lo, hi, shade, attachment = null, lift = 0.012) => {
+        part = attachment || { kind: 'decal', marking: 'wing-panel' };
+        for (let j = 1; j < geo.fractions.length; j++) {
+          const low = geo.fractions[j - 1],
+            high = geo.fractions[j];
+          if (lo >= high || hi <= low) continue;
+          const bottom = (Math.max(lo, low) - low) / (high - low),
+            top = (Math.min(hi, high) - low) / (high - low),
+            corners = [at(s, low), at(t, low), at(t, high), at(s, high)],
+            rectangle = [
+              [u0, bottom],
+              [u1, bottom],
+              [u1, top],
+              [u0, top],
+            ];
+          // Clip each panel to the exact diagonal used by the wing triangles.
+          // Bilinear decals cut through a tapered, triangulated wing mid-panel.
+          for (const side of [-1, 1]) {
+            const polygon = [];
+            for (let n = 0; n < rectangle.length; n++) {
+              const p = rectangle[n],
+                q = rectangle[(n + 1) % rectangle.length],
+                dp = (p[1] - p[0]) * side,
+                dq = (q[1] - q[0]) * side;
+              if (dp >= 0) polygon.push(p);
+              if (dp < 0 !== dq < 0) {
+                const f = dp / (dp - dq);
+                polygon.push(p.map((v, i) => v + (q[i] - v) * f));
+              }
+            }
+            if (polygon.length < 3) continue;
+            add(
+              polygon.map(([u, v]) => {
+                const weights = side < 0 ? [1 - u, u - v, v, 0] : [1 - v, 0, u, v - u];
+                return [0, 1, 2].map(
+                  (i) =>
+                    corners.reduce((sum, p, n) => sum + p[i] * weights[n], 0) +
+                    (i === 1 ? lift : 0),
+                );
+              }),
+              shade,
+              false,
+            );
+          }
+        }
+        part = null;
+      };
+      // Metal leading-edge skins, slat joints and Fowler-panel divisions.
+      strip(0.008, 0.992, 0.014, 0.069, [181, 198, 214], slat);
+      if (k <= 3) {
+        const count = k <= 2 ? 3 : 2;
+        for (let n = 0; n < count; n++) {
+          const u = n / count + 0.018,
+            v = (n + 1) / count - 0.018;
+          // Adjacent border strips avoid coplanar overlapping fills in both
+          // depth renderers; a second filled rectangle would shimmer.
+          strip(u, v, 0.45, 0.455, [82, 103, 124]);
+          strip(u, v, 0.682, 0.69, [82, 103, 124]);
+          strip(u, u + 0.008, 0.455, 0.682, [82, 103, 124]);
+          strip(v - 0.008, v, 0.455, 0.682, [82, 103, 124]);
+          strip(u + 0.008, v - 0.008, 0.455, 0.682, [155, 176, 197]);
+          if (slat && n > 0) strip(u, u + 0.004, 0.014, 0.072, [73, 95, 117], slat, 0.02);
+        }
+      }
+      if (flap) {
+        strip(0.012, 0.988, 0.721, 0.727, [68, 91, 115], flap);
+        strip(0.012, 0.988, 0.982, 0.994, [190, 204, 217], aft || flap);
+        for (const u of [0.02, 0.5, 0.98])
+          strip(u, u + 0.004, 0.73, aft ? 0.855 : 0.99, [93, 116, 139], flap);
+      } else if (k === 3) {
+        strip(0.03, 0.97, 0.724, 0.735, [72, 95, 118]);
+        strip(0.03, 0.038, 0.735, 0.985, [72, 95, 118]);
+        strip(0.962, 0.97, 0.735, 0.985, [72, 95, 118]);
+      }
+      // Short exposed rails share their parent surface's articulation. Kept
+      // out of wire mode so additional detail never multiplies edge work.
+      if (slat)
+        for (const u of [0.22, 0.76]) {
+          const st = interpolate(s, t, u),
+            anchor = at(st, 0.1, -1);
+          part = { ...slat, component: 'slat-track' };
+          beam(
+            [anchor[0], anchor[1] - 0.025, anchor[2] - 0.2],
+            [anchor[0], anchor[1] - 0.025, anchor[2] + 0.16],
+            spec.narrow ? 0.018 : 0.026,
+            [106, 125, 144],
+          );
+          part = null;
+        }
+    }
+    // Closed wingtip, rather than an exposed cut through the foil.
+    const tip = stations.at(-1);
+    part = null;
+    for (let j = 1; j < fractions.length; j++)
+      add(
+        [
+          at(tip, fractions[j - 1], 1),
+          at(tip, fractions[j], 1),
+          at(tip, fractions[j], -1),
+          at(tip, fractions[j - 1], -1),
+        ],
+        [133, 157, 182],
+      );
+  }
+
   function foil(stations, sign, color, movable = false) {
-    const fractions = movable ? [0, 0.075, 0.38, 0.72, 1] : [0, 0.055, 0.28, 0.68, 0.695, 1],
-      at = (s, f, side = 1) => [
+    if (movable) return wingFoil(stations, sign, color);
+    const fractions = [0, 0.055, 0.28, 0.68, 0.695, 1],
+      at = (s, f, side) => [
         sign * s[0],
         s[1] +
           side *
-            (movable
-              ? Math.sin(Math.PI * f)
-              : 2.969 * Math.sqrt(f) -
-                1.26 * f -
-                3.516 * f * f +
-                2.843 * f * f * f -
-                1.036 * f * f * f * f) *
+            (2.969 * Math.sqrt(f) - 1.26 * f - 3.516 * f * f + 2.843 * f ** 3 - 1.036 * f ** 4) *
             s[4],
         s[2] + f * s[3],
       ];
     for (let k = 1; k < stations.length; k++) {
       const s = stations[k - 1],
-        t = stations[k],
-        slat = movable && k <= 3 ? { kind: 'slat', sign, hinge: s, end: t } : null,
-        flap = movable && k <= 2 ? { kind: 'flap', sign, hinge: s, end: t } : null;
+        t = stations[k];
+      part = null;
       for (let j = 1; j < fractions.length; j++)
         for (const side of [-1, 1]) {
-          part = j === 1 ? slat : j === fractions.length - 1 ? flap : null;
-          const shade = !movable && j === 4 ? 0.56 : !movable && j === 5 ? 0.94 : 1;
+          const shade = j === 4 ? 0.56 : j === 5 ? 0.94 : 1;
           add(
             [
               at(s, fractions[j - 1], side),
@@ -866,14 +1080,6 @@ export function buildPlane(a, wireframe = false) {
             color.map((v) => v * (side > 0 ? 1 : 0.65) * shade),
           );
         }
-      // Close the moving leading edge; the exposed gap remains visible on extension.
-      if (slat) {
-        part = slat;
-        add([at(s, 0.075, 1), at(t, 0.075, 1), at(t, 0.075, -1), at(s, 0.075, -1)], [94, 130, 165]);
-        part = null;
-        add([at(s, 0.075, 1), at(t, 0.075, 1), at(t, 0.075, -1), at(s, 0.075, -1)], [35, 60, 86]);
-      }
-      part = flap;
       add(
         [
           [sign * s[0], s[1], s[2] + s[3]],
@@ -883,29 +1089,6 @@ export function buildPlane(a, wireframe = false) {
         ],
         [63, 99, 140],
       );
-      part = null;
-      if (movable && k <= 3) {
-        const p = [at(s, 0.43), at(t, 0.43), at(t, 0.62), at(s, 0.62)].map((p) => [
-          p[0],
-          p[1] + 0.018,
-          p[2],
-        ]);
-        add(
-          p,
-          color.map((v) => v * 0.88),
-          false,
-        );
-        const q = [at(s, 0.435), at(t, 0.435), at(t, 0.615), at(s, 0.615)].map((p) => [
-          p[0],
-          p[1] + 0.027,
-          p[2],
-        ]);
-        add(
-          q,
-          color.map((v) => v * 0.97),
-          false,
-        );
-      }
     }
   }
 
@@ -2078,28 +2261,58 @@ export function buildPlane(a, wireframe = false) {
           axis[2] * u[0] - axis[0] * u[2],
           axis[0] * u[1] - axis[1] * u[0],
         ],
-        radius = ['landing', 'taxi'].includes(light.group) ? 0.13 : 0.075;
+        projector = ['landing', 'taxi'].includes(light.group),
+        beacon = light.group === 'beacon' || light.group === 'lowerBeacon',
+        radius =
+          (projector ? 0.14 : beacon ? 0.105 : light.group === 'strobe' ? 0.065 : 0.075) *
+          (spec.narrow ? 0.8 : 1),
+        depth = beacon ? 0.11 : projector ? 0.028 : 0.035,
+        rgb = light.color.match(/[a-f\d]{2}/gi).map((v) => parseInt(v, 16));
       const disc = (rr, lift) =>
-        Array.from({ length: 8 }, (_, j) =>
+        Array.from({ length: 10 }, (_, j) =>
           light.point.map(
             (x, i) =>
               x +
               axis[i] * lift +
-              (rr * (u[i] * Math.cos((j * Math.PI) / 4) + v[i] * Math.sin((j * Math.PI) / 4))) / un,
+              (rr * (u[i] * Math.cos((j * Math.PI) / 5) + v[i] * Math.sin((j * Math.PI) / 5))) / un,
           ),
         );
-      const back = disc(radius * 1.35, light.housingNormal ? -0.026 : -0.015),
-        lens = disc(radius, 0.001);
-      add(back, [69, 84, 102], false);
-      for (let j = 0; j < 8; j++)
-        add([back[j], back[(j + 1) % 8], lens[(j + 1) % 8], lens[j]], [82, 98, 115], false);
+      const rings = [
+        disc(radius * 1.3, -0.014),
+        disc(radius * 1.18, 0),
+        disc(radius, 0.008),
+        disc(radius * 0.82, depth),
+      ];
+      for (let k = 1; k < rings.length; k++)
+        for (let j = 0; j < 10; j++)
+          add(
+            [rings[k - 1][j], rings[k - 1][(j + 1) % 10], rings[k][(j + 1) % 10], rings[k][j]],
+            k === 1
+              ? [65, 78, 93]
+              : k === 2
+                ? [169, 187, 203]
+                : rgb.map((v) => v * (beacon ? 0.58 : 0.78)),
+            false,
+            null,
+            k === 2 ? 0.85 : 0.55,
+          );
       add(
-        lens,
-        light.group === 'beacon' || light.group === 'lowerBeacon' ? [154, 37, 48] : [177, 196, 211],
+        rings.at(-1),
+        rgb.map((v) => v * 0.85),
         false,
         null,
-        0.5,
+        0.8,
       );
+      if (projector) {
+        const centre = light.point.map((v, i) => v + axis[i] * (depth + 0.002));
+        add(disc(radius * 0.34, depth + 0.003), [224, 229, 225], false, null, 0.7);
+        beam(
+          centre.map((v, i) => v - (u[i] * radius * 0.75) / un),
+          centre.map((v, i) => v + (u[i] * radius * 0.75) / un),
+          0.007,
+          [105, 121, 135],
+        );
+      }
       part = null;
     }
   }
