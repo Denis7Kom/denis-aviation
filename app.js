@@ -729,7 +729,24 @@
       stations: stations2,
       nav: nav2,
       tip,
-      fractions: [0, 4e-3, 0.012, 0.026, 0.047, 0.075, 0.105, 0.13, 0.16, 0.38, 0.56, 0.7, 0.72, 0.86, 0.94, 1],
+      fractions: [
+        0,
+        4e-3,
+        0.012,
+        0.026,
+        0.047,
+        0.075,
+        0.105,
+        0.13,
+        0.16,
+        0.38,
+        0.56,
+        0.7,
+        0.72,
+        0.86,
+        0.94,
+        1
+      ],
       point(s2, f, sign = 1, side = 1) {
         const thickness = 2.969 * Math.sqrt(f) - 1.26 * f - 3.516 * f * f + 2.843 * f * f * f - 1.036 * f * f * f * f;
         const camber = 0.12 * Math.sin(Math.PI * f);
@@ -1113,7 +1130,15 @@
     function wingFoil(stations2, sign, color) {
       const geo = wingGeometry(a), fractions2 = wireframe ? [0, 0.035, 0.075, 0.13, 0.38, 0.72, 0.86, 1] : geo.fractions, doubleSlotted = a.code === "B737" || a.code === "A321", at = (s, f, side = 1) => geo.point(s, f, sign, side), interpolate = (s, t, u) => s.map((v, i) => v + (t[i] - v) * u);
       for (let k = 1; k < stations2.length; k++) {
-        const s = stations2[k - 1], t = stations2[k], slat = k <= 3 ? { kind: "slat", sign, hinge: s, end: t, chord: 0.13, deflection: spec.narrow ? -24 : -28, extension: -Math.min(0.78, Math.max(0.2, (s[3] + t[3]) * 0.041)) } : null, flap = k <= 2 ? { kind: "flap", sign, hinge: s, end: t } : null, aft2 = flap && doubleSlotted ? { ...flap, component: "aft-element", chord: 0.86, deflection: 43, extension: 1.12 } : null, surfacePart = (f) => f < 0.13 ? slat : f >= 0.86 && aft2 ? aft2 : f >= 0.72 ? flap : null;
+        const s = stations2[k - 1], t = stations2[k], slat = k <= 3 ? {
+          kind: "slat",
+          sign,
+          hinge: s,
+          end: t,
+          chord: 0.13,
+          deflection: spec.narrow ? -24 : -28,
+          extension: -Math.min(0.78, Math.max(0.2, (s[3] + t[3]) * 0.041))
+        } : null, flap = k <= 2 ? { kind: "flap", sign, hinge: s, end: t } : null, aft2 = flap && doubleSlotted ? { ...flap, component: "aft-element", chord: 0.86, deflection: 43, extension: 1.12 } : null, surfacePart = (f) => f < 0.13 ? slat : f >= 0.86 && aft2 ? aft2 : f >= 0.72 ? flap : null;
         for (let j = 1; j < fractions2.length; j++) {
           const lo = fractions2[j - 1], hi = fractions2[j];
           part = surfacePart((lo + hi) / 2);

@@ -352,7 +352,10 @@ export function wingGeometry(a) {
       stations,
       nav,
       tip,
-      fractions: [0, 0.004, 0.012, 0.026, 0.047, 0.075, 0.105, 0.13, 0.16, 0.38, 0.56, 0.7, 0.72, 0.86, 0.94, 1],
+      fractions: [
+        0, 0.004, 0.012, 0.026, 0.047, 0.075, 0.105, 0.13, 0.16, 0.38, 0.56, 0.7, 0.72, 0.86, 0.94,
+        1,
+      ],
       point(s, f, sign = 1, side = 1) {
         const thickness =
           2.969 * Math.sqrt(f) -

@@ -1,10 +1,6 @@
 {
   "baseline": "4da04ba03ba70897377c9b3502065f1b1c1fa3a6",
-  "modules": [
-    "src/aircraft/geometry.js",
-    "src/data/airports.js",
-    "src/data/aircraft.js"
-  ],
+  "modules": ["src/aircraft/geometry.js", "src/data/airports.js", "src/data/aircraft.js"],
   "shell": "a73e9ff9184546f9d27f99feb15e98eed564ec3067f7783240af2e677e56f01e",
   "extracted": [
     "45bab69cec4504be700cd18f31ae5c4ba7558c8f7c888b3e24b71b1ed2d0e29d",
