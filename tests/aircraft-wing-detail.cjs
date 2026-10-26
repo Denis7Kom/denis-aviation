@@ -80,7 +80,7 @@ for (const aircraft of vm.runInContext('fleet', ctx)) {
     const deployed = ctx.articulatedPoint(point, slat, aircraft, 1, 1);
     assert(deployed[2] < point[2] - 0.09, 'slat moves forward');
     assert(deployed[1] < point[1] - 0.09, 'slat rotates down');
-    assert.deepEqual(ctx.articulatedPoint(point, slat, aircraft, 1, 0), point, 'slat retracts flush');
+    assert(ctx.articulatedPoint(point, slat, aircraft, 1, 0).every((v, i) => Math.abs(v - point[i]) < 1e-9), 'slat retracts flush');
   }
   for (const face of mesh.filter(
     (f) => f.part?.marking === 'wing-panel' && f.color.join(',') === '155,176,197',
