@@ -918,8 +918,8 @@
       add("strobe-" + side, strobeMount.point, [sign * 0.55, 0.25, 0], "#e9f6ff", "strobe", 2);
       lamps.at(-1).housingNormal = strobeMount.normal;
       for (const [id, x, f, size, color] of [
-        ["landing", spec.gearX + (spec.narrow ? 0.55 : 0.9), 0.11, 2.2, "#f5f2df"],
-        ["turnoff", a.r + 0.8, 0.12, 1.45, "#fff0d1"]
+        ["landing", spec.gearX + (spec.narrow ? 0.55 : 0.9), 0.18, 2.2, "#f5f2df"],
+        ["turnoff", a.r + 0.8, 0.19, 1.45, "#fff0d1"]
       ]) {
         const mount = wingMount(x, f), point = [sign * mount.point[0], mount.point[1], mount.point[2]], normal = [sign * mount.normal[0], mount.normal[1], mount.normal[2]];
         add(
