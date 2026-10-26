@@ -67,6 +67,21 @@ for (const aircraft of vm.runInContext('fleet', ctx)) {
   const darkPanels = mesh.filter(
     (f) => f.part?.marking === 'wing-panel' && f.color.join(',') === '82,103,124',
   );
+  assert.equal(darkPanels.length, 0, 'remove non-aircraft rectangular wing tiles');
+  assert.equal(
+    mesh.filter((f) => f.part?.marking === 'wing-panel' && f.color.join(',') === '155,176,197')
+      .length,
+    0,
+    'remove raised square panel fills',
+  );
+  for (const slat of parts.filter((p) => p.kind === 'slat' && !p.component)) {
+    assert.equal(slat.chord, 0.13, 'slat uses a substantial curved leading-edge chord');
+    const point = geo.point(slat.hinge, 0, slat.sign);
+    const deployed = ctx.articulatedPoint(point, slat, aircraft, 1, 1);
+    assert(deployed[2] < point[2] - 0.09, 'slat moves forward');
+    assert(deployed[1] < point[1] - 0.09, 'slat rotates down');
+    assert.deepEqual(ctx.articulatedPoint(point, slat, aircraft, 1, 0), point, 'slat retracts flush');
+  }
   for (const face of mesh.filter(
     (f) => f.part?.marking === 'wing-panel' && f.color.join(',') === '155,176,197',
   )) {

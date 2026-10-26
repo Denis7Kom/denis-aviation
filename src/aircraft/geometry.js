@@ -352,7 +352,7 @@ export function wingGeometry(a) {
       stations,
       nav,
       tip,
-      fractions: [0, 0.012, 0.035, 0.075, 0.16, 0.38, 0.56, 0.7, 0.72, 0.86, 0.94, 1],
+      fractions: [0, 0.004, 0.012, 0.026, 0.047, 0.075, 0.105, 0.13, 0.16, 0.38, 0.56, 0.7, 0.72, 0.86, 0.94, 1],
       point(s, f, sign = 1, side = 1) {
         const thickness =
           2.969 * Math.sqrt(f) -
@@ -877,20 +877,31 @@ export function buildPlane(a, wireframe = false) {
   }
   function wingFoil(stations, sign, color) {
     const geo = wingGeometry(a),
-      fractions = wireframe ? [0, 0.075, 0.38, 0.72, 0.86, 1] : geo.fractions,
+      fractions = wireframe ? [0, 0.035, 0.075, 0.13, 0.38, 0.72, 0.86, 1] : geo.fractions,
       doubleSlotted = a.code === 'B737' || a.code === 'A321',
       at = (s, f, side = 1) => geo.point(s, f, sign, side),
       interpolate = (s, t, u) => s.map((v, i) => v + (t[i] - v) * u);
     for (let k = 1; k < stations.length; k++) {
       const s = stations[k - 1],
         t = stations[k],
-        slat = k <= 3 ? { kind: 'slat', sign, hinge: s, end: t } : null,
+        slat =
+          k <= 3
+            ? {
+                kind: 'slat',
+                sign,
+                hinge: s,
+                end: t,
+                chord: 0.13,
+                deflection: spec.narrow ? -24 : -28,
+                extension: -Math.min(0.78, Math.max(0.2, (s[3] + t[3]) * 0.041)),
+              }
+            : null,
         flap = k <= 2 ? { kind: 'flap', sign, hinge: s, end: t } : null,
         aft =
           flap && doubleSlotted
             ? { ...flap, component: 'aft-element', chord: 0.86, deflection: 43, extension: 1.12 }
             : null,
-        surfacePart = (f) => (f < 0.075 ? slat : f >= 0.86 && aft ? aft : f >= 0.72 ? flap : null);
+        surfacePart = (f) => (f < 0.13 ? slat : f >= 0.86 && aft ? aft : f >= 0.72 ? flap : null);
       for (let j = 1; j < fractions.length; j++) {
         const lo = fractions[j - 1],
           hi = fractions[j];
@@ -913,7 +924,11 @@ export function buildPlane(a, wireframe = false) {
             });
           add(
             points,
-            color.map((v) => v * (side > 0 ? 1 : 0.65)),
+            part?.kind === 'slat'
+              ? side > 0
+                ? [181, 199, 215]
+                : [108, 132, 153]
+              : color.map((v) => v * (side > 0 ? 1 : 0.65)),
             true,
             normals,
             0.22,
@@ -923,7 +938,7 @@ export function buildPlane(a, wireframe = false) {
       // Close both sides of every moving element. Their exposed cove is visible
       // during travel rather than showing through an open, paper-thin surface.
       for (const [lo, hi, moving] of [
-        [0, 0.075, slat],
+        [0, 0.13, slat],
         [0.72, aft ? 0.86 : 1, flap],
         ...(aft ? [[0.86, 1, aft]] : []),
       ]) {
@@ -994,23 +1009,7 @@ export function buildPlane(a, wireframe = false) {
         }
         part = null;
       };
-      // Metal leading-edge skins, slat joints and Fowler-panel divisions.
-      strip(0.008, 0.992, 0.014, 0.069, [181, 198, 214], slat);
-      if (k <= 3) {
-        const count = k <= 2 ? 3 : 2;
-        for (let n = 0; n < count; n++) {
-          const u = n / count + 0.018,
-            v = (n + 1) / count - 0.018;
-          // Adjacent border strips avoid coplanar overlapping fills in both
-          // depth renderers; a second filled rectangle would shimmer.
-          strip(u, v, 0.45, 0.455, [82, 103, 124]);
-          strip(u, v, 0.682, 0.69, [82, 103, 124]);
-          strip(u, u + 0.008, 0.455, 0.682, [82, 103, 124]);
-          strip(v - 0.008, v, 0.455, 0.682, [82, 103, 124]);
-          strip(u + 0.008, v - 0.008, 0.455, 0.682, [155, 176, 197]);
-          if (slat && n > 0) strip(u, u + 0.004, 0.014, 0.072, [73, 95, 117], slat, 0.02);
-        }
-      }
+      // Slat metallic surfaces are part of the foil: no floating rectangular overlays.
       if (flap) {
         strip(0.012, 0.988, 0.721, 0.727, [68, 91, 115], flap);
         strip(0.012, 0.988, 0.982, 0.994, [190, 204, 217], aft || flap);
@@ -1026,7 +1025,7 @@ export function buildPlane(a, wireframe = false) {
       if (slat)
         for (const u of [0.22, 0.76]) {
           const st = interpolate(s, t, u),
-            anchor = at(st, 0.1, -1);
+            anchor = at(st, 0.105, -1);
           part = { ...slat, component: 'slat-track' };
           beam(
             [anchor[0], anchor[1] - 0.025, anchor[2] - 0.2],
