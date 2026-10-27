@@ -1009,6 +1009,7 @@ import {
       $$('[data-aircraft]').forEach((n) => n.setAttribute('aria-pressed', String(n === b)));
       modelText();
       fleetLog();
+      articulationText();
       if (motion)
         model.el.animate?.(
           [
@@ -8091,7 +8092,21 @@ import {
         flapsDown,
         flapMoving,
         en ? 'FLAPS' : 'ЗАКРЫЛКИ',
-        Math.round(smoothStep(flapPosition) * 32) + '°',
+        flapMoving
+          ? flapsDown
+            ? en
+              ? 'EXTENDING'
+              : 'ВЫПУСК'
+            : en
+              ? 'RETRACTING'
+              : 'УБОРКА'
+          : !flapsDown
+            ? '0'
+            : fleet[aircraftIndex].code === 'B77W'
+              ? '30'
+              : fleet[aircraftIndex].code === 'B737'
+                ? '40'
+                : 'FULL',
       ],
     ]) {
       const b = $('#' + id);
