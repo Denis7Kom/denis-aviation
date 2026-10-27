@@ -5,5 +5,5 @@ export const fleet = [
   { code: 'A333', name: 'Airbus A330-300', len: 63.7, span: 60.3, r: 2.82, winglet: 1.4 },
   { code: 'A35K', name: 'Airbus A350-1000', len: 73.8, span: 64.75, r: 2.98, winglet: 3.4 },
   { code: 'B737', name: 'Boeing 737-700', len: 33.63, span: 35.8, r: 1.88, winglet: 2.4 },
-  { code: 'A321', name: 'Airbus A321-200', len: 44.51, span: 34.1, r: 1.975, winglet: 0.8 },
+  { code: 'A321', name: 'Airbus A321-200', len: 44.51, span: 35.8, r: 1.975, winglet: 2.4 },
 ];

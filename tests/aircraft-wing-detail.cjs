@@ -21,6 +21,18 @@ for (const aircraft of vm.runInContext('fleet', ctx)) {
     wire = ctx.buildPlane(aircraft, true),
     geo = ctx.wingGeometry(aircraft);
   assert.equal(ctx.wingGeometry(aircraft), geo, 'wing profile is cached');
+  if (aircraft.code === 'A321') {
+    const base = geo.stations[5],
+      tip = geo.stations.at(-1);
+    assert(Math.abs(tip[1] - base[1] - 2.4) < 0.02, 'A321 Sharklet rises from wingtip');
+    assert(Math.abs(tip[0] * 2 - 35.8) < 0.01, 'A321 Sharklet span is consistent');
+    assert(tip[3] < base[3], 'Sharklet tapers toward the tip');
+    assert(
+      geo.stations.slice(5).every((station, i, list) => !i || station[1] > list[i - 1][1]),
+      'Sharklet bends upward smoothly',
+    );
+  }
+
   assert(wire.length < mesh.length * 0.6, 'wire mode omits fine skins and light fixtures');
   const parts = [...new Set(mesh.map((f) => f.part).filter(Boolean))];
   for (const sign of [-1, 1]) {
