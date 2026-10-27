@@ -712,6 +712,16 @@ import {
 
   // Animate rigid parts without rebuilding the airframe on every frame.
 
+  // A slow roll cycle: ailerons follow roll rate, not bank angle.
+  function flightMotion(time, enabled = true) {
+    if (!enabled) return { bank: 0, aileron: 0, elevator: 0 };
+    const phase = time / 4400,
+      bank = 0.055 * Math.sin(phase),
+      aileron = 0.12 * Math.cos(phase),
+      elevator = -0.055 * Math.sin(phase) ** 2;
+    return { bank, aileron, elevator };
+  }
+
   function articulatedPoint(p, part, a, gear = gearPosition, flaps = flapPosition) {
     if (!part || part.kind === 'glazing') return p;
     if (part.kind === 'fan') {
@@ -773,11 +783,11 @@ import {
               : speedbrakePosition
             : part.kind === 'elevator'
               ? typeof motion !== 'undefined' && motion
-                ? Math.sin(systemsClock / 3400) * 0.12
+                ? flightMotion(systemsClock).elevator
                 : 0
               : part.kind === 'aileron'
                 ? typeof motion !== 'undefined' && motion
-                  ? Math.sin(systemsClock / 2400) * part.sign * 0.14
+                  ? flightMotion(systemsClock).aileron * part.sign
                   : 0
                 : f,
         t =
@@ -947,9 +957,7 @@ import {
       sa = Math.sin(rot),
       pitch = detail === 'gear' ? -0.32 : detail === 'cockpit' ? 0.3 : 0.5,
       scale = Math.min(w / 94, h / 51) * visualZoom;
-    const bank = motion
-      ? Math.sin(systemsClock / 2400) * 0.025 + Math.sin(systemsClock / 4100) * 0.012
-      : 0;
+    const bank = flightMotion(systemsClock, motion).bank;
     function bankPoint(point) {
       return [
         point[0] * Math.cos(bank) - point[1] * Math.sin(bank),
@@ -8089,7 +8097,7 @@ import {
   }
   function updateModel(dt) {
     if (!model.visible) return;
-    systemsClock = (systemsClock + dt) % 167400;
+    systemsClock = (systemsClock + dt) % (Math.PI * 2 * 4400 * 6);
     fanSpeed += (0.0018 - fanSpeed) * (1 - Math.exp(-dt / 850));
     fanAngle = (fanAngle + fanSpeed * dt) % (Math.PI * 2);
     const approach = (value, target, step) =>

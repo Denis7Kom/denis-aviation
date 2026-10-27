@@ -2981,6 +2981,11 @@
       }
       c.globalAlpha = 1;
     }
+    function flightMotion(time, enabled = true) {
+      if (!enabled) return { bank: 0, aileron: 0, elevator: 0 };
+      const phase2 = time / 4400, bank2 = 0.055 * Math.sin(phase2), aileron = 0.12 * Math.cos(phase2), elevator = -0.055 * Math.sin(phase2) ** 2;
+      return { bank: bank2, aileron, elevator };
+    }
     function articulatedPoint(p, part, a, gear = gearPosition, flaps = flapPosition) {
       if (!part || part.kind === "glazing") return p;
       if (part.kind === "fan") {
@@ -3006,7 +3011,7 @@
       }
       if (part.kind === "flap" || part.kind === "slat" || part.kind === "spoiler" || part.kind === "aileron" || part.kind === "elevator") {
         const slat = part.kind === "slat", chord = part.chord ?? (slat ? 0.075 : 0.72);
-        const h = part.hinge, e = part.end, origin = slat ? wingGeometry(a).point(h, chord, part.sign, part.device === "krueger" ? -1 : 0) : [part.sign * h[0], h[1], h[2] + h[3] * chord], end = slat ? wingGeometry(a).point(e, chord, part.sign, part.device === "krueger" ? -1 : 0) : [part.sign * e[0], e[1], e[2] + e[3] * chord], axis = end.map((v, i) => v - origin[i]), n = Math.hypot(...axis), k = axis.map((v) => v / n), q = p.map((v, i) => v - origin[i]), control = part.kind === "spoiler" ? typeof speedbrakePosition === "undefined" ? 0 : speedbrakePosition : part.kind === "elevator" ? typeof motion !== "undefined" && motion ? Math.sin(systemsClock / 3400) * 0.12 : 0 : part.kind === "aileron" ? typeof motion !== "undefined" && motion ? Math.sin(systemsClock / 2400) * part.sign * 0.14 : 0 : f, t = part.sign * control * (part.kind === "spoiler" ? -45 : part.kind === "aileron" || part.kind === "elevator" ? 50 : part.deflection ?? (slat ? -16 : 32)) * D, co = Math.cos(t), si = Math.sin(t), dot = k.reduce((v, x, i) => v + x * q[i], 0), cross = [k[1] * q[2] - k[2] * q[1], k[2] * q[0] - k[0] * q[2], k[0] * q[1] - k[1] * q[0]];
+        const h = part.hinge, e = part.end, origin = slat ? wingGeometry(a).point(h, chord, part.sign, part.device === "krueger" ? -1 : 0) : [part.sign * h[0], h[1], h[2] + h[3] * chord], end = slat ? wingGeometry(a).point(e, chord, part.sign, part.device === "krueger" ? -1 : 0) : [part.sign * e[0], e[1], e[2] + e[3] * chord], axis = end.map((v, i) => v - origin[i]), n = Math.hypot(...axis), k = axis.map((v) => v / n), q = p.map((v, i) => v - origin[i]), control = part.kind === "spoiler" ? typeof speedbrakePosition === "undefined" ? 0 : speedbrakePosition : part.kind === "elevator" ? typeof motion !== "undefined" && motion ? flightMotion(systemsClock).elevator : 0 : part.kind === "aileron" ? typeof motion !== "undefined" && motion ? flightMotion(systemsClock).aileron * part.sign : 0 : f, t = part.sign * control * (part.kind === "spoiler" ? -45 : part.kind === "aileron" || part.kind === "elevator" ? 50 : part.deflection ?? (slat ? -16 : 32)) * D, co = Math.cos(t), si = Math.sin(t), dot = k.reduce((v, x, i) => v + x * q[i], 0), cross = [k[1] * q[2] - k[2] * q[1], k[2] * q[0] - k[0] * q[2], k[0] * q[1] - k[1] * q[0]];
         return q.map(
           (v, i) => origin[i] + v * co + cross[i] * si + k[i] * dot * (1 - co) + (part.kind === "spoiler" || part.kind === "aileron" || part.kind === "elevator" ? 0 : i === 2 ? (part.extension ?? (slat ? -(a.r * 0.12 + 0.12) : airframe(a).narrow ? 0.62 : 0.9)) * f * (slat ? (e[0] - h[0]) / Math.hypot(e[0] - h[0], e[2] - h[2]) : 1) : i === 1 ? (part.drop ?? (slat ? -0.1 : part.component === "aft-element" ? -0.09 : 0)) * f : slat ? -(part.extension || 0) * part.sign * (e[2] - h[2]) / Math.hypot(e[0] - h[0], e[2] - h[2]) * f : 0)
         );
@@ -3104,7 +3109,7 @@
       const c = begin(model);
       if (!c) return;
       const w = model.w, h = model.h, rot = visualAngle, ca = Math.cos(rot), sa = Math.sin(rot), pitch2 = detail === "gear" ? -0.32 : detail === "cockpit" ? 0.3 : 0.5, scale = Math.min(w / 94, h / 51) * visualZoom;
-      const bank2 = motion ? Math.sin(systemsClock / 2400) * 0.025 + Math.sin(systemsClock / 4100) * 0.012 : 0;
+      const bank2 = flightMotion(systemsClock, motion).bank;
       function bankPoint(point) {
         return [
           point[0] * Math.cos(bank2) - point[1] * Math.sin(bank2),
@@ -9984,7 +9989,7 @@
     }
     function updateModel(dt) {
       if (!model.visible) return;
-      systemsClock = (systemsClock + dt) % 167400;
+      systemsClock = (systemsClock + dt) % (Math.PI * 2 * 4400 * 6);
       fanSpeed += (18e-4 - fanSpeed) * (1 - Math.exp(-dt / 850));
       fanAngle = (fanAngle + fanSpeed * dt) % (Math.PI * 2);
       const approach = (value, target, step) => value < target ? Math.min(target, value + step) : Math.max(target, value - step);

@@ -11,6 +11,7 @@ for (const name of [
   'aircraftLightLayout',
   'buildPlane',
   'smoothStep',
+  'flightMotion',
   'articulatedPoint',
   'aircraftLampLevels',
 ])
@@ -47,6 +48,7 @@ for (const aircraft of vm.runInContext('fleet', ctx)) {
     slatAtZero,
     'slat stays retracted while rocking',
   );
+  ctx.systemsClock = 0;
   const movements = [-1, 1].map((sign) => {
     const part = parts.find((p) => p.kind === 'aileron' && p.sign === sign);
     const point = geo.point(part.end, 1, sign);
@@ -54,6 +56,17 @@ for (const aircraft of vm.runInContext('fleet', ctx)) {
     return moved[1] - point[1];
   });
   assert(movements[0] * movements[1] < 0, 'ailerons move in opposite directions');
+  assert(
+    movements[0] > 0 && movements[1] < 0,
+    'ailerons drive the same direction as increasing bank',
+  );
+  ctx.systemsClock = Math.PI * 2200;
+  for (const sign of [-1, 1]) {
+    const part = parts.find((p) => p.kind === 'aileron' && p.sign === sign);
+    const point = geo.point(part.end, 1, sign);
+    const moved = ctx.articulatedPoint(point, part, aircraft, 1, 0);
+    assert(Math.abs(moved[1] - point[1]) < 1e-8, 'ailerons neutral when roll rate is zero');
+  }
   assert(
     parts.some((p) => p.kind === 'elevator'),
     'tail elevators are articulated',
