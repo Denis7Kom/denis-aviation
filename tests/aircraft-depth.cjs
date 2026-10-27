@@ -80,6 +80,11 @@ for (const kind of ['spoiler', 'aileron', 'elevator']) {
   });
   assert(calls > 0, `${kind} must be transformed in software rendering`);
 }
+const banked = { ...options, roll: 0.18 };
+renderer.draw({ drawImage() {} }, [red], banked);
+const staticImage = image.slice();
+renderer.draw({ drawImage() {} }, [{ ...red, part: { kind: 'slat' } }], banked);
+assert.deepEqual(image, staticImage, 'bank moves fixed wing and stationary slat identically');
 console.log(
   'PASS: intersecting surfaces occlude per pixel, submission order has no effect, transparent background, WebGL-free fallback',
 );

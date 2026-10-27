@@ -74,8 +74,10 @@
           const v = mesh.vertices[i];
           if (v.gear && o.gear <= 0.005) continue;
           const p = v.dynamic ? o.transform(v.p, v.part) : v.p,
-            x = p[0] - o.focus[0],
-            y = p[1] - o.focus[1],
+            co = Math.cos(o.roll || 0),
+            si = Math.sin(o.roll || 0),
+            x = p[0] * co - p[1] * si - o.focus[0],
+            y = p[0] * si + p[1] * co - o.focus[1],
             z = p[2] - o.focus[2],
             xx = x * ca + z * sa,
             zz = -x * sa + z * ca,
@@ -185,7 +187,13 @@
           const f = vertices[i];
           if (f.gear && o.gear <= 0.005) continue;
           const p = f.dynamic ? o.transform(f.p, f.part) : f.p,
-            v = p.map((x, i) => x - o.focus[i]),
+            co = Math.cos(o.roll || 0),
+            si = Math.sin(o.roll || 0),
+            v = [
+              p[0] * co - p[1] * si - o.focus[0],
+              p[0] * si + p[1] * co - o.focus[1],
+              p[2] - o.focus[2],
+            ],
             x = v[0] * ca + v[2] * sa,
             z = -v[0] * sa + v[2] * ca,
             d = 155 + z * cp - v[1] * sp,
@@ -198,7 +206,7 @@
             );
             n = np.map((x, i) => x - p[i]);
           }
-          n = normalize(n);
+          n = normalize([n[0] * co - n[1] * si, n[0] * si + n[1] * co, n[2]]);
           if (n.reduce((s, x, i) => s + x * eye[i], 0) < 0) n = n.map((x) => -x);
           const key = Math.max(0, (-0.4 * n[0] + 0.85 * n[1] - 0.5 * n[2]) / 1.064),
             fill = Math.max(0, (0.75 * n[0] + 0.25 * n[1] + 0.4 * n[2]) / 0.887),
@@ -275,13 +283,15 @@
       uniform vec2 viewport;
       uniform vec2 rotation;
       uniform vec2 elevation;
+      uniform vec2 roll;
       uniform float scale;
       varying vec3 vNormal;
       varying vec3 vColor;
       varying vec3 vView;
       varying float vMaterial;
       void main() {
-        vec3 p = position - focus;
+        vec3 rotated = vec3(position.x * roll.x - position.y * roll.y, position.x * roll.y + position.y * roll.x, position.z);
+        vec3 p = rotated - focus;
         float x = p.x * rotation.x + p.z * rotation.y;
         float z = -p.x * rotation.y + p.z * rotation.x;
         float y = p.y * elevation.x + z * elevation.y;
@@ -290,12 +300,12 @@
         gl_Position = vec4(x * scale * 310.0 / viewport.x,
           y * scale * 310.0 / viewport.y + .04 * w,
           (320.0 + 20.0) / (320.0 - 20.0) * w - 2.0 * 320.0 * 20.0 / (320.0 - 20.0), w);
-        vNormal = normal;
+        vNormal = vec3(normal.x * roll.x - normal.y * roll.y, normal.x * roll.y + normal.y * roll.x, normal.z);
         vColor = color;
         vMaterial = material;
         vec3 eye = focus + vec3(rotation.y * elevation.x,
           elevation.y, -rotation.x * elevation.x) * 155.0;
-        vView = eye - position;
+        vView = eye - rotated;
       }`;
     const fragmentSource = `
       precision mediump float;
@@ -347,7 +357,7 @@
       gl.getAttribLocation(program, name),
     );
     const uniforms = Object.fromEntries(
-      ['focus', 'viewport', 'rotation', 'elevation', 'scale'].map((name) => [
+      ['focus', 'viewport', 'rotation', 'elevation', 'roll', 'scale'].map((name) => [
         name,
         gl.getUniformLocation(program, name),
       ]),
@@ -467,6 +477,7 @@
         gl.uniform2f(uniforms.viewport, width, height);
         gl.uniform2f(uniforms.rotation, Math.cos(angle), Math.sin(angle));
         gl.uniform2f(uniforms.elevation, Math.cos(pitch), Math.sin(pitch));
+        gl.uniform2f(uniforms.roll, Math.cos(options.roll || 0), Math.sin(options.roll || 0));
         gl.uniform1f(uniforms.scale, scale);
         if (source !== faces) {
           if (mesh) Object.values(mesh).forEach((g) => gl.deleteBuffer(g.buffer));

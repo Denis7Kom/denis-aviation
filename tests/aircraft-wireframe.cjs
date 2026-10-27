@@ -120,6 +120,14 @@ for (const kind of ['spoiler', 'aileron', 'elevator']) {
   renderer.draw(context, [{ p: moving[0].p, part: { kind } }], extended);
   assert.equal(transforms, 3, `${kind} vertices must be animated in wireframe`);
 }
+// A stationary slat and the wing beneath it must follow exactly the same bank.
+const sample = [{ p: moving[0].p }];
+moves = [];
+renderer.draw(context, sample, { ...options, roll: 0.18 });
+const fixedProjection = moves.map((p) => p.slice());
+moves = [];
+renderer.draw(context, [{ p: moving[0].p, part: { kind: 'slat' } }], { ...options, roll: 0.18 });
+assert.deepEqual(moves, fixedProjection, 'bank rotates wing and stowed slat together');
 console.log(
   'PASS: shared edges/vertices deduplicated, one stroke, no fill, cached topology, camera rotation, hidden gear/decals, one transform per moving vertex',
 );

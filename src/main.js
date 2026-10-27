@@ -1004,10 +1004,11 @@ import {
       dpr: model.d,
       angle: rot,
       pitch,
+      roll: bank,
       scale,
       focus: visualFocus,
       gear: gearPosition,
-      transform: (p, part) => bankPoint(articulatedPoint(p, part, fleet[aircraftIndex])),
+      transform: (p, part) => articulatedPoint(p, part, fleet[aircraftIndex]),
     });
     model.el.dataset.renderer = rendered ? renderer.mode : 'canvas';
     if (!rendered) {
