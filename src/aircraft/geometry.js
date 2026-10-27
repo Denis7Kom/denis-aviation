@@ -877,7 +877,7 @@ export function buildPlane(a, wireframe = false) {
   }
   function wingFoil(stations, sign, color) {
     const geo = wingGeometry(a),
-      fractions = wireframe ? [0, 0.075, 0.38, 0.72, 0.86, 1] : geo.fractions,
+      fractions = wireframe ? [0, 0.075, 0.38, 0.56, 0.7, 0.72, 0.86, 1] : geo.fractions,
       doubleSlotted = a.code === 'B737' || a.code === 'A321',
       leadingLast = spec.narrow || a.code === 'B77W' ? 3 : 4,
       at = (s, f, side = 1) => geo.point(s, f, sign, side),
@@ -1058,17 +1058,26 @@ export function buildPlane(a, wireframe = false) {
       const s = stations[k - 1],
         t = stations[k],
         flap = k <= 2 ? { kind: 'flap', sign, hinge: s, end: t } : null,
+        aileron = k === 3 ? { kind: 'aileron', sign, hinge: s, end: t, chord: 0.72 } : null,
+        spoiler = k <= 2 ? { kind: 'spoiler', sign, hinge: s, end: t, chord: 0.56 } : null,
         aft =
           flap && doubleSlotted
             ? { ...flap, component: 'aft-element', chord: 0.86, deflection: 43, extension: 1.12 }
             : null,
-        surfacePart = (f) => (f >= 0.86 && aft ? aft : f >= 0.72 ? flap : null);
+        surfacePart = (f, side) =>
+          side > 0 && spoiler && f >= 0.56 && f < 0.7
+            ? spoiler
+            : f >= 0.86 && aft
+              ? aft
+              : f >= 0.72
+                ? flap || aileron
+                : null;
       for (let j = 1; j < fractions.length; j++) {
         const lo = fractions[j - 1],
           hi = fractions[j];
         if (hi <= 0.075 && k <= leadingLast) continue;
-        part = surfacePart((lo + hi) / 2);
         for (const side of [-1, 1]) {
+          part = surfacePart((lo + hi) / 2, side);
           const points = [at(s, lo, side), at(t, lo, side), at(t, hi, side), at(s, hi, side)],
             normals = [s, t, t, s].map((station, i) => {
               const f = i < 2 ? lo : hi,
@@ -1096,7 +1105,7 @@ export function buildPlane(a, wireframe = false) {
       // Close both sides of every moving element. Their exposed cove is visible
       // during travel rather than showing through an open, paper-thin surface.
       for (const [lo, hi, moving] of [
-        [0.72, aft ? 0.86 : 1, flap],
+        [0.72, aft ? 0.86 : 1, flap || aileron],
         ...(aft ? [[0.86, 1, aft]] : []),
       ]) {
         if (!moving) continue;

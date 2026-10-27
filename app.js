@@ -1111,7 +1111,7 @@
         }
     }
     function wingFoil(stations2, sign, color) {
-      const geo = wingGeometry(a), fractions2 = wireframe ? [0, 0.075, 0.38, 0.72, 0.86, 1] : geo.fractions, doubleSlotted = a.code === "B737" || a.code === "A321", leadingLast = spec.narrow || a.code === "B77W" ? 3 : 4, at = (s, f, side = 1) => geo.point(s, f, sign, side), interpolate = (s, t, u) => s.map((v, i) => v + (t[i] - v) * u);
+      const geo = wingGeometry(a), fractions2 = wireframe ? [0, 0.075, 0.38, 0.56, 0.7, 0.72, 0.86, 1] : geo.fractions, doubleSlotted = a.code === "B737" || a.code === "A321", leadingLast = spec.narrow || a.code === "B77W" ? 3 : 4, at = (s, f, side = 1) => geo.point(s, f, sign, side), interpolate = (s, t, u) => s.map((v, i) => v + (t[i] - v) * u);
       const sectionAt = (x) => {
         let k = 1;
         while (k < stations2.length - 1 && x > stations2[k][0]) k++;
@@ -1260,12 +1260,12 @@
         }
       }
       for (let k = 1; k < stations2.length; k++) {
-        const s = stations2[k - 1], t = stations2[k], flap = k <= 2 ? { kind: "flap", sign, hinge: s, end: t } : null, aft2 = flap && doubleSlotted ? { ...flap, component: "aft-element", chord: 0.86, deflection: 43, extension: 1.12 } : null, surfacePart = (f) => f >= 0.86 && aft2 ? aft2 : f >= 0.72 ? flap : null;
+        const s = stations2[k - 1], t = stations2[k], flap = k <= 2 ? { kind: "flap", sign, hinge: s, end: t } : null, aileron = k === 3 ? { kind: "aileron", sign, hinge: s, end: t, chord: 0.72 } : null, spoiler = k <= 2 ? { kind: "spoiler", sign, hinge: s, end: t, chord: 0.56 } : null, aft2 = flap && doubleSlotted ? { ...flap, component: "aft-element", chord: 0.86, deflection: 43, extension: 1.12 } : null, surfacePart = (f, side) => side > 0 && spoiler && f >= 0.56 && f < 0.7 ? spoiler : f >= 0.86 && aft2 ? aft2 : f >= 0.72 ? flap || aileron : null;
         for (let j = 1; j < fractions2.length; j++) {
           const lo = fractions2[j - 1], hi = fractions2[j];
           if (hi <= 0.075 && k <= leadingLast) continue;
-          part = surfacePart((lo + hi) / 2);
           for (const side of [-1, 1]) {
+            part = surfacePart((lo + hi) / 2, side);
             const points = [at(s, lo, side), at(t, lo, side), at(t, hi, side), at(s, hi, side)], normals = [s, t, t, s].map((station, i) => {
               const f = i < 2 ? lo : hi, left = at(station, Math.max(0, f - 1e-3), side), right = at(station, Math.min(1, f + 1e-3), side), chord = right.map((v, n2) => v - left[n2]), span = at(t, f, side).map((v, n2) => v - at(s, f, side)[n2]), n = [
                 span[1] * chord[2] - span[2] * chord[1],
@@ -1284,7 +1284,7 @@
           }
         }
         for (const [lo, hi, moving] of [
-          [0.72, aft2 ? 0.86 : 1, flap],
+          [0.72, aft2 ? 0.86 : 1, flap || aileron],
           ...aft2 ? [[0.86, 1, aft2]] : []
         ]) {
           if (!moving) continue;
@@ -2503,7 +2503,7 @@
     ];
     let flightIndex = 0, routeProgress = 0, routePlaying = false, routeInView = false, routeManualPause = false, routeArrivalHold = 0, routeLongitude = 90, routeLatitude = 45;
     let fanAngle = 0, fanSpeed = 0, systemsClock = 0, lightsOn = true;
-    let gearDown = false, gearPosition = 0, flapsDown = false, flapPosition = 0, autoTurnResume = 0, detail = "all", zoom = 1, visualZoom = 1, visualFocus = [0, 0, 0], visualAngle = 26 * D;
+    let gearDown = false, gearPosition = 0, flapTarget = 0, flapPosition = 0, speedbrakeTarget = 0, speedbrakePosition = 0, autoTurnResume = 0, detail = "all", zoom = 1, visualZoom = 1, visualFocus = [0, 0, 0], visualAngle = 26 * D;
     let pitch = 0, targetPitch = 0, airspeed = 250, targetSpeed = 250, altitude = 12e3, heading = 280, verticalSpeed = 0;
     let simRate = 1, ownEast = 0, ownNorth = 0, trailClock = 0, radarRange = 5;
     const radarTraffic = [
@@ -2985,11 +2985,11 @@
           z + qy * Math.sin(t) + qz * Math.cos(t)
         ];
       }
-      if (part.kind === "flap" || part.kind === "slat") {
+      if (part.kind === "flap" || part.kind === "slat" || part.kind === "spoiler" || part.kind === "aileron") {
         const slat = part.kind === "slat", chord = part.chord ?? (slat ? 0.075 : 0.72);
-        const h = part.hinge, e = part.end, origin = slat ? wingGeometry(a).point(h, chord, part.sign, part.device === "krueger" ? -1 : 0) : [part.sign * h[0], h[1], h[2] + h[3] * chord], end = slat ? wingGeometry(a).point(e, chord, part.sign, part.device === "krueger" ? -1 : 0) : [part.sign * e[0], e[1], e[2] + e[3] * chord], axis = end.map((v, i) => v - origin[i]), n = Math.hypot(...axis), k = axis.map((v) => v / n), q = p.map((v, i) => v - origin[i]), t = part.sign * f * (part.deflection ?? (slat ? -16 : 32)) * D, co = Math.cos(t), si = Math.sin(t), dot = k.reduce((v, x, i) => v + x * q[i], 0), cross = [k[1] * q[2] - k[2] * q[1], k[2] * q[0] - k[0] * q[2], k[0] * q[1] - k[1] * q[0]];
+        const h = part.hinge, e = part.end, origin = slat ? wingGeometry(a).point(h, chord, part.sign, part.device === "krueger" ? -1 : 0) : [part.sign * h[0], h[1], h[2] + h[3] * chord], end = slat ? wingGeometry(a).point(e, chord, part.sign, part.device === "krueger" ? -1 : 0) : [part.sign * e[0], e[1], e[2] + e[3] * chord], axis = end.map((v, i) => v - origin[i]), n = Math.hypot(...axis), k = axis.map((v) => v / n), q = p.map((v, i) => v - origin[i]), control = part.kind === "spoiler" ? typeof speedbrakePosition === "undefined" ? 0 : speedbrakePosition : part.kind === "aileron" ? typeof motion !== "undefined" && motion ? Math.sin(systemsClock / 2400) * part.sign * 0.14 : 0 : f, t = part.sign * control * (part.kind === "spoiler" ? -45 : part.kind === "aileron" ? 28 : part.deflection ?? (slat ? -16 : 32)) * D, co = Math.cos(t), si = Math.sin(t), dot = k.reduce((v, x, i) => v + x * q[i], 0), cross = [k[1] * q[2] - k[2] * q[1], k[2] * q[0] - k[0] * q[2], k[0] * q[1] - k[1] * q[0]];
         return q.map(
-          (v, i) => origin[i] + v * co + cross[i] * si + k[i] * dot * (1 - co) + (i === 2 ? (part.extension ?? (slat ? -(a.r * 0.12 + 0.12) : airframe(a).narrow ? 0.62 : 0.9)) * f * (slat ? (e[0] - h[0]) / Math.hypot(e[0] - h[0], e[2] - h[2]) : 1) : i === 1 ? (part.drop ?? (slat ? -0.1 : part.component === "aft-element" ? -0.09 : 0)) * f : slat ? -(part.extension || 0) * part.sign * (e[2] - h[2]) / Math.hypot(e[0] - h[0], e[2] - h[2]) * f : 0)
+          (v, i) => origin[i] + v * co + cross[i] * si + k[i] * dot * (1 - co) + (part.kind === "spoiler" || part.kind === "aileron" ? 0 : i === 2 ? (part.extension ?? (slat ? -(a.r * 0.12 + 0.12) : airframe(a).narrow ? 0.62 : 0.9)) * f * (slat ? (e[0] - h[0]) / Math.hypot(e[0] - h[0], e[2] - h[2]) : 1) : i === 1 ? (part.drop ?? (slat ? -0.1 : part.component === "aft-element" ? -0.09 : 0)) * f : slat ? -(part.extension || 0) * part.sign * (e[2] - h[2]) / Math.hypot(e[0] - h[0], e[2] - h[2]) * f : 0)
         );
       }
       return p;
@@ -3085,14 +3085,37 @@
       const c = begin(model);
       if (!c) return;
       const w = model.w, h = model.h, rot = visualAngle, ca = Math.cos(rot), sa = Math.sin(rot), pitch2 = detail === "gear" ? -0.32 : detail === "cockpit" ? 0.3 : 0.5, scale = Math.min(w / 94, h / 51) * visualZoom;
+      const bank2 = motion ? Math.sin(systemsClock / 2400) * 0.025 + Math.sin(systemsClock / 4100) * 0.012 : 0;
+      function bankPoint(point) {
+        return [
+          point[0] * Math.cos(bank2) - point[1] * Math.sin(bank2),
+          point[0] * Math.sin(bank2) + point[1] * Math.cos(bank2),
+          point[2]
+        ];
+      }
       function project(point) {
-        const p = point.map((v, i) => v - visualFocus[i]);
+        const p = bankPoint(point).map((v, i) => v - visualFocus[i]);
         const x = p[0] * ca + p[2] * sa, z = -p[0] * sa + p[2] * ca, depth = z * Math.cos(pitch2) - p[1] * Math.sin(pitch2), perspective = 155 / (155 + depth);
         return [
           w / 2 + x * scale * perspective,
           h * 0.48 + (-p[1] * Math.cos(pitch2) - z * Math.sin(pitch2)) * scale * perspective,
           depth
         ];
+      }
+      if (motion) {
+        c.save();
+        c.strokeStyle = "rgba(124,185,235,0.16)";
+        c.lineWidth = 0.8;
+        for (let i = 0; i < 14; i++) {
+          const x = Math.sin(i * 83.1) * 39, y = Math.cos(i * 27.7) * 17;
+          const z = (systemsClock * 0.022 + i * 13) % 100 - 50;
+          const a = project([x, y, z]), b = project([x, y, z + 5]);
+          c.beginPath();
+          c.moveTo(a[0], a[1]);
+          c.lineTo(b[0], b[1]);
+          c.stroke();
+        }
+        c.restore();
       }
       c.strokeStyle = "#6baaff1a";
       c.lineWidth = 0.7;
@@ -3114,7 +3137,7 @@
         scale,
         focus: visualFocus,
         gear: gearPosition,
-        transform: (p, part) => articulatedPoint(p, part, fleet[aircraftIndex])
+        transform: (p, part) => bankPoint(articulatedPoint(p, part, fleet[aircraftIndex]))
       });
       model.el.dataset.renderer = rendered ? renderer.mode : "canvas";
       if (!rendered) {
@@ -3158,6 +3181,7 @@
         $$("[data-aircraft]").forEach((n) => n.setAttribute("aria-pressed", String(n === b)));
         modelText();
         fleetLog();
+        configureFlaps();
         articulationText();
         if (motion)
           model.el.animate?.(
@@ -9930,7 +9954,8 @@
     }
     function snapModel() {
       gearPosition = gearDown ? 1 : 0;
-      flapPosition = flapsDown ? 1 : 0;
+      flapPosition = flapTarget;
+      speedbrakePosition = speedbrakeTarget;
       articulationText();
       const t = modelTarget();
       visualZoom = t.zoom * zoom;
@@ -9944,7 +9969,8 @@
       fanAngle = (fanAngle + fanSpeed * dt) % (Math.PI * 2);
       const approach = (value, target, step) => value < target ? Math.min(target, value + step) : Math.max(target, value - step);
       gearPosition = approach(gearPosition, gearDown ? 1 : 0, dt / 3200);
-      flapPosition = approach(flapPosition, flapsDown ? 1 : 0, dt / 2600);
+      flapPosition = approach(flapPosition, flapTarget, dt / 2600);
+      speedbrakePosition = approach(speedbrakePosition, speedbrakeTarget, dt / 1800);
       articulationText();
       if (!dragging && detail === "all" && phase >= autoTurnResume) {
         angle = (angle + dt * 32e-6 + Math.PI) % (Math.PI * 2) - Math.PI;
@@ -9972,7 +9998,7 @@
       drawPlane();
     });
     function articulationText() {
-      const en = lang === "en", gearMoving = Math.abs(gearPosition - (gearDown ? 1 : 0)) > 1e-3, flapMoving = Math.abs(flapPosition - (flapsDown ? 1 : 0)) > 1e-3;
+      const en = lang === "en", gearMoving = Math.abs(gearPosition - (gearDown ? 1 : 0)) > 1e-3;
       for (const [id, on, moving, label, state] of [
         [
           "gear-toggle",
@@ -9980,13 +10006,6 @@
           gearMoving,
           en ? "GEAR" : "ШАССИ",
           gearMoving ? gearDown ? en ? "EXTENDING" : "ВЫПУСК" : en ? "RETRACTING" : "УБОРКА" : gearDown ? en ? "DOWN" : "ВЫПУЩЕНЫ" : en ? "UP" : "УБРАНЫ"
-        ],
-        [
-          "flaps-toggle",
-          flapsDown,
-          flapMoving,
-          en ? "FLAPS" : "ЗАКРЫЛКИ",
-          flapMoving ? flapsDown ? en ? "EXTENDING" : "ВЫПУСК" : en ? "RETRACTING" : "УБОРКА" : !flapsDown ? "0" : fleet[aircraftIndex].code === "B77W" ? "30" : fleet[aircraftIndex].code === "B737" ? "40" : "FULL"
         ]
       ]) {
         const b = $("#" + id);
@@ -10004,12 +10023,31 @@
       articulationText();
       drawPlane();
     });
-    $("#flaps-toggle").addEventListener("click", () => {
-      flapsDown = !flapsDown;
+    function configureFlaps() {
+      const settings = fleet[aircraftIndex].code === "B737" ? ["0", "1", "2", "5", "10", "15", "25", "30", "40"] : fleet[aircraftIndex].code === "B77W" ? ["0", "1", "5", "15", "20", "25", "30"] : ["0", "1", "2", "3", "FULL"];
+      const select = $("#flaps-select");
+      select.replaceChildren(
+        ...settings.map((name, i) => {
+          const option = document.createElement("option");
+          option.value = String(i / (settings.length - 1));
+          option.textContent = name;
+          return option;
+        })
+      );
+      flapTarget = 0;
+      select.value = "0";
+    }
+    $("#flaps-select").addEventListener("change", (event) => {
+      flapTarget = Number(event.target.value);
       if (!motion) snapModel();
-      articulationText();
       drawPlane();
     });
+    $("#speedbrake-select").addEventListener("change", (event) => {
+      speedbrakeTarget = Number(event.target.value);
+      if (!motion) snapModel();
+      drawPlane();
+    });
+    configureFlaps();
     $("#lights-toggle").addEventListener("click", () => {
       lightsOn = !lightsOn;
       articulationText();

@@ -22,6 +22,20 @@ for (const aircraft of vm.runInContext('fleet', ctx)) {
   assert.equal(ctx.wingGeometry(aircraft), geo, 'wing profile is cached');
   assert(wire.length < mesh.length * 0.6, 'wire mode omits fine skins and light fixtures');
   const parts = [...new Set(mesh.map((f) => f.part).filter(Boolean))];
+  for (const sign of [-1, 1]) {
+    const spoiler = parts.find((p) => p.kind === 'spoiler' && p.sign === sign);
+    const aileron = parts.find((p) => p.kind === 'aileron' && p.sign === sign);
+    assert(spoiler && aileron, 'each wing has moving spoiler and aileron surfaces');
+    const point = geo.point(spoiler.hinge, 0.7, sign);
+    ctx.speedbrakePosition = 0;
+    const stowed = ctx.articulatedPoint(point, spoiler, aircraft, 1, 0);
+    ctx.speedbrakePosition = 0.5;
+    const half = ctx.articulatedPoint(point, spoiler, aircraft, 1, 0);
+    ctx.speedbrakePosition = 1;
+    const full = ctx.articulatedPoint(point, spoiler, aircraft, 1, 0);
+    assert(half[1] > stowed[1] && full[1] > half[1], 'spoiler rises through half and full');
+  }
+  ctx.speedbrakePosition = 0;
   const aft = parts.find((p) => p.component === 'aft-element');
   assert.equal(
     Boolean(aft),
