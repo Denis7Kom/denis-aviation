@@ -5,7 +5,16 @@
   // Build and deduplicate the topology once, then project each vertex once.
   window.createAircraftWireframe = function () {
     const cache = new WeakMap(),
-      moving = new Set(['mainGear', 'noseGear', 'gearDoor', 'flap', 'slat']);
+      moving = new Set([
+        'mainGear',
+        'noseGear',
+        'gearDoor',
+        'flap',
+        'slat',
+        'spoiler',
+        'aileron',
+        'elevator',
+      ]);
     const omitted = new Set(['decal', 'window', 'glazing', 'fan']);
     function compile(faces) {
       const vertices = [],
@@ -100,7 +109,17 @@
       projected = null,
       pixels = null,
       depth = null;
-    const moving = new Set(['mainGear', 'noseGear', 'gearDoor', 'flap', 'slat', 'fan']);
+    const moving = new Set([
+      'mainGear',
+      'noseGear',
+      'gearDoor',
+      'flap',
+      'slat',
+      'spoiler',
+      'aileron',
+      'elevator',
+      'fan',
+    ]);
     const normalize = (v) => {
       const n = Math.hypot(...v) || 1;
       return v.map((x) => x / n);
@@ -333,7 +352,17 @@
         gl.getUniformLocation(program, name),
       ]),
     );
-    const moving = new Set(['mainGear', 'noseGear', 'gearDoor', 'flap', 'slat', 'fan']);
+    const moving = new Set([
+      'mainGear',
+      'noseGear',
+      'gearDoor',
+      'flap',
+      'slat',
+      'spoiler',
+      'aileron',
+      'elevator',
+      'fan',
+    ]);
     const cross = (a, b) => [
       a[1] * b[2] - a[2] * b[1],
       a[2] * b[0] - a[0] * b[2],

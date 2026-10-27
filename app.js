@@ -1546,17 +1546,32 @@
       const stations2 = wingGeometry(a).stations;
       foil(stations2, sign, wingColor, true);
       if (a.code === "A321") {
-        const q = stations2.at(-1);
+        const q = stations2.at(-1), point = (dx, y, z2) => [sign * (q[0] + dx), q[1] + y, q[2] + z2], fence = [
+          [-0.018, -0.08, 0.03],
+          [0.06, 0.67, 0.3],
+          [0.06, 0.65, 0.56],
+          [-0.018, 0.06, q[3] * 0.95],
+          [0.015, -0.45, 0.62],
+          [0.015, -0.48, 0.4]
+        ];
+        part = null;
         for (const side of [-1, 1])
           add(
-            [
-              [sign * (q[0] + side * 0.025), q[1] + 0.72, q[2] + 0.06],
-              [sign * (q[0] + side * 0.025), q[1] + 0.12, q[2] + q[3]],
-              [sign * (q[0] + side * 0.025), q[1] - 0.46, q[2] + 0.4],
-              [sign * (q[0] + side * 0.025), q[1], q[2] - 0.03]
-            ],
-            [142, 170, 201]
+            fence.map(([x, y, z2]) => point(x + side * 0.018, y, z2)),
+            [145, 171, 197]
           );
+        for (let i = 0; i < fence.length; i++) {
+          const a2 = fence[i], b = fence[(i + 1) % fence.length];
+          add(
+            [
+              point(a2[0] - 0.018, a2[1], a2[2]),
+              point(b[0] - 0.018, b[1], b[2]),
+              point(b[0] + 0.018, b[1], b[2]),
+              point(a2[0] + 0.018, a2[1], a2[2])
+            ],
+            [106, 132, 157]
+          );
+        }
       }
       foil(
         spec.stabilizer.map((s) => [s[0], s[1], half - s[2], s[3], s[4]]),

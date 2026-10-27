@@ -69,6 +69,17 @@ const first = image.slice();
 renderer.draw({ drawImage() {} }, [blue, red], options);
 assert.deepEqual(image, first, 'depth occlusion is independent of draw order');
 assert.equal(sample(0, 0)[3], 0, 'background remains transparent');
+for (const kind of ['spoiler', 'aileron', 'elevator']) {
+  let calls = 0;
+  renderer.draw({ drawImage() {} }, [{ ...red, part: { kind } }], {
+    ...options,
+    transform: (p) => {
+      calls++;
+      return p;
+    },
+  });
+  assert(calls > 0, `${kind} must be transformed in software rendering`);
+}
 console.log(
   'PASS: intersecting surfaces occlude per pixel, submission order has no effect, transparent background, WebGL-free fallback',
 );

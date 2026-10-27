@@ -115,6 +115,11 @@ renderer.draw(context, moving, extended);
 assert.equal(transforms, 3, 'each moving vertex transformed only once');
 assert.equal(moves.length, 3);
 assert(moves.flat().every(Number.isFinite));
+for (const kind of ['spoiler', 'aileron', 'elevator']) {
+  transforms = 0;
+  renderer.draw(context, [{ p: moving[0].p, part: { kind } }], extended);
+  assert.equal(transforms, 3, `${kind} vertices must be animated in wireframe`);
+}
 console.log(
   'PASS: shared edges/vertices deduplicated, one stroke, no fill, cached topology, camera rotation, hidden gear/decals, one transform per moving vertex',
 );

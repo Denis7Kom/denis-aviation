@@ -1271,17 +1271,36 @@ export function buildPlane(a, wireframe = false) {
     const stations = wingGeometry(a).stations;
     foil(stations, sign, wingColor, true);
     if (a.code === 'A321') {
-      const q = stations.at(-1);
+      // Classic A320-family wingtip fence: two thin blades, one above and one below.
+      const q = stations.at(-1),
+        point = (dx, y, z) => [sign * (q[0] + dx), q[1] + y, q[2] + z],
+        fence = [
+          [-0.018, -0.08, 0.03],
+          [0.06, 0.67, 0.3],
+          [0.06, 0.65, 0.56],
+          [-0.018, 0.06, q[3] * 0.95],
+          [0.015, -0.45, 0.62],
+          [0.015, -0.48, 0.4],
+        ];
+      part = null;
       for (const side of [-1, 1])
         add(
-          [
-            [sign * (q[0] + side * 0.025), q[1] + 0.72, q[2] + 0.06],
-            [sign * (q[0] + side * 0.025), q[1] + 0.12, q[2] + q[3]],
-            [sign * (q[0] + side * 0.025), q[1] - 0.46, q[2] + 0.4],
-            [sign * (q[0] + side * 0.025), q[1], q[2] - 0.03],
-          ],
-          [142, 170, 201],
+          fence.map(([x, y, z]) => point(x + side * 0.018, y, z)),
+          [145, 171, 197],
         );
+      for (let i = 0; i < fence.length; i++) {
+        const a = fence[i],
+          b = fence[(i + 1) % fence.length];
+        add(
+          [
+            point(a[0] - 0.018, a[1], a[2]),
+            point(b[0] - 0.018, b[1], b[2]),
+            point(b[0] + 0.018, b[1], b[2]),
+            point(a[0] + 0.018, a[1], a[2]),
+          ],
+          [106, 132, 157],
+        );
+      }
     }
     foil(
       spec.stabilizer.map((s) => [s[0], s[1], half - s[2], s[3], s[4]]),
