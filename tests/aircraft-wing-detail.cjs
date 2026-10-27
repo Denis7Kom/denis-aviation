@@ -64,45 +64,53 @@ for (const aircraft of vm.runInContext('fleet', ctx)) {
     const n = lamp.housingNormal;
     assert(n && Math.abs(Math.hypot(...n) - 1) < 1e-9, 'wing lights use a physical surface normal');
   }
-  const darkPanels = mesh.filter(
-    (f) => f.part?.marking === 'wing-panel' && f.color.join(',') === '82,103,124',
+  assert(
+    !mesh.some((f) => f.part?.marking === 'wing-panel' && f.color.join(',') === '82,103,124'),
+    'decorative spoiler rectangles are absent',
   );
-  assert.equal(darkPanels.length, 0, 'remove non-aircraft rectangular wing tiles');
-  assert.equal(
-    mesh.filter((f) => f.part?.marking === 'wing-panel' && f.color.join(',') === '155,176,197')
-      .length,
-    0,
-    'remove raised square panel fills',
-  );
-  for (const slat of parts.filter((p) => p.kind === 'slat' && !p.component)) {
-    assert.equal(slat.chord, 0.13, 'slat uses a substantial curved leading-edge chord');
-    const point = geo.point(slat.hinge, 0, slat.sign);
-    const deployed = ctx.articulatedPoint(point, slat, aircraft, 1, 1);
-    assert(deployed[2] < point[2] - 0.09, 'slat moves forward');
-    assert(deployed[1] < point[1] - 0.09, 'slat rotates down');
-    assert(
-      ctx
-        .articulatedPoint(point, slat, aircraft, 1, 0)
-        .every((v, i) => Math.abs(v - point[i]) < 1e-9),
-      'slat retracts flush',
-    );
-  }
+  const leading = parts.filter((p) => p.kind === 'slat' && !p.component && p.sign === 1);
+  const count = (kind) => leading.filter((p) => p.device === kind).length;
+  if (aircraft.code === 'B737') {
+    assert.equal(count('slat'), 4);
+    assert.equal(count('krueger'), 2);
+  } else if (aircraft.code === 'A321') assert.equal(count('slat'), 5);
+  else if (aircraft.code === 'A35K') {
+    assert.equal(count('slat'), 6);
+    assert.equal(count('droop'), 1);
+  } else assert.equal(count('slat'), 7);
   for (const face of mesh.filter(
-    (f) => f.part?.marking === 'wing-panel' && f.color.join(',') === '155,176,197',
-  )) {
-    const centre = [0, 1, 2].map((i) => face.p.reduce((sum, p) => sum + p[i] / face.p.length, 0));
-    for (const border of darkPanels)
-      for (let j = 2; j < border.p.length; j++) {
-        const [a, b, c] = [border.p[0], border.p[j - 1], border.p[j]],
-          d = (b[0] - a[0]) * (c[2] - a[2]) - (b[2] - a[2]) * (c[0] - a[0]);
-        if (Math.abs(d) < 1e-10) continue;
-        const u = ((centre[0] - a[0]) * (c[2] - a[2]) - (centre[2] - a[2]) * (c[0] - a[0])) / d,
-          v = ((b[0] - a[0]) * (centre[2] - a[2]) - (b[2] - a[2]) * (centre[0] - a[0])) / d;
+    (f) => f.part?.device === 'slat' && !f.part.component && f.color.join(',') === '119,139,158',
+  ))
+    assert(
+      Math.abs(face.p[0][1] - face.p[3][1]) < 0.02,
+      'slat has a thin trailing lip instead of a wing-box cut',
+    );
+  for (const device of leading) {
+    for (const face of mesh.filter((f) => f.part === device))
+      for (const p of face.p) {
+        const closed = ctx.articulatedPoint(p, device, aircraft, 1, 0);
         assert(
-          !(u > 1e-6 && v > 1e-6 && u + v < 1 - 1e-6),
-          'panel fills must not overlap their coplanar borders',
+          closed.every((v, i) => Math.abs(v - p[i]) < 1e-9),
+          'leading devices close without offsets',
         );
+        for (const progress of [0.2, 0.5, 0.8, 1])
+          assert(ctx.articulatedPoint(p, device, aircraft, 1, progress).every(Number.isFinite));
       }
+    if (device.device === 'slat') {
+      const h = device.hinge,
+        p = geo.point(h, 0.075, 1, 1),
+        moved = ctx.articulatedPoint(p, device, aircraft, 1, 1);
+      assert(moved[2] < p[2] - 0.1, 'slat advances ahead of the fixed leading-edge cove');
+      assert(moved[0] > p[0], 'slat track follows the swept wing normal');
+    }
+    if (device.device === 'krueger') {
+      const points = mesh.filter((f) => f.part === device).flatMap((f) => f.p),
+        p = points.reduce((a, b) => (a[2] > b[2] ? a : b)),
+        moved = ctx.articulatedPoint(p, device, aircraft, 1, 1);
+      assert(moved[1] < p[1] - 0.2, 'Krueger panel unfolds below the leading edge');
+    }
+    if (device.device === 'droop')
+      assert.equal(device.extension, 0, 'droop nose rotates without a translating slot');
   }
   console.log(
     'PASS ' +

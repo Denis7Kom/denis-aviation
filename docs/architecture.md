@@ -57,3 +57,19 @@ Narrowbody secondary flap elements carry their own chord pivot and Fowler travel
 Slat rails share the parent hinge; fine skins and lamp bezels are omitted from wire mode.
 The preservation fixture was deliberately refreshed for these geometry and lamp changes;
 airport/fleet data, unrelated UI, renderer and styles retain their existing guards.
+
+## Leading-edge revision - 26 October 2026
+
+Removed the decorative spoiler rectangles from the upper wing. Each leading-edge
+panel now has its own span bounds and a thin curved slat section. Slats translate
+normal to the swept leading edge; deployment leads the flap command slightly.
+The 737 uses two inboard Krueger panels and four outboard slats per wing. The A321
+uses five slats. The A350 uses an inboard droop nose with six translating slats.
+Dimensions and travel remain display approximations; this is not a rigging model.
+
+Reference layouts:
+
+- [FAA: 737 leading-edge devices](https://www.faa.gov/lessons_learned/transport_airplane/accidents/B18616)
+- [Airbus: A320-family planning drawings](https://aircraft.airbus.com/sites/g/files/jlcbta126/files/2025-01/AC_A320_0624.pdf)
+- [Airbus: A330 planning drawings](https://www.aircraft.airbus.com/sites/g/files/jlcbta126/files/2025-12/AC_A330_20251201.pdf)
+- [Airbus: A350 high-lift system design](https://www.icas.org/icas_archive/ICAS2014/data/papers/2014_0298_paper)

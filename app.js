@@ -729,24 +729,7 @@
       stations: stations2,
       nav: nav2,
       tip,
-      fractions: [
-        0,
-        4e-3,
-        0.012,
-        0.026,
-        0.047,
-        0.075,
-        0.105,
-        0.13,
-        0.16,
-        0.38,
-        0.56,
-        0.7,
-        0.72,
-        0.86,
-        0.94,
-        1
-      ],
+      fractions: [0, 0.012, 0.035, 0.075, 0.16, 0.38, 0.56, 0.7, 0.72, 0.86, 0.94, 1],
       point(s2, f, sign = 1, side = 1) {
         const thickness = 2.969 * Math.sqrt(f) - 1.26 * f - 3.516 * f * f + 2.843 * f * f * f - 1.036 * f * f * f * f;
         const camber = 0.12 * Math.sin(Math.PI * f);
@@ -1128,19 +1111,159 @@
         }
     }
     function wingFoil(stations2, sign, color) {
-      const geo = wingGeometry(a), fractions2 = wireframe ? [0, 0.035, 0.075, 0.13, 0.38, 0.72, 0.86, 1] : geo.fractions, doubleSlotted = a.code === "B737" || a.code === "A321", at = (s, f, side = 1) => geo.point(s, f, sign, side), interpolate = (s, t, u) => s.map((v, i) => v + (t[i] - v) * u);
+      const geo = wingGeometry(a), fractions2 = wireframe ? [0, 0.075, 0.38, 0.72, 0.86, 1] : geo.fractions, doubleSlotted = a.code === "B737" || a.code === "A321", leadingLast = spec.narrow || a.code === "B77W" ? 3 : 4, at = (s, f, side = 1) => geo.point(s, f, sign, side), interpolate = (s, t, u) => s.map((v, i) => v + (t[i] - v) * u);
+      const sectionAt = (x) => {
+        let k = 1;
+        while (k < stations2.length - 1 && x > stations2[k][0]) k++;
+        const s = stations2[k - 1], t = stations2[k];
+        return interpolate(s, t, (x - s[0]) / (t[0] - s[0]));
+      };
+      const devices = [], root = a.r * 1.025, engine = spec.ex, limit = stations2[leadingLast][0] - 0.08, addDevices = (start, stop, count, device = "slat") => {
+        for (let i = 0; i < count; i++) {
+          const gap = 0.018, x0 = start + (stop - start) * i / count + gap, x1 = start + (stop - start) * (i + 1) / count - gap, h = sectionAt(x0), e = sectionAt(x1), chord = (h[3] + e[3]) / 2, krueger = device === "krueger", droop = device === "droop";
+          devices.push({
+            kind: "slat",
+            device,
+            sign,
+            segment: devices.length,
+            start: x0,
+            stop: x1,
+            hinge: h,
+            end: e,
+            chord: krueger ? 0.025 : 0.075,
+            deflection: krueger ? 115 : droop ? -18 : -22,
+            extension: krueger || droop ? 0 : -Math.min(0.68, chord * 0.105),
+            drop: krueger || droop ? 0 : -Math.min(0.1, chord * 0.015)
+          });
+        }
+      };
+      if (a.code === "B737") {
+        addDevices(root, engine - 0.4, 2, "krueger");
+        addDevices(engine + 0.45, limit, 4);
+      } else {
+        addDevices(root, engine - 0.5, 1, a.code === "A35K" ? "droop" : "slat");
+        addDevices(engine + 0.5, limit, a.code === "A321" ? 4 : 6);
+      }
+      function slatPoint(st, f, side = 1, device = "slat") {
+        const p = at(st, f, 1), lower = at(st, f, -1);
+        if (device === "droop") return at(st, f, side);
+        if (side < 0)
+          p[1] -= (p[1] - lower[1]) * Math.pow(Math.max(0, 1 - f / 0.075), 0.72) + 0.012 * f / 0.075;
+        return p;
+      }
+      function leadingSpan(s, t) {
+        const boundaries = [
+          s[0],
+          ...devices.flatMap((d) => [d.start, d.stop]).filter((x) => x > s[0] && x < t[0]),
+          t[0]
+        ].sort((a2, b) => a2 - b), cuts = wireframe ? [0, 0.025, 0.075] : [0, 4e-3, 0.012, 0.025, 0.045, 0.06, 0.075];
+        for (let i = 1; i < boundaries.length; i++) {
+          const x0 = boundaries[i - 1], x1 = boundaries[i], left = sectionAt(x0), right = sectionAt(x1), d = devices.find((d2) => (x0 + x1) / 2 > d2.start && (x0 + x1) / 2 < d2.stop), movingNose = d && d.device !== "krueger";
+          const core = (st, f, side) => {
+            const p = at(st, f, side);
+            if (movingNose) {
+              p[1] = st[1] + (p[1] - st[1]) * 0.7;
+              p[2] += (0.075 - f) * st[3] * 0.42;
+            }
+            return p;
+          };
+          part = null;
+          for (let j = 1; j < cuts.length; j++)
+            for (const side of [-1, 1])
+              add(
+                [
+                  core(left, cuts[j - 1], side),
+                  core(right, cuts[j - 1], side),
+                  core(right, cuts[j], side),
+                  core(left, cuts[j], side)
+                ],
+                color.map((v) => v * (side > 0 ? 1 : 0.65))
+              );
+          if (!d) continue;
+          if (movingNose)
+            add(
+              [at(left, 0.075, 1), at(right, 0.075, 1), at(right, 0.075, -1), at(left, 0.075, -1)],
+              [88, 109, 132]
+            );
+          part = d;
+          if (d.device === "krueger") {
+            const f = wireframe ? [0.025, 0.14] : [0.025, 0.045, 0.075, 0.11, 0.14], point = (st, f2, side) => {
+              const p = at(st, f2, -1);
+              p[1] -= 0.018 + side * 9e-3;
+              return p;
+            };
+            for (let j = 1; j < f.length; j++)
+              for (const side of [-1, 1])
+                add(
+                  [
+                    point(left, f[j - 1], side),
+                    point(right, f[j - 1], side),
+                    point(right, f[j], side),
+                    point(left, f[j], side)
+                  ],
+                  [165, 183, 201]
+                );
+            for (const st of [left, right])
+              for (let j = 1; j < f.length; j++)
+                add(
+                  [
+                    point(st, f[j - 1], 1),
+                    point(st, f[j], 1),
+                    point(st, f[j], -1),
+                    point(st, f[j - 1], -1)
+                  ],
+                  [111, 132, 154]
+                );
+            for (const f2 of [0.025, 0.14])
+              add(
+                [point(left, f2, 1), point(right, f2, 1), point(right, f2, -1), point(left, f2, -1)],
+                [111, 132, 154]
+              );
+          } else {
+            const point = (st, f, side) => slatPoint(st, f, side, d.device);
+            for (let j = 1; j < cuts.length; j++)
+              for (const side of [-1, 1])
+                add(
+                  [
+                    point(left, cuts[j - 1], side),
+                    point(right, cuts[j - 1], side),
+                    point(right, cuts[j], side),
+                    point(left, cuts[j], side)
+                  ],
+                  side > 0 ? [163, 183, 202] : [117, 139, 161],
+                  true,
+                  null,
+                  0.25
+                );
+            for (const st of [left, right])
+              for (let j = 1; j < cuts.length; j++)
+                add(
+                  [
+                    point(st, cuts[j - 1], 1),
+                    point(st, cuts[j], 1),
+                    point(st, cuts[j], -1),
+                    point(st, cuts[j - 1], -1)
+                  ],
+                  [125, 145, 164]
+                );
+            add(
+              [
+                point(left, 0.075, 1),
+                point(right, 0.075, 1),
+                point(right, 0.075, -1),
+                point(left, 0.075, -1)
+              ],
+              [119, 139, 158]
+            );
+          }
+          part = null;
+        }
+      }
       for (let k = 1; k < stations2.length; k++) {
-        const s = stations2[k - 1], t = stations2[k], slat = k <= 3 ? {
-          kind: "slat",
-          sign,
-          hinge: s,
-          end: t,
-          chord: 0.13,
-          deflection: spec.narrow ? -24 : -28,
-          extension: -Math.min(0.78, Math.max(0.2, (s[3] + t[3]) * 0.041))
-        } : null, flap = k <= 2 ? { kind: "flap", sign, hinge: s, end: t } : null, aft2 = flap && doubleSlotted ? { ...flap, component: "aft-element", chord: 0.86, deflection: 43, extension: 1.12 } : null, surfacePart = (f) => f < 0.13 ? slat : f >= 0.86 && aft2 ? aft2 : f >= 0.72 ? flap : null;
+        const s = stations2[k - 1], t = stations2[k], flap = k <= 2 ? { kind: "flap", sign, hinge: s, end: t } : null, aft2 = flap && doubleSlotted ? { ...flap, component: "aft-element", chord: 0.86, deflection: 43, extension: 1.12 } : null, surfacePart = (f) => f >= 0.86 && aft2 ? aft2 : f >= 0.72 ? flap : null;
         for (let j = 1; j < fractions2.length; j++) {
           const lo = fractions2[j - 1], hi = fractions2[j];
+          if (hi <= 0.075 && k <= leadingLast) continue;
           part = surfacePart((lo + hi) / 2);
           for (const side of [-1, 1]) {
             const points = [at(s, lo, side), at(t, lo, side), at(t, hi, side), at(s, hi, side)], normals = [s, t, t, s].map((station, i) => {
@@ -1153,7 +1276,7 @@
             });
             add(
               points,
-              part?.kind === "slat" ? side > 0 ? [181, 199, 215] : [108, 132, 153] : color.map((v) => v * (side > 0 ? 1 : 0.65)),
+              color.map((v) => v * (side > 0 ? 1 : 0.65)),
               true,
               normals,
               0.22
@@ -1161,7 +1284,6 @@
           }
         }
         for (const [lo, hi, moving] of [
-          [0, 0.13, slat],
           [0.72, aft2 ? 0.86 : 1, flap],
           ...aft2 ? [[0.86, 1, aft2]] : []
         ]) {
@@ -1181,7 +1303,7 @@
           for (const f2 of [lo, hi])
             add([at(s, f2, 1), at(t, f2, 1), at(t, f2, -1), at(s, f2, -1)], [73, 94, 117]);
           part = null;
-          const f = lo === 0 ? hi : lo;
+          const f = lo;
           if (f !== 0.86) add([at(s, f, 1), at(t, f, 1), at(t, f, -1), at(s, f, -1)], [37, 54, 72]);
         }
         if (wireframe) continue;
@@ -1231,18 +1353,25 @@
           strip(0.03, 0.038, 0.735, 0.985, [72, 95, 118]);
           strip(0.962, 0.97, 0.735, 0.985, [72, 95, 118]);
         }
-        if (slat)
-          for (const u of [0.22, 0.76]) {
-            const st = interpolate(s, t, u), anchor = at(st, 0.105, -1);
-            part = { ...slat, component: "slat-track" };
-            beam(
-              [anchor[0], anchor[1] - 0.025, anchor[2] - 0.2],
-              [anchor[0], anchor[1] - 0.025, anchor[2] + 0.16],
-              spec.narrow ? 0.018 : 0.026,
-              [106, 125, 144]
-            );
-            part = null;
+        if (k <= leadingLast) leadingSpan(s, t);
+      }
+      for (const device of devices) {
+        if (wireframe || device.device !== "slat") continue;
+        for (const u of [0.24, 0.76]) {
+          const st = sectionAt(device.start + (device.stop - device.start) * u), root2 = slatPoint(st, 0.058, -1), length = Math.min(0.42, st[3] * 0.085);
+          part = { ...device, component: "slat-track" };
+          let before = root2;
+          for (let j = 1; j <= 4; j++) {
+            const v = j / 4, next = [
+              root2[0],
+              root2[1] - Math.sin(v * Math.PI / 2) * length * 0.28,
+              root2[2] + v * length
+            ];
+            beam(before, next, spec.narrow ? 0.012 : 0.019, [107, 122, 138]);
+            before = next;
           }
+          part = null;
+        }
       }
       const tip = stations2.at(-1);
       part = null;
@@ -2839,7 +2968,7 @@
         const x = p[0] - part.x, y = p[1] - part.y, co = Math.cos(fanAngle), si = Math.sin(fanAngle);
         return [part.x + x * co - y * si, part.y + x * si + y * co, p[2]];
       }
-      const g = smoothStep(gear), f = smoothStep(flaps);
+      const g = smoothStep(gear), f = smoothStep(part.kind === "slat" ? Math.min(1, flaps * 1.18) : flaps);
       if (part.kind === "mainGear") {
         const pivot = part.pivot, q = p.map((v, i) => v - pivot[i]), t = -part.sign * (1 - g) * Math.PI * 0.49;
         return [
@@ -2858,9 +2987,9 @@
       }
       if (part.kind === "flap" || part.kind === "slat") {
         const slat = part.kind === "slat", chord = part.chord ?? (slat ? 0.075 : 0.72);
-        const h = part.hinge, e = part.end, origin = [part.sign * h[0], h[1], h[2] + h[3] * chord], end = [part.sign * e[0], e[1], e[2] + e[3] * chord], axis = end.map((v, i) => v - origin[i]), n = Math.hypot(...axis), k = axis.map((v) => v / n), q = p.map((v, i) => v - origin[i]), t = part.sign * f * (part.deflection ?? (slat ? -16 : 32)) * D, co = Math.cos(t), si = Math.sin(t), dot = k.reduce((v, x, i) => v + x * q[i], 0), cross = [k[1] * q[2] - k[2] * q[1], k[2] * q[0] - k[0] * q[2], k[0] * q[1] - k[1] * q[0]];
+        const h = part.hinge, e = part.end, origin = slat ? wingGeometry(a).point(h, chord, part.sign, part.device === "krueger" ? -1 : 0) : [part.sign * h[0], h[1], h[2] + h[3] * chord], end = slat ? wingGeometry(a).point(e, chord, part.sign, part.device === "krueger" ? -1 : 0) : [part.sign * e[0], e[1], e[2] + e[3] * chord], axis = end.map((v, i) => v - origin[i]), n = Math.hypot(...axis), k = axis.map((v) => v / n), q = p.map((v, i) => v - origin[i]), t = part.sign * f * (part.deflection ?? (slat ? -16 : 32)) * D, co = Math.cos(t), si = Math.sin(t), dot = k.reduce((v, x, i) => v + x * q[i], 0), cross = [k[1] * q[2] - k[2] * q[1], k[2] * q[0] - k[0] * q[2], k[0] * q[1] - k[1] * q[0]];
         return q.map(
-          (v, i) => origin[i] + v * co + cross[i] * si + k[i] * dot * (1 - co) + (i === 2 ? (part.extension ?? (slat ? -(a.r * 0.12 + 0.12) : airframe(a).narrow ? 0.62 : 0.9)) * f : i === 1 ? (slat ? -0.1 : part.component === "aft-element" ? -0.09 : 0) * f : 0)
+          (v, i) => origin[i] + v * co + cross[i] * si + k[i] * dot * (1 - co) + (i === 2 ? (part.extension ?? (slat ? -(a.r * 0.12 + 0.12) : airframe(a).narrow ? 0.62 : 0.9)) * f * (slat ? (e[0] - h[0]) / Math.hypot(e[0] - h[0], e[2] - h[2]) : 1) : i === 1 ? (part.drop ?? (slat ? -0.1 : part.component === "aft-element" ? -0.09 : 0)) * f : slat ? -(part.extension || 0) * part.sign * (e[2] - h[2]) / Math.hypot(e[0] - h[0], e[2] - h[2]) * f : 0)
         );
       }
       return p;

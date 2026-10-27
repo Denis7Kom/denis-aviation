@@ -720,7 +720,7 @@ import {
       return [part.x + x * co - y * si, part.y + x * si + y * co, p[2]];
     }
     const g = smoothStep(gear),
-      f = smoothStep(flaps);
+      f = smoothStep(part.kind === 'slat' ? Math.min(1, flaps * 1.18) : flaps);
     if (part.kind === 'mainGear') {
       const pivot = part.pivot,
         q = p.map((v, i) => v - pivot[i]),
@@ -748,8 +748,12 @@ import {
         chord = part.chord ?? (slat ? 0.075 : 0.72);
       const h = part.hinge,
         e = part.end,
-        origin = [part.sign * h[0], h[1], h[2] + h[3] * chord],
-        end = [part.sign * e[0], e[1], e[2] + e[3] * chord],
+        origin = slat
+          ? wingGeometry(a).point(h, chord, part.sign, part.device === 'krueger' ? -1 : 0)
+          : [part.sign * h[0], h[1], h[2] + h[3] * chord],
+        end = slat
+          ? wingGeometry(a).point(e, chord, part.sign, part.device === 'krueger' ? -1 : 0)
+          : [part.sign * e[0], e[1], e[2] + e[3] * chord],
         axis = end.map((v, i) => v - origin[i]),
         n = Math.hypot(...axis),
         k = axis.map((v) => v / n),
@@ -767,10 +771,15 @@ import {
           k[i] * dot * (1 - co) +
           (i === 2
             ? (part.extension ?? (slat ? -(a.r * 0.12 + 0.12) : airframe(a).narrow ? 0.62 : 0.9)) *
-              f
+              f *
+              (slat ? (e[0] - h[0]) / Math.hypot(e[0] - h[0], e[2] - h[2]) : 1)
             : i === 1
-              ? (slat ? -0.1 : part.component === 'aft-element' ? -0.09 : 0) * f
-              : 0),
+              ? (part.drop ?? (slat ? -0.1 : part.component === 'aft-element' ? -0.09 : 0)) * f
+              : slat
+                ? ((-(part.extension || 0) * part.sign * (e[2] - h[2])) /
+                    Math.hypot(e[0] - h[0], e[2] - h[2])) *
+                  f
+                : 0),
       );
     }
     return p;

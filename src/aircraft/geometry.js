@@ -352,10 +352,7 @@ export function wingGeometry(a) {
       stations,
       nav,
       tip,
-      fractions: [
-        0, 0.004, 0.012, 0.026, 0.047, 0.075, 0.105, 0.13, 0.16, 0.38, 0.56, 0.7, 0.72, 0.86, 0.94,
-        1,
-      ],
+      fractions: [0, 0.012, 0.035, 0.075, 0.16, 0.38, 0.56, 0.7, 0.72, 0.86, 0.94, 1],
       point(s, f, sign = 1, side = 1) {
         const thickness =
           2.969 * Math.sqrt(f) -
@@ -880,34 +877,196 @@ export function buildPlane(a, wireframe = false) {
   }
   function wingFoil(stations, sign, color) {
     const geo = wingGeometry(a),
-      fractions = wireframe ? [0, 0.035, 0.075, 0.13, 0.38, 0.72, 0.86, 1] : geo.fractions,
+      fractions = wireframe ? [0, 0.075, 0.38, 0.72, 0.86, 1] : geo.fractions,
       doubleSlotted = a.code === 'B737' || a.code === 'A321',
+      leadingLast = spec.narrow || a.code === 'B77W' ? 3 : 4,
       at = (s, f, side = 1) => geo.point(s, f, sign, side),
       interpolate = (s, t, u) => s.map((v, i) => v + (t[i] - v) * u);
+    const sectionAt = (x) => {
+      let k = 1;
+      while (k < stations.length - 1 && x > stations[k][0]) k++;
+      const s = stations[k - 1],
+        t = stations[k];
+      return interpolate(s, t, (x - s[0]) / (t[0] - s[0]));
+    };
+    const devices = [],
+      root = a.r * 1.025,
+      engine = spec.ex,
+      limit = stations[leadingLast][0] - 0.08,
+      addDevices = (start, stop, count, device = 'slat') => {
+        for (let i = 0; i < count; i++) {
+          const gap = 0.018,
+            x0 = start + ((stop - start) * i) / count + gap,
+            x1 = start + ((stop - start) * (i + 1)) / count - gap,
+            h = sectionAt(x0),
+            e = sectionAt(x1),
+            chord = (h[3] + e[3]) / 2,
+            krueger = device === 'krueger',
+            droop = device === 'droop';
+          devices.push({
+            kind: 'slat',
+            device,
+            sign,
+            segment: devices.length,
+            start: x0,
+            stop: x1,
+            hinge: h,
+            end: e,
+            chord: krueger ? 0.025 : 0.075,
+            deflection: krueger ? 115 : droop ? -18 : -22,
+            extension: krueger || droop ? 0 : -Math.min(0.68, chord * 0.105),
+            drop: krueger || droop ? 0 : -Math.min(0.1, chord * 0.015),
+          });
+        }
+      };
+    if (a.code === 'B737') {
+      addDevices(root, engine - 0.4, 2, 'krueger');
+      addDevices(engine + 0.45, limit, 4);
+    } else {
+      addDevices(root, engine - 0.5, 1, a.code === 'A35K' ? 'droop' : 'slat');
+      addDevices(engine + 0.5, limit, a.code === 'A321' ? 4 : 6);
+    }
+    function slatPoint(st, f, side = 1, device = 'slat') {
+      const p = at(st, f, 1),
+        lower = at(st, f, -1);
+      if (device === 'droop') return at(st, f, side);
+      // A real slat is a curved shell, with a rounded nose and a thin aft lip,
+      // rather than the full thickness of a sliced wing-box segment.
+      if (side < 0)
+        p[1] -=
+          (p[1] - lower[1]) * Math.pow(Math.max(0, 1 - f / 0.075), 0.72) + (0.012 * f) / 0.075;
+      return p;
+    }
+    function leadingSpan(s, t) {
+      const boundaries = [
+          s[0],
+          ...devices.flatMap((d) => [d.start, d.stop]).filter((x) => x > s[0] && x < t[0]),
+          t[0],
+        ].sort((a, b) => a - b),
+        cuts = wireframe ? [0, 0.025, 0.075] : [0, 0.004, 0.012, 0.025, 0.045, 0.06, 0.075];
+      for (let i = 1; i < boundaries.length; i++) {
+        const x0 = boundaries[i - 1],
+          x1 = boundaries[i],
+          left = sectionAt(x0),
+          right = sectionAt(x1),
+          d = devices.find((d) => (x0 + x1) / 2 > d.start && (x0 + x1) / 2 < d.stop),
+          movingNose = d && d.device !== 'krueger';
+        // Fixed leading-edge structure is recessed below the shell. It becomes
+        // visible through the slot during extension and closes the wing cove.
+        const core = (st, f, side) => {
+          const p = at(st, f, side);
+          if (movingNose) {
+            p[1] = st[1] + (p[1] - st[1]) * 0.7;
+            p[2] += (0.075 - f) * st[3] * 0.42;
+          }
+          return p;
+        };
+        part = null;
+        for (let j = 1; j < cuts.length; j++)
+          for (const side of [-1, 1])
+            add(
+              [
+                core(left, cuts[j - 1], side),
+                core(right, cuts[j - 1], side),
+                core(right, cuts[j], side),
+                core(left, cuts[j], side),
+              ],
+              color.map((v) => v * (side > 0 ? 1 : 0.65)),
+            );
+        if (!d) continue;
+        if (movingNose)
+          add(
+            [at(left, 0.075, 1), at(right, 0.075, 1), at(right, 0.075, -1), at(left, 0.075, -1)],
+            [88, 109, 132],
+          );
+        part = d;
+        if (d.device === 'krueger') {
+          const f = wireframe ? [0.025, 0.14] : [0.025, 0.045, 0.075, 0.11, 0.14],
+            point = (st, f, side) => {
+              const p = at(st, f, -1);
+              p[1] -= 0.018 + side * 0.009;
+              return p;
+            };
+          for (let j = 1; j < f.length; j++)
+            for (const side of [-1, 1])
+              add(
+                [
+                  point(left, f[j - 1], side),
+                  point(right, f[j - 1], side),
+                  point(right, f[j], side),
+                  point(left, f[j], side),
+                ],
+                [165, 183, 201],
+              );
+          for (const st of [left, right])
+            for (let j = 1; j < f.length; j++)
+              add(
+                [
+                  point(st, f[j - 1], 1),
+                  point(st, f[j], 1),
+                  point(st, f[j], -1),
+                  point(st, f[j - 1], -1),
+                ],
+                [111, 132, 154],
+              );
+          for (const f of [0.025, 0.14])
+            add(
+              [point(left, f, 1), point(right, f, 1), point(right, f, -1), point(left, f, -1)],
+              [111, 132, 154],
+            );
+        } else {
+          const point = (st, f, side) => slatPoint(st, f, side, d.device);
+          for (let j = 1; j < cuts.length; j++)
+            for (const side of [-1, 1])
+              add(
+                [
+                  point(left, cuts[j - 1], side),
+                  point(right, cuts[j - 1], side),
+                  point(right, cuts[j], side),
+                  point(left, cuts[j], side),
+                ],
+                side > 0 ? [163, 183, 202] : [117, 139, 161],
+                true,
+                null,
+                0.25,
+              );
+          for (const st of [left, right])
+            for (let j = 1; j < cuts.length; j++)
+              add(
+                [
+                  point(st, cuts[j - 1], 1),
+                  point(st, cuts[j], 1),
+                  point(st, cuts[j], -1),
+                  point(st, cuts[j - 1], -1),
+                ],
+                [125, 145, 164],
+              );
+          add(
+            [
+              point(left, 0.075, 1),
+              point(right, 0.075, 1),
+              point(right, 0.075, -1),
+              point(left, 0.075, -1),
+            ],
+            [119, 139, 158],
+          );
+        }
+        part = null;
+      }
+    }
     for (let k = 1; k < stations.length; k++) {
       const s = stations[k - 1],
         t = stations[k],
-        slat =
-          k <= 3
-            ? {
-                kind: 'slat',
-                sign,
-                hinge: s,
-                end: t,
-                chord: 0.13,
-                deflection: spec.narrow ? -24 : -28,
-                extension: -Math.min(0.78, Math.max(0.2, (s[3] + t[3]) * 0.041)),
-              }
-            : null,
         flap = k <= 2 ? { kind: 'flap', sign, hinge: s, end: t } : null,
         aft =
           flap && doubleSlotted
             ? { ...flap, component: 'aft-element', chord: 0.86, deflection: 43, extension: 1.12 }
             : null,
-        surfacePart = (f) => (f < 0.13 ? slat : f >= 0.86 && aft ? aft : f >= 0.72 ? flap : null);
+        surfacePart = (f) => (f >= 0.86 && aft ? aft : f >= 0.72 ? flap : null);
       for (let j = 1; j < fractions.length; j++) {
         const lo = fractions[j - 1],
           hi = fractions[j];
+        if (hi <= 0.075 && k <= leadingLast) continue;
         part = surfacePart((lo + hi) / 2);
         for (const side of [-1, 1]) {
           const points = [at(s, lo, side), at(t, lo, side), at(t, hi, side), at(s, hi, side)],
@@ -927,11 +1086,7 @@ export function buildPlane(a, wireframe = false) {
             });
           add(
             points,
-            part?.kind === 'slat'
-              ? side > 0
-                ? [181, 199, 215]
-                : [108, 132, 153]
-              : color.map((v) => v * (side > 0 ? 1 : 0.65)),
+            color.map((v) => v * (side > 0 ? 1 : 0.65)),
             true,
             normals,
             0.22,
@@ -941,7 +1096,6 @@ export function buildPlane(a, wireframe = false) {
       // Close both sides of every moving element. Their exposed cove is visible
       // during travel rather than showing through an open, paper-thin surface.
       for (const [lo, hi, moving] of [
-        [0, 0.13, slat],
         [0.72, aft ? 0.86 : 1, flap],
         ...(aft ? [[0.86, 1, aft]] : []),
       ]) {
@@ -961,7 +1115,7 @@ export function buildPlane(a, wireframe = false) {
         for (const f of [lo, hi])
           add([at(s, f, 1), at(t, f, 1), at(t, f, -1), at(s, f, -1)], [73, 94, 117]);
         part = null;
-        const f = lo === 0 ? hi : lo;
+        const f = lo;
         if (f !== 0.86) add([at(s, f, 1), at(t, f, 1), at(t, f, -1), at(s, f, -1)], [37, 54, 72]);
       }
       if (wireframe) continue;
@@ -1012,7 +1166,6 @@ export function buildPlane(a, wireframe = false) {
         }
         part = null;
       };
-      // Slat metallic surfaces are part of the foil: no floating rectangular overlays.
       if (flap) {
         strip(0.012, 0.988, 0.721, 0.727, [68, 91, 115], flap);
         strip(0.012, 0.988, 0.982, 0.994, [190, 204, 217], aft || flap);
@@ -1023,21 +1176,28 @@ export function buildPlane(a, wireframe = false) {
         strip(0.03, 0.038, 0.735, 0.985, [72, 95, 118]);
         strip(0.962, 0.97, 0.735, 0.985, [72, 95, 118]);
       }
-      // Short exposed rails share their parent surface's articulation. Kept
-      // out of wire mode so additional detail never multiplies edge work.
-      if (slat)
-        for (const u of [0.22, 0.76]) {
-          const st = interpolate(s, t, u),
-            anchor = at(st, 0.105, -1);
-          part = { ...slat, component: 'slat-track' };
-          beam(
-            [anchor[0], anchor[1] - 0.025, anchor[2] - 0.2],
-            [anchor[0], anchor[1] - 0.025, anchor[2] + 0.16],
-            spec.narrow ? 0.018 : 0.026,
-            [106, 125, 144],
-          );
-          part = null;
+      if (k <= leadingLast) leadingSpan(s, t);
+    }
+    for (const device of devices) {
+      if (wireframe || device.device !== 'slat') continue;
+      for (const u of [0.24, 0.76]) {
+        const st = sectionAt(device.start + (device.stop - device.start) * u),
+          root = slatPoint(st, 0.058, -1),
+          length = Math.min(0.42, st[3] * 0.085);
+        part = { ...device, component: 'slat-track' };
+        let before = root;
+        for (let j = 1; j <= 4; j++) {
+          const v = j / 4,
+            next = [
+              root[0],
+              root[1] - Math.sin((v * Math.PI) / 2) * length * 0.28,
+              root[2] + v * length,
+            ];
+          beam(before, next, spec.narrow ? 0.012 : 0.019, [107, 122, 138]);
+          before = next;
         }
+        part = null;
+      }
     }
     // Closed wingtip, rather than an exposed cut through the foil.
     const tip = stations.at(-1);

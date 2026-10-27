@@ -15,6 +15,15 @@ Run `npm ci` and `npm run check` before publishing. The checks cover:
 These checks do not replace browser tests or validate the factual contents of documents.
 External destinations and remote font availability are outside the local resource check.
 
+## Leading-edge revision check - 26 October 2026
+
+- Upper-wing decorative spoiler rectangles removed.
+- Checked clean and deployed leading edges in the software depth renderer.
+- Regressions verify family-specific panel counts, thin slat trailing lips,
+  swept travel, Krueger downward folding and zero-translation droop noses.
+- Flap fairings, landing-light mounts, glazing and wireframe caching retain their
+  existing regression coverage.
+
 ## Wing and lighting check - 26 October 2026
 
 - All six aircraft selected correctly in Chromium with the software depth renderer.
