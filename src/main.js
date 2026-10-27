@@ -749,7 +749,8 @@ import {
       part.kind === 'flap' ||
       part.kind === 'slat' ||
       part.kind === 'spoiler' ||
-      part.kind === 'aileron'
+      part.kind === 'aileron' ||
+      part.kind === 'elevator'
     ) {
       const slat = part.kind === 'slat',
         chord = part.chord ?? (slat ? 0.075 : 0.72);
@@ -770,18 +771,22 @@ import {
             ? typeof speedbrakePosition === 'undefined'
               ? 0
               : speedbrakePosition
-            : part.kind === 'aileron'
+            : part.kind === 'elevator'
               ? typeof motion !== 'undefined' && motion
-                ? Math.sin(systemsClock / 2400) * part.sign * 0.14
+                ? Math.sin(systemsClock / 3400) * 0.12
                 : 0
-              : f,
+              : part.kind === 'aileron'
+                ? typeof motion !== 'undefined' && motion
+                  ? Math.sin(systemsClock / 2400) * part.sign * 0.14
+                  : 0
+                : f,
         t =
           part.sign *
           control *
           (part.kind === 'spoiler'
             ? -45
-            : part.kind === 'aileron'
-              ? 28
+            : part.kind === 'aileron' || part.kind === 'elevator'
+              ? 50
               : (part.deflection ?? (slat ? -16 : 32))) *
           D,
         co = Math.cos(t),
@@ -794,7 +799,7 @@ import {
           v * co +
           cross[i] * si +
           k[i] * dot * (1 - co) +
-          (part.kind === 'spoiler' || part.kind === 'aileron'
+          (part.kind === 'spoiler' || part.kind === 'aileron' || part.kind === 'elevator'
             ? 0
             : i === 2
               ? (part.extension ??
@@ -8167,25 +8172,36 @@ import {
         : fleet[aircraftIndex].code === 'B77W'
           ? ['0', '1', '5', '15', '20', '25', '30']
           : ['0', '1', '2', '3', 'FULL'];
-    const select = $('#flaps-select');
-    select.replaceChildren(
+    const group = $('#flaps-choices');
+    group.replaceChildren(
       ...settings.map((name, i) => {
-        const option = document.createElement('option');
-        option.value = String(i / (settings.length - 1));
-        option.textContent = name;
-        return option;
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.dataset.flap = String(i / (settings.length - 1));
+        button.textContent = name;
+        button.setAttribute('aria-pressed', String(i === 0));
+        return button;
       }),
     );
     flapTarget = 0;
-    select.value = '0';
   }
-  $('#flaps-select').addEventListener('change', (event) => {
-    flapTarget = Number(event.target.value);
+  $('#flaps-choices').addEventListener('click', (event) => {
+    const button = event.target.closest('button[data-flap]');
+    if (!button) return;
+    flapTarget = Number(button.dataset.flap);
+    $$('#flaps-choices button').forEach((item) =>
+      item.setAttribute('aria-pressed', String(item === button)),
+    );
     if (!motion) snapModel();
     drawPlane();
   });
-  $('#speedbrake-select').addEventListener('change', (event) => {
-    speedbrakeTarget = Number(event.target.value);
+  $('#speedbrake-choices').addEventListener('click', (event) => {
+    const button = event.target.closest('button[data-speedbrake]');
+    if (!button) return;
+    speedbrakeTarget = Number(button.dataset.speedbrake);
+    $$('#speedbrake-choices button').forEach((item) =>
+      item.setAttribute('aria-pressed', String(item === button)),
+    );
     if (!motion) snapModel();
     drawPlane();
   });

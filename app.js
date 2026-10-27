@@ -1395,9 +1395,11 @@
       ];
       for (let k = 1; k < stations2.length; k++) {
         const s = stations2[k - 1], t = stations2[k];
+        const elevator = { kind: "elevator", sign, hinge: s, end: t, chord: 0.695 };
         part = null;
         for (let j = 1; j < fractions2.length; j++)
           for (const side of [-1, 1]) {
+            part = fractions2[j - 1] >= 0.695 ? elevator : null;
             const shade = j === 4 ? 0.56 : j === 5 ? 0.94 : 1;
             add(
               [
@@ -1409,6 +1411,7 @@
               color.map((v) => v * (side > 0 ? 1 : 0.65) * shade)
             );
           }
+        part = elevator;
         add(
           [
             [sign * s[0], s[1], s[2] + s[3]],
@@ -1418,6 +1421,7 @@
           ],
           [63, 99, 140]
         );
+        part = null;
       }
     }
     for (const sign of [-1, 1]) {
@@ -2985,11 +2989,11 @@
           z + qy * Math.sin(t) + qz * Math.cos(t)
         ];
       }
-      if (part.kind === "flap" || part.kind === "slat" || part.kind === "spoiler" || part.kind === "aileron") {
+      if (part.kind === "flap" || part.kind === "slat" || part.kind === "spoiler" || part.kind === "aileron" || part.kind === "elevator") {
         const slat = part.kind === "slat", chord = part.chord ?? (slat ? 0.075 : 0.72);
-        const h = part.hinge, e = part.end, origin = slat ? wingGeometry(a).point(h, chord, part.sign, part.device === "krueger" ? -1 : 0) : [part.sign * h[0], h[1], h[2] + h[3] * chord], end = slat ? wingGeometry(a).point(e, chord, part.sign, part.device === "krueger" ? -1 : 0) : [part.sign * e[0], e[1], e[2] + e[3] * chord], axis = end.map((v, i) => v - origin[i]), n = Math.hypot(...axis), k = axis.map((v) => v / n), q = p.map((v, i) => v - origin[i]), control = part.kind === "spoiler" ? typeof speedbrakePosition === "undefined" ? 0 : speedbrakePosition : part.kind === "aileron" ? typeof motion !== "undefined" && motion ? Math.sin(systemsClock / 2400) * part.sign * 0.14 : 0 : f, t = part.sign * control * (part.kind === "spoiler" ? -45 : part.kind === "aileron" ? 28 : part.deflection ?? (slat ? -16 : 32)) * D, co = Math.cos(t), si = Math.sin(t), dot = k.reduce((v, x, i) => v + x * q[i], 0), cross = [k[1] * q[2] - k[2] * q[1], k[2] * q[0] - k[0] * q[2], k[0] * q[1] - k[1] * q[0]];
+        const h = part.hinge, e = part.end, origin = slat ? wingGeometry(a).point(h, chord, part.sign, part.device === "krueger" ? -1 : 0) : [part.sign * h[0], h[1], h[2] + h[3] * chord], end = slat ? wingGeometry(a).point(e, chord, part.sign, part.device === "krueger" ? -1 : 0) : [part.sign * e[0], e[1], e[2] + e[3] * chord], axis = end.map((v, i) => v - origin[i]), n = Math.hypot(...axis), k = axis.map((v) => v / n), q = p.map((v, i) => v - origin[i]), control = part.kind === "spoiler" ? typeof speedbrakePosition === "undefined" ? 0 : speedbrakePosition : part.kind === "elevator" ? typeof motion !== "undefined" && motion ? Math.sin(systemsClock / 3400) * 0.12 : 0 : part.kind === "aileron" ? typeof motion !== "undefined" && motion ? Math.sin(systemsClock / 2400) * part.sign * 0.14 : 0 : f, t = part.sign * control * (part.kind === "spoiler" ? -45 : part.kind === "aileron" || part.kind === "elevator" ? 50 : part.deflection ?? (slat ? -16 : 32)) * D, co = Math.cos(t), si = Math.sin(t), dot = k.reduce((v, x, i) => v + x * q[i], 0), cross = [k[1] * q[2] - k[2] * q[1], k[2] * q[0] - k[0] * q[2], k[0] * q[1] - k[1] * q[0]];
         return q.map(
-          (v, i) => origin[i] + v * co + cross[i] * si + k[i] * dot * (1 - co) + (part.kind === "spoiler" || part.kind === "aileron" ? 0 : i === 2 ? (part.extension ?? (slat ? -(a.r * 0.12 + 0.12) : airframe(a).narrow ? 0.62 : 0.9)) * f * (slat ? (e[0] - h[0]) / Math.hypot(e[0] - h[0], e[2] - h[2]) : 1) : i === 1 ? (part.drop ?? (slat ? -0.1 : part.component === "aft-element" ? -0.09 : 0)) * f : slat ? -(part.extension || 0) * part.sign * (e[2] - h[2]) / Math.hypot(e[0] - h[0], e[2] - h[2]) * f : 0)
+          (v, i) => origin[i] + v * co + cross[i] * si + k[i] * dot * (1 - co) + (part.kind === "spoiler" || part.kind === "aileron" || part.kind === "elevator" ? 0 : i === 2 ? (part.extension ?? (slat ? -(a.r * 0.12 + 0.12) : airframe(a).narrow ? 0.62 : 0.9)) * f * (slat ? (e[0] - h[0]) / Math.hypot(e[0] - h[0], e[2] - h[2]) : 1) : i === 1 ? (part.drop ?? (slat ? -0.1 : part.component === "aft-element" ? -0.09 : 0)) * f : slat ? -(part.extension || 0) * part.sign * (e[2] - h[2]) / Math.hypot(e[0] - h[0], e[2] - h[2]) * f : 0)
         );
       }
       return p;
@@ -10025,25 +10029,36 @@
     });
     function configureFlaps() {
       const settings = fleet[aircraftIndex].code === "B737" ? ["0", "1", "2", "5", "10", "15", "25", "30", "40"] : fleet[aircraftIndex].code === "B77W" ? ["0", "1", "5", "15", "20", "25", "30"] : ["0", "1", "2", "3", "FULL"];
-      const select = $("#flaps-select");
-      select.replaceChildren(
+      const group = $("#flaps-choices");
+      group.replaceChildren(
         ...settings.map((name, i) => {
-          const option = document.createElement("option");
-          option.value = String(i / (settings.length - 1));
-          option.textContent = name;
-          return option;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.dataset.flap = String(i / (settings.length - 1));
+          button.textContent = name;
+          button.setAttribute("aria-pressed", String(i === 0));
+          return button;
         })
       );
       flapTarget = 0;
-      select.value = "0";
     }
-    $("#flaps-select").addEventListener("change", (event) => {
-      flapTarget = Number(event.target.value);
+    $("#flaps-choices").addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-flap]");
+      if (!button) return;
+      flapTarget = Number(button.dataset.flap);
+      $$("#flaps-choices button").forEach(
+        (item) => item.setAttribute("aria-pressed", String(item === button))
+      );
       if (!motion) snapModel();
       drawPlane();
     });
-    $("#speedbrake-select").addEventListener("change", (event) => {
-      speedbrakeTarget = Number(event.target.value);
+    $("#speedbrake-choices").addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-speedbrake]");
+      if (!button) return;
+      speedbrakeTarget = Number(button.dataset.speedbrake);
+      $$("#speedbrake-choices button").forEach(
+        (item) => item.setAttribute("aria-pressed", String(item === button))
+      );
       if (!motion) snapModel();
       drawPlane();
     });

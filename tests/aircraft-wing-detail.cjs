@@ -36,6 +36,29 @@ for (const aircraft of vm.runInContext('fleet', ctx)) {
     assert(half[1] > stowed[1] && full[1] > half[1], 'spoiler rises through half and full');
   }
   ctx.speedbrakePosition = 0;
+  ctx.motion = true;
+  ctx.systemsClock = 0;
+  const slat = parts.find((p) => p.kind === 'slat' && p.device === 'slat');
+  const slatPoint = mesh.find((face) => face.part === slat).p[0];
+  const slatAtZero = ctx.articulatedPoint(slatPoint, slat, aircraft, 1, 0);
+  ctx.systemsClock = Math.PI * 1200;
+  assert.deepEqual(
+    ctx.articulatedPoint(slatPoint, slat, aircraft, 1, 0),
+    slatAtZero,
+    'slat stays retracted while rocking',
+  );
+  const movements = [-1, 1].map((sign) => {
+    const part = parts.find((p) => p.kind === 'aileron' && p.sign === sign);
+    const point = geo.point(part.end, 1, sign);
+    const moved = ctx.articulatedPoint(point, part, aircraft, 1, 0);
+    return moved[1] - point[1];
+  });
+  assert(movements[0] * movements[1] < 0, 'ailerons move in opposite directions');
+  assert(
+    parts.some((p) => p.kind === 'elevator'),
+    'tail elevators are articulated',
+  );
+  ctx.motion = false;
   const aft = parts.find((p) => p.component === 'aft-element');
   assert.equal(
     Boolean(aft),

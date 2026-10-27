@@ -4989,3 +4989,49 @@ body.motion-off .radar-switch:after {
   outline: 2px solid #7ab9ff;
   outline-offset: 2px;
 }
+
+.aircraft-actions .surface-control {
+  display: grid;
+  gap: 7px;
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.surface-label {
+  color: #a7bbd0;
+  font: 9px var(--mono);
+  letter-spacing: 0.08em;
+}
+.surface-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.hangar-tools .surface-choices button {
+  min-width: 38px;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px solid #41628780;
+  border-radius: 4px;
+  background: #0c192a;
+  color: #a9c1d8;
+  font: 10px var(--mono);
+  cursor: pointer;
+}
+.hangar-tools .surface-choices button[aria-pressed='true'] {
+  background: #1e3b58;
+  color: #e2f4ff;
+  border-color: #82caff;
+}
+.hangar-tools .surface-choices button:focus-visible {
+  outline: 2px solid #8fceff;
+  outline-offset: 2px;
+}
+@media (max-width: 650px) {
+  .aircraft-actions .surface-control {
+    grid-column: 1 / -1;
+  }
+  .hangar-tools .surface-choices button {
+    flex: 1 0 38px;
+    min-height: 44px;
+  }
+}

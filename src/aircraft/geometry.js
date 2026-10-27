@@ -1237,9 +1237,11 @@ export function buildPlane(a, wireframe = false) {
     for (let k = 1; k < stations.length; k++) {
       const s = stations[k - 1],
         t = stations[k];
+      const elevator = { kind: 'elevator', sign, hinge: s, end: t, chord: 0.695 };
       part = null;
       for (let j = 1; j < fractions.length; j++)
         for (const side of [-1, 1]) {
+          part = fractions[j - 1] >= 0.695 ? elevator : null;
           const shade = j === 4 ? 0.56 : j === 5 ? 0.94 : 1;
           add(
             [
@@ -1251,6 +1253,7 @@ export function buildPlane(a, wireframe = false) {
             color.map((v) => v * (side > 0 ? 1 : 0.65) * shade),
           );
         }
+      part = elevator;
       add(
         [
           [sign * s[0], s[1], s[2] + s[3]],
@@ -1260,6 +1263,7 @@ export function buildPlane(a, wireframe = false) {
         ],
         [63, 99, 140],
       );
+      part = null;
     }
   }
 
