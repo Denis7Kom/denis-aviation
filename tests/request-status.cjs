@@ -109,6 +109,16 @@ const render = () =>
     context,
   );
   render();
+  elements.get('#status-filter').value = 'confirmed';
+  elements.get('#status-filter').listeners.change();
+  render();
+  assert.deepEqual(
+    elements.get('#list').children.map((card) => card.dataset.status),
+    ['confirmed'],
+  );
+  elements.get('#status-filter').value = 'all';
+  elements.get('#status-filter').listeners.change();
+  render();
   cards = elements.get('#list').children;
   const select = cards[0].children[2].children[1];
   select.value = 'confirmed';

@@ -23,7 +23,7 @@ class Element {
   setAttribute() {}
 }
 
-function boot(failImports = false, search = '') {
+function boot(failImports = false, search = '', storage = new Map()) {
   const elements = new Map();
   const get = (selector) => {
     if (!elements.has(selector)) elements.set(selector, new Element());
@@ -33,7 +33,7 @@ function boot(failImports = false, search = '') {
   form.fields = {
     type: 'flight',
     network: 'VATSIM',
-    date: '2026-11-01',
+    date: '2099-11-01',
     time: '18:30',
     timezone: 'Europe/Rome',
     callsign: ' TEST01 ',
@@ -41,7 +41,14 @@ function boot(failImports = false, search = '') {
     contact: ' @test ',
     notes: ' optional ',
   };
-  form.elements = { timezone: {}, type: {} };
+  form.elements = Object.fromEntries(Object.keys(form.fields).map((key) => [key, {}]));
+  for (const key of Object.keys(form.fields).filter((key) => !['timezone', 'type'].includes(key)))
+    Object.defineProperty(form.elements[key], 'value', {
+      get: () => form.fields[key],
+      set: (value) => {
+        form.fields[key] = value;
+      },
+    });
   Object.defineProperty(form.elements.timezone, 'value', {
     get: () => form.fields.timezone,
     set: (value) => (form.fields.timezone = value),
@@ -121,7 +128,11 @@ function boot(failImports = false, search = '') {
     document,
     window: { location: { search } },
     URLSearchParams,
-    localStorage: { getItem: () => 'ru', setItem() {} },
+    localStorage: {
+      getItem: (key) => storage.get(key) || null,
+      setItem: (key, value) => storage.set(key, value),
+      removeItem: (key) => storage.delete(key),
+    },
     Intl,
     FormData: class {
       constructor(currentForm) {
@@ -180,7 +191,22 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   const unknown = boot(false, '?type=unknown');
   await flush();
   assert.equal(unknown.form.fields.type, 'flight', 'Ignore unknown request types');
-  const app = boot();
+  const storage = new Map();
+  const draft = boot(false, '', storage);
+  await flush();
+  draft.form.listeners.input();
+  assert.equal(storage.has('dk-flight-request-draft-v1'), false);
+  draft.get('#save-draft').checked = true;
+  draft.form.listeners.change();
+  assert.equal(JSON.parse(storage.get('dk-flight-request-draft-v1')).contact, ' @test ');
+  const restored = boot(false, '', storage);
+  await flush();
+  assert.equal(restored.form.fields.callsign, ' TEST01 ');
+  assert.equal(restored.get('#save-draft').checked, true);
+  restored.get('#save-draft').checked = false;
+  restored.form.listeners.change();
+  assert.equal(storage.has('dk-flight-request-draft-v1'), false);
+  const app = boot(false, '', storage);
   assert(app.get('#send').disabled, 'Submission stays disabled while the SDK is loading');
   await app.submit();
   assert.equal(app.getWrites().length, 0);
@@ -198,6 +224,19 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   assert.equal(app.getSignInCalls(), 0, 'Whitespace-only required fields are rejected');
   app.form.fields.contact = ' @test ';
 
+  app.form.fields.date = '2001-01-01';
+  await app.submit();
+  assert.equal(app.getSignInCalls(), 0);
+  assert.match(app.get('#notice').textContent, /прошло/);
+  app.form.fields.date = '2099-11-01';
+  app.form.fields.timezone = 'Invalid/Zone';
+  await app.submit();
+  assert.equal(app.getSignInCalls(), 0);
+  assert.match(app.get('#notice').textContent, /IANA/);
+  app.form.fields.timezone = 'Europe/Rome';
+  app.get('#save-draft').checked = true;
+  app.form.listeners.input();
+  assert(storage.has('dk-flight-request-draft-v1'));
   app.setSignInMode('cancel');
   const cancelled = app.submit();
   assert.equal(app.getSignInCalls(), 1, 'The pop-up is opened in the submit event');
@@ -229,13 +268,20 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   app.resolveWrite();
   await submission;
   assert.equal(app.form.resets, 1, 'Reset only after the server acknowledges the write');
-  assert(app.form.fields.timezone);
+  assert.equal(storage.has('dk-flight-request-draft-v1'), false);
+  assert.equal(app.get('#confirmation').hidden, false);
+  assert.equal(app.form.hidden, true);
+  assert.match(app.get('#confirmation-summary').textContent, /TEST01/);
   assert.match(app.get('#notice').textContent, /сохранена/);
+  app.get('#new-form').listeners.click();
+  assert.equal(app.form.hidden, false);
+  assert(app.form.fields.timezone);
+  assert.equal(app.get('#notice').textContent, '');
 
   Object.assign(app.form.fields, {
     type: 'atc',
     network: 'Infinite Flight',
-    date: '2026-11-01',
+    date: '2099-11-01',
     time: '19:00',
     callsign: 'TEST02',
     route: 'LIRN',

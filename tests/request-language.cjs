@@ -28,6 +28,9 @@ function boot(values, blocked = false) {
     ['#login', element()],
     ['#logout', element()],
     ['#form-auth-hint', element()],
+    ['#new-form', element()],
+    ['#status-filter', element()],
+    ['#save-draft', element()],
   ]);
   const document = {
     title: '',

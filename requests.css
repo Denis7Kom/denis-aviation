@@ -622,3 +622,56 @@ textarea:focus-visible {
     transition-duration: 0s !important;
   }
 }
+
+.confirmation {
+  margin-top: 26px;
+  padding: 22px;
+  border: 1px solid #418c64;
+  background: #10291f;
+  border-radius: 5px;
+}
+.confirmation-mark {
+  color: #a5edc0;
+  font-size: 24px;
+}
+.confirmation h3 {
+  margin: 10px 0;
+  color: #e5fff0;
+  font-size: 20px;
+}
+.confirmation p {
+  font-size: 12px;
+}
+#confirmation-summary {
+  white-space: pre-wrap;
+  color: #e1f1ea;
+  overflow-wrap: anywhere;
+}
+.confirmation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 20px;
+}
+.confirmation-link {
+  color: #b9e5cb;
+  font-size: 12px;
+  text-decoration: underline;
+}
+.draft-choice {
+  display: flex;
+  align-items: start;
+  gap: 10px;
+  line-height: 1.5;
+}
+.draft-choice input {
+  width: 18px;
+  min-height: 18px;
+  height: 18px;
+  margin: 0;
+  flex: 0 0 18px;
+}
+.filter-label {
+  margin-top: 22px;
+}

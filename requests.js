@@ -22,7 +22,8 @@ let language = readLanguage(),
   lastListNotice = null,
   authReady = false,
   serviceFailed = false,
-  phase = '';
+  phase = '',
+  lastSubmitted = null;
 let db,
   auth,
   authSdk,
@@ -74,6 +75,13 @@ function translate() {
     ? text('Все заявки', 'All requests')
     : text('Мои заявки', 'My requests');
   renderControls();
+  renderConfirmation();
+}
+function renderConfirmation() {
+  if (!lastSubmitted) return;
+  const d = lastSubmitted;
+  $('#confirmation-summary').textContent =
+    `${d.type === 'atc' ? text('Диспетчерский контроль', 'ATC control') : text('Совместный полёт', 'Fly together')} · ${d.network}\n${d.date} ${d.time} (${d.timezone})\n${d.callsign} · ${d.route}`;
 }
 function renderControls() {
   $('#send').disabled = !authReady || !!phase;
@@ -109,6 +117,59 @@ if (typeof window !== 'undefined') {
   if (requestedType === 'flight' || requestedType === 'atc')
     $('#form').elements.type.value = requestedType;
 }
+// Drafts are stored only after the visitor explicitly opts in.
+const draftKey = 'dk-flight-request-draft-v1';
+const draftFields = [
+  'type',
+  'network',
+  'date',
+  'time',
+  'timezone',
+  'callsign',
+  'route',
+  'contact',
+  'notes',
+];
+try {
+  const saved = JSON.parse(localStorage.getItem(draftKey) || 'null');
+  if (saved && typeof saved === 'object') {
+    for (const key of draftFields) {
+      if (typeof saved[key] === 'string' && $('#form').elements[key])
+        $('#form').elements[key].value = saved[key];
+    }
+    if (saved.notes) $('.more-details').open = true;
+    $('#save-draft').checked = true;
+  }
+} catch (_) {}
+function saveDraft() {
+  try {
+    if (!$('#save-draft').checked) {
+      localStorage.removeItem(draftKey);
+      return;
+    }
+    const data = Object.fromEntries(new FormData($('#form')).entries());
+    localStorage.setItem(
+      draftKey,
+      JSON.stringify(Object.fromEntries(draftFields.map((key) => [key, data[key] || '']))),
+    );
+  } catch (_) {
+    notice(
+      'Не удалось сохранить черновик на этом устройстве.',
+      'Could not save a draft on this device.',
+    );
+  }
+}
+$('#form').addEventListener('input', saveDraft);
+$('#form').addEventListener('change', saveDraft);
+$('#new-form').addEventListener('click', () => {
+  $('#confirmation').hidden = true;
+  $('#form').hidden = false;
+  lastSubmitted = null;
+  notice('', '');
+});
+$('#status-filter').addEventListener('change', () => {
+  if (user) subscribe();
+});
 translate();
 function subscribe() {
   if (unsubscribe) unsubscribe();
@@ -126,9 +187,16 @@ function subscribe() {
         list.append(p);
         return;
       }
+      const filter = isAdmin(user) ? $('#status-filter').value : 'all';
       const entries = snapshot.docs
+        .filter((item) => !filter || filter === 'all' || item.data().status === filter)
         .slice()
         .sort((a, b) => (b.data().createdAt?.seconds || 0) - (a.data().createdAt?.seconds || 0));
+      if (!entries.length) {
+        const p = document.createElement('p');
+        p.textContent = text('Заявок с этим статусом нет.', 'No requests with this status.');
+        list.append(p);
+      }
       for (const item of entries) {
         const d = item.data(),
           card = document.createElement('article');
@@ -216,6 +284,33 @@ $('#form').addEventListener('submit', async (event) => {
     return;
   }
 
+  // Compare against the current date and time in the time zone selected by the visitor.
+  try {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: data.timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    }).formatToParts(new Date());
+    const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+    const now = `${values.year}-${values.month}-${values.day} ${values.hour}:${values.minute}`;
+    if (`${data.date} ${data.time}` < now) {
+      notice(
+        'Выбранное время уже прошло в указанном часовом поясе. Проверь дату и время.',
+        'The selected time has already passed in the specified time zone. Check the date and time.',
+      );
+      return;
+    }
+  } catch (_) {
+    notice(
+      'Укажи часовой пояс в формате IANA, например Europe/Rome или UTC.',
+      'Enter an IANA time zone, such as Europe/Rome or UTC.',
+    );
+    return;
+  }
   phase = user ? 'sending' : 'signing-in';
   renderControls();
   notice('', '');
@@ -236,6 +331,14 @@ $('#form').addEventListener('submit', async (event) => {
       status: 'new',
       createdAt: serverTimestamp(),
     });
+    lastSubmitted = data;
+    renderConfirmation();
+    $('#confirmation').hidden = false;
+    form.hidden = true;
+    try {
+      localStorage.removeItem(draftKey);
+    } catch (_) {}
+    $('#save-draft').checked = false;
     form.reset();
     form.elements.timezone.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
     notice(
@@ -304,6 +407,7 @@ async function start() {
       lastListNotice = null;
       $('#list-notice').textContent = '';
       $('#list-panel').hidden = !u;
+      $('#filter-label').hidden = !isAdmin(u);
       $('.grid').classList.toggle('is-guest', !u);
       $('#login').hidden = !!u;
       $('#logout').hidden = !u;
