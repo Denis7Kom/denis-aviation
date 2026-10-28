@@ -1,5 +1,6 @@
 import { airports, isMainHub, airportRole } from './data/airports.js';
 import { fleet } from './data/aircraft.js';
+import { bindModelGestures } from './aircraft/model-gestures.js';
 import {
   airframe,
   wingGeometry,
@@ -36,6 +37,7 @@ import {
     tabIndex = 0,
     wire = false,
     angle = 26 * D,
+    viewPitch = 0,
     dragging = false;
   let phase = 0,
     raf = 0,
@@ -955,7 +957,10 @@ import {
       rot = visualAngle,
       ca = Math.cos(rot),
       sa = Math.sin(rot),
-      pitch = detail === 'gear' ? -0.32 : detail === 'cockpit' ? 0.3 : 0.5,
+      pitch = Math.max(
+        -1.15,
+        Math.min(1.15, (detail === 'gear' ? -0.32 : detail === 'cockpit' ? 0.3 : 0.5) + viewPitch),
+      ),
       scale = Math.min(w / 94, h / 51) * visualZoom;
     const bank = flightMotion(systemsClock, motion).bank;
     function bankPoint(point) {
@@ -1105,30 +1110,27 @@ import {
     visualAngle = angle;
     requestPlaneDraw();
   });
-  let dragX = 0,
-    dragAngle = 0;
-  model.el.addEventListener('pointerdown', (e) => {
-    if (e.button !== 0) return;
-    dragging = true;
-    autoTurnResume = Infinity;
-    dragX = e.clientX;
-    dragAngle = angle;
-    model.el.setPointerCapture(e.pointerId);
-  });
-  model.el.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
-    angle = dragAngle + (e.clientX - dragX) * 0.012;
-    angle = ((((angle + Math.PI) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) - Math.PI;
-    $('#rotation').value = Math.round(angle / D);
-    visualAngle = angle;
-    requestPlaneDraw();
-  });
-  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((type) =>
-    model.el.addEventListener(type, () => {
-      dragging = false;
+  bindModelGestures(model.el, {
+    read: () => ({ angle, pitch: viewPitch, zoom }),
+    rotate: (nextAngle, nextPitch) => {
+      angle = ((((nextAngle + Math.PI) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) - Math.PI;
+      viewPitch = Math.max(-1.2, Math.min(0.65, nextPitch));
+      $('#rotation').value = Math.round(angle / D);
+      visualAngle = angle;
+      requestPlaneDraw();
+    },
+    zoom: (value) => {
+      zoom = Math.max(0.8, Math.min(1.75, value));
+      $('#model-zoom').value = Math.round(zoom * 100);
+      visualZoom = modelTarget().zoom * zoom;
       autoTurnResume = phase + 7000;
-    }),
-  );
+      requestPlaneDraw();
+    },
+    dragging: (active) => {
+      dragging = active;
+      autoTurnResume = active ? Infinity : phase + 7000;
+    },
+  });
   // Natural Earth 1:110m land, public domain. https://naturalearthdata.com/about/terms-of-use/
   const land = [
     [
@@ -8119,6 +8121,7 @@ import {
   $$('[data-detail]').forEach((b) =>
     b.addEventListener('click', () => {
       detail = b.dataset.detail;
+      viewPitch = 0;
       autoTurnResume = phase + 3000;
       angle =
         (detail === 'engines' ? -12 : detail === 'cockpit' ? 20 : detail === 'gear' ? 35 : 26) * D;

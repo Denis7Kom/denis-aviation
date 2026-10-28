@@ -408,6 +408,61 @@
     { code: "A321", name: "Airbus A321-200", len: 44.51, span: 34.1, r: 1.975, winglet: 0.75 }
   ];
 
+  // src/aircraft/model-gestures.js
+  function bindModelGestures(canvas, { read, rotate, zoom, dragging }) {
+    const pointers = /* @__PURE__ */ new Map();
+    let anchor = null;
+    function rebase() {
+      const points = [...pointers.values()];
+      if (!points.length) {
+        anchor = null;
+        dragging(false);
+        return;
+      }
+      const state = read();
+      dragging(true);
+      anchor = points.length > 1 ? {
+        distance: Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y) || 1,
+        zoom: state.zoom
+      } : { x: points[0].x, y: points[0].y, angle: state.angle, pitch: state.pitch };
+    }
+    canvas.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "mouse" && event.button !== 0) return;
+      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      canvas.setPointerCapture(event.pointerId);
+      rebase();
+    });
+    canvas.addEventListener("pointermove", (event) => {
+      if (!pointers.has(event.pointerId) || !anchor) return;
+      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      const points = [...pointers.values()];
+      if (points.length > 1 && anchor.distance) {
+        const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+        zoom(anchor.zoom * distance / anchor.distance);
+      } else if (points.length === 1 && anchor.x !== void 0) {
+        rotate(
+          anchor.angle + (points[0].x - anchor.x) * 0.012,
+          anchor.pitch + (points[0].y - anchor.y) * 8e-3
+        );
+      }
+    });
+    function finish(event) {
+      if (!pointers.delete(event.pointerId)) return;
+      rebase();
+    }
+    for (const name of ["pointerup", "pointercancel", "lostpointercapture"])
+      canvas.addEventListener(name, finish);
+    canvas.addEventListener(
+      "wheel",
+      (event) => {
+        event.preventDefault();
+        const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 400 : 1;
+        zoom(read().zoom * Math.exp(-event.deltaY * unit * 15e-4));
+      },
+      { passive: false }
+    );
+  }
+
   // src/aircraft/geometry.js
   function airframe(a) {
     if (!airframe.specs)
@@ -2456,7 +2511,7 @@
       }
     }
     let lang = read("dk-aviation-lang") === "en" ? "en" : "ru", motion = !reduced.matches && read("dk-aviation-motion") !== "off";
-    let aircraftIndex = 0, airportIndex = 0, tabIndex = 0, wire = false, angle = 26 * D, dragging = false;
+    let aircraftIndex = 0, airportIndex = 0, tabIndex = 0, wire = false, angle = 26 * D, viewPitch = 0, dragging = false;
     let phase = 0, raf = 0, last = 0, bank = 0, targetBank = 0, longitude = -20, latitude = 30, targetLon = 37.4125, targetLat = 40.3;
     const flights = [
       {
@@ -3109,7 +3164,10 @@
       }
       const c = begin(model);
       if (!c) return;
-      const w = model.w, h = model.h, rot = visualAngle, ca = Math.cos(rot), sa = Math.sin(rot), pitch2 = detail === "gear" ? -0.32 : detail === "cockpit" ? 0.3 : 0.5, scale = Math.min(w / 94, h / 51) * visualZoom;
+      const w = model.w, h = model.h, rot = visualAngle, ca = Math.cos(rot), sa = Math.sin(rot), pitch2 = Math.max(
+        -1.15,
+        Math.min(1.15, (detail === "gear" ? -0.32 : detail === "cockpit" ? 0.3 : 0.5) + viewPitch)
+      ), scale = Math.min(w / 94, h / 51) * visualZoom;
       const bank2 = flightMotion(systemsClock, motion).bank;
       function bankPoint(point) {
         return [
@@ -3234,29 +3292,27 @@
       visualAngle = angle;
       requestPlaneDraw();
     });
-    let dragX = 0, dragAngle = 0;
-    model.el.addEventListener("pointerdown", (e) => {
-      if (e.button !== 0) return;
-      dragging = true;
-      autoTurnResume = Infinity;
-      dragX = e.clientX;
-      dragAngle = angle;
-      model.el.setPointerCapture(e.pointerId);
-    });
-    model.el.addEventListener("pointermove", (e) => {
-      if (!dragging) return;
-      angle = dragAngle + (e.clientX - dragX) * 0.012;
-      angle = ((angle + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
-      $("#rotation").value = Math.round(angle / D);
-      visualAngle = angle;
-      requestPlaneDraw();
-    });
-    ["pointerup", "pointercancel", "lostpointercapture"].forEach(
-      (type) => model.el.addEventListener(type, () => {
-        dragging = false;
+    bindModelGestures(model.el, {
+      read: () => ({ angle, pitch: viewPitch, zoom }),
+      rotate: (nextAngle, nextPitch) => {
+        angle = ((nextAngle + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
+        viewPitch = Math.max(-1.2, Math.min(0.65, nextPitch));
+        $("#rotation").value = Math.round(angle / D);
+        visualAngle = angle;
+        requestPlaneDraw();
+      },
+      zoom: (value) => {
+        zoom = Math.max(0.8, Math.min(1.75, value));
+        $("#model-zoom").value = Math.round(zoom * 100);
+        visualZoom = modelTarget().zoom * zoom;
         autoTurnResume = phase + 7e3;
-      })
-    );
+        requestPlaneDraw();
+      },
+      dragging: (active) => {
+        dragging = active;
+        autoTurnResume = active ? Infinity : phase + 7e3;
+      }
+    });
     const land = [
       [
         [
@@ -10010,6 +10066,7 @@
     $$("[data-detail]").forEach(
       (b) => b.addEventListener("click", () => {
         detail = b.dataset.detail;
+        viewPitch = 0;
         autoTurnResume = phase + 3e3;
         angle = (detail === "engines" ? -12 : detail === "cockpit" ? 20 : detail === "gear" ? 35 : 26) * D;
         $("#rotation").value = Math.round(angle / D);
