@@ -1609,7 +1609,7 @@
               const vertices = [
                 point(side, y0, leading0),
                 point(side, y1, leading1),
-                point(side, y1, trailing1),
+                ...leading1 === trailing1 ? [] : [point(side, y1, trailing1)],
                 point(side, y0, trailing0)
               ];
               add(side > 0 ? vertices : [...vertices].reverse(), [174, 193, 212], true, null, 0.16);
@@ -1624,37 +1624,33 @@
               );
           }
           const [y, leading, trailing] = sections.at(-1);
-          add(
-            [
-              point(-1, y, leading),
-              point(-1, y, trailing),
-              point(1, y, trailing),
-              point(1, y, leading)
-            ],
-            [112, 137, 159]
-          );
+          if (leading !== trailing)
+            add(
+              [
+                point(-1, y, leading),
+                point(-1, y, trailing),
+                point(1, y, trailing),
+                point(1, y, leading)
+              ],
+              [112, 137, 159]
+            );
           part = null;
         };
         blade("upper", [
           [0, 0.01, q[3] - 0.02],
-          [0.2, 0.12, 0.74],
-          [0.42, 0.28, 0.69],
-          [0.64, 0.45, 0.71],
-          [0.78, 0.6, 0.73]
+          [0.78, 0.66, 0.66]
         ]);
         blade("lower", [
           [0, 0.09, q[3] - 0.04],
-          [-0.18, 0.23, 0.74],
-          [-0.38, 0.4, 0.72],
-          [-0.55, 0.57, 0.71]
+          [-0.55, 0.64, 0.64]
         ]);
         if (!wireframe) {
           part = { kind: "wingtip-fence", component: "static-wick", sign };
           for (const [y, z2] of [
-            [0.74, 0.73],
-            [0.43, 0.69],
-            [-0.15, 0.74],
-            [-0.46, 0.71]
+            [0.62, 0.69],
+            [0.3, 0.746],
+            [-0.15, 0.742],
+            [-0.42, 0.673]
           ]) {
             const base = point(0, y, z2);
             beam(base, [base[0], base[1], base[2] + 0.16], 6e-3, [74, 94, 113]);
