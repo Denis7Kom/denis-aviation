@@ -1807,7 +1807,11 @@
       const stations2 = wingGeometry(a).stations;
       foil(stations2, sign, wingColor, true);
       if (a.code === "A321") {
-        const q = stations2.at(-1), point = (side, y, z2) => [sign * (q[0] + side * 0.018), q[1] + y, q[2] + z2], blade = (name, sections) => {
+        const q = stations2.at(-1), point = (side, y, z2) => [
+          sign * (q[0] + side * 0.018),
+          q[1] + y,
+          q[2] + (q[3] - 0.02) + (z2 - (q[3] - 0.02)) * 1.5
+        ], blade = (name, sections) => {
           part = { kind: "wingtip-fence", component: name, sign };
           for (let i = 1; i < sections.length; i++) {
             const [y0, leading0, trailing0] = sections[i - 1], [y1, leading1, trailing1] = sections[i];

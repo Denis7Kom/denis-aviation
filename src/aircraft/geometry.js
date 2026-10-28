@@ -1275,7 +1275,11 @@ export function buildPlane(a, wireframe = false) {
       // lower blade. Both sit at the aft edge of the outer wingtip.
       // Reference: https://commons.wikimedia.org/wiki/File:Airbus_A321_wingtip_fence.jpg
       const q = stations.at(-1),
-        point = (side, y, z) => [sign * (q[0] + side * 0.018), q[1] + y, q[2] + z],
+        point = (side, y, z) => [
+          sign * (q[0] + side * 0.018),
+          q[1] + y,
+          q[2] + (q[3] - 0.02) + (z - (q[3] - 0.02)) * 1.5,
+        ],
         blade = (name, sections) => {
           part = { kind: 'wingtip-fence', component: name, sign };
           for (let i = 1; i < sections.length; i++) {
