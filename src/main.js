@@ -1,5 +1,6 @@
 import { airports, isMainHub, airportRole } from './data/airports.js';
 import { fleet } from './data/aircraft.js';
+import { sampleFlights } from './data/sample-flights.js';
 import { bindModelGestures } from './aircraft/model-gestures.js';
 import {
   airframe,
@@ -111,6 +112,7 @@ import {
       ],
     },
   ];
+  flights.push(...sampleFlights);
   let flightIndex = 0,
     routeProgress = 0,
     routePlaying = false,
@@ -549,6 +551,7 @@ import {
     motionText();
     flightText();
     fleetLog();
+    renderSampleFlights();
     galleryText();
     ownshipReadout();
     gameText();
@@ -7770,6 +7773,13 @@ import {
     $('#route-name').textContent = f[lang];
     $('#route-meta').textContent = f.aircraft + ' / ' + f.callsign + ' / ' + f.reg;
     $('#route-duration').textContent = f.duration;
+    $('#route-timing').textContent = f.demo
+      ? (lang === 'en' ? 'DEMO · ' : 'ДЕМО · ') +
+        f.departure +
+        ' → ' +
+        arrivalTime(f.departure, f.duration) +
+        ' UTC'
+      : '';
     $('#route-hangar').hidden = f.fleet === null;
     $('#route-state').textContent =
       routeProgress >= 1
@@ -7809,6 +7819,49 @@ import {
       b.setAttribute('aria-pressed', String(+b.dataset.route === flightIndex)),
     );
   }
+  function arrivalTime(departure, duration) {
+    const [hours, minutes] = departure.split(':').map(Number),
+      [flightHours, flightMinutes] = duration.split(':').map(Number),
+      total = hours * 60 + minutes + flightHours * 60 + flightMinutes,
+      clock =
+        String(Math.floor((total % 1440) / 60)).padStart(2, '0') +
+        ':' +
+        String(total % 60).padStart(2, '0');
+    return clock + (total >= 1440 ? ' (+1)' : '');
+  }
+  function renderSampleFlights() {
+    const box = $('#example-routes'),
+      selected = Number($('#example-fleet').value);
+    box.replaceChildren();
+    flights.forEach((flight, index) => {
+      if (!flight.demo || flight.fleet !== selected) return;
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'example-route';
+      row.dataset.route = String(index);
+      row.setAttribute('aria-pressed', String(index === flightIndex));
+      const code = document.createElement('strong');
+      code.textContent = flight.from + ' → ' + flight.to;
+      const name = document.createElement('span');
+      name.textContent = flight[lang];
+      const timing = document.createElement('small');
+      timing.textContent =
+        flight.departure +
+        ' → ' +
+        arrivalTime(flight.departure, flight.duration) +
+        ' UTC · ' +
+        flight.duration +
+        ' · ' +
+        flight.callsign;
+      row.append(code, name, timing);
+      box.append(row);
+    });
+  }
+  $('#example-fleet').addEventListener('change', renderSampleFlights);
+  $('#example-routes').addEventListener('click', (event) => {
+    const button = event.target.closest('button[data-route]');
+    if (button) selectFlight(Number(button.dataset.route));
+  });
   function routePlan(f) {
     if (f.plan) return f.plan;
     const points = [f.a, ...f.via, f.b],
@@ -7837,6 +7890,10 @@ import {
   }
   function selectFlight(i, scroll = true) {
     flightIndex = i;
+    if (flights[i].demo) {
+      $('#example-fleet').value = String(flights[i].fleet);
+      renderSampleFlights();
+    }
     routeProgress = 0;
     routeArrivalHold = 0;
     routeManualPause = false;
@@ -8042,8 +8099,8 @@ import {
     $('#fleet-log-title').textContent = fleet[aircraftIndex].name;
     $('#fleet-log-description').textContent = matches.length
       ? lang === 'en'
-        ? 'Selected flights on this aircraft'
-        : 'Избранные рейсы на этом самолёте'
+        ? 'Recorded and illustrative flights on this aircraft'
+        : 'Записанные и демонстрационные рейсы этого самолёта'
       : lang === 'en'
         ? 'No matching flights in the selected logbook entries.'
         : 'В выбранных записях журнала рейсов на этом самолёте пока нет.';
@@ -8052,7 +8109,14 @@ import {
     for (const f of matches) {
       const b = document.createElement('button');
       b.className = 'fleet-flight';
-      b.textContent = f.from + ' → ' + f.to + ' / ' + f.duration + ' ↗';
+      b.textContent =
+        (f.demo ? (lang === 'en' ? 'DEMO · ' : 'ДЕМО · ') : '') +
+        f.from +
+        ' → ' +
+        f.to +
+        ' / ' +
+        f.duration +
+        ' ↗';
       b.addEventListener('click', () => selectFlight(flights.indexOf(f)));
       box.append(b);
     }
@@ -8222,6 +8286,31 @@ import {
     lightsOn = !lightsOn;
     articulationText();
     drawPlane();
+  });
+
+  const requestForm = $('#flight-request');
+  $('#request-timezone').value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  requestForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!requestForm.reportValidity()) return;
+    const type = $('#request-type').selectedOptions[0].textContent,
+      network = $('#request-network').value,
+      date = $('#request-date').value,
+      time = $('#request-time').value,
+      timezone = $('#request-timezone').value.trim(),
+      callsign = $('#request-callsign').value.trim(),
+      route = $('#request-route').value.trim(),
+      notes = $('#request-notes').value.trim(),
+      subject = lang === 'en' ? 'Flight / ATC request' : 'Заявка на полёт / ATC',
+      body =
+        lang === 'en'
+          ? `Request: ${type}\nNetwork: ${network}\nDate and time: ${date} ${time} (${timezone})\nUsername: ${callsign}\nRoute / airport: ${route}\nDetails: ${notes}`
+          : `Заявка: ${type}\nСеть: ${network}\nДата и время: ${date} ${time} (${timezone})\nНик: ${callsign}\nМаршрут / аэропорт: ${route}\nПодробности: ${notes}`;
+    window.location.href =
+      'mailto:deniska7best@gmail.com?subject=' +
+      encodeURIComponent(subject) +
+      '&body=' +
+      encodeURIComponent(body);
   });
 
   function hudReadouts() {

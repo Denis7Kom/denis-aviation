@@ -408,6 +408,212 @@
     { code: "A321", name: "Airbus A321-200", len: 44.51, span: 34.1, r: 1.975, winglet: 0.75 }
   ];
 
+  // src/data/sample-flights.js
+  var sampleFlights = [
+    {
+      fleet: 0,
+      from: "KLAX",
+      to: "PHNL",
+      ru: "Лос-Анджелес → Гонолулу",
+      en: "Los Angeles → Honolulu",
+      duration: "05:45",
+      departure: "16:00",
+      a: [33.9416, -118.4085],
+      b: [21.3187, -157.9224],
+      via: [
+        [32, -126],
+        [29, -136],
+        [25, -148]
+      ]
+    },
+    {
+      fleet: 0,
+      from: "VHHH",
+      to: "WSSS",
+      ru: "Гонконг → Сингапур",
+      en: "Hong Kong → Singapore",
+      duration: "03:55",
+      departure: "09:30",
+      a: [22.308, 113.9185],
+      b: [1.3644, 103.9915],
+      via: [
+        [18, 111],
+        [12, 109],
+        [6, 105]
+      ]
+    },
+    {
+      fleet: 1,
+      from: "LIRF",
+      to: "KJFK",
+      ru: "Рим → Нью-Йорк",
+      en: "Rome → New York",
+      duration: "09:20",
+      departure: "09:00",
+      a: [41.8003, 12.2389],
+      b: [40.6413, -73.7781],
+      via: [
+        [45, 4],
+        [49, -10],
+        [52, -25],
+        [49, -45],
+        [43, -65]
+      ]
+    },
+    {
+      fleet: 1,
+      from: "YSSY",
+      to: "PHNL",
+      ru: "Сидней → Гонолулу",
+      en: "Sydney → Honolulu",
+      duration: "09:45",
+      departure: "11:15",
+      a: [-33.9399, 151.1753],
+      b: [21.3187, -157.9224],
+      via: [
+        [-25, 160],
+        [-12, 170],
+        [0, -178],
+        [12, -166]
+      ]
+    },
+    {
+      fleet: 2,
+      from: "UUEE",
+      to: "LTBA",
+      ru: "Москва → Стамбул",
+      en: "Moscow → Istanbul",
+      duration: "03:35",
+      departure: "08:40",
+      a: [55.9726, 37.4146],
+      b: [40.9769, 28.8146],
+      via: [
+        [52, 36],
+        [48, 34],
+        [44, 31]
+      ]
+    },
+    {
+      fleet: 2,
+      from: "LIRF",
+      to: "OMDB",
+      ru: "Рим → Дубай",
+      en: "Rome → Dubai",
+      duration: "05:45",
+      departure: "12:20",
+      a: [41.8003, 12.2389],
+      b: [25.2532, 55.3657],
+      via: [
+        [39, 20],
+        [35, 29],
+        [31, 39],
+        [27, 49]
+      ]
+    },
+    {
+      fleet: 3,
+      from: "VHHH",
+      to: "EGLL",
+      ru: "Гонконг → Лондон",
+      en: "Hong Kong → London",
+      duration: "13:40",
+      departure: "15:00",
+      a: [22.308, 113.9185],
+      b: [51.4706, -0.4619],
+      via: [
+        [32, 105],
+        [43, 90],
+        [51, 70],
+        [56, 50],
+        [56, 25],
+        [53, 8]
+      ]
+    },
+    {
+      fleet: 3,
+      from: "YSSY",
+      to: "WSSS",
+      ru: "Сидней → Сингапур",
+      en: "Sydney → Singapore",
+      duration: "08:15",
+      departure: "01:10",
+      a: [-33.9399, 151.1753],
+      b: [1.3644, 103.9915],
+      via: [
+        [-29, 143],
+        [-21, 133],
+        [-12, 120],
+        [-4, 109]
+      ]
+    },
+    {
+      fleet: 4,
+      from: "LIRN",
+      to: "LMML",
+      ru: "Неаполь → Мальта",
+      en: "Naples → Malta",
+      duration: "01:25",
+      departure: "10:00",
+      a: [40.886, 14.2908],
+      b: [35.8575, 14.4775],
+      via: [
+        [39, 14],
+        [37.5, 14.4]
+      ]
+    },
+    {
+      fleet: 4,
+      from: "UUEE",
+      to: "ULLI",
+      ru: "Москва → Санкт-Петербург",
+      en: "Moscow → St Petersburg",
+      duration: "01:30",
+      departure: "07:10",
+      a: [55.9726, 37.4146],
+      b: [59.8003, 30.2625],
+      via: [
+        [57, 35],
+        [58.5, 32.5]
+      ]
+    },
+    {
+      fleet: 5,
+      from: "LIRF",
+      to: "LEBL",
+      ru: "Рим → Барселона",
+      en: "Rome → Barcelona",
+      duration: "01:50",
+      departure: "13:00",
+      a: [41.8003, 12.2389],
+      b: [41.2971, 2.0785],
+      via: [
+        [42.3, 9],
+        [42.2, 5.5]
+      ]
+    },
+    {
+      fleet: 5,
+      from: "LIRN",
+      to: "LIPZ",
+      ru: "Неаполь → Венеция",
+      en: "Naples → Venice",
+      duration: "01:15",
+      departure: "16:40",
+      a: [40.886, 14.2908],
+      b: [45.5053, 12.3519],
+      via: [
+        [42.5, 13.5],
+        [44, 12.9]
+      ]
+    }
+  ].map((flight, i) => ({
+    ...flight,
+    demo: true,
+    callsign: `SIM${String(i + 1).padStart(3, "0")}`,
+    reg: "DEMO",
+    aircraft: ["B777-300ER", "A330-900", "A330-300", "A350-1000", "B737-700", "A321-200"][flight.fleet]
+  }));
+
   // src/aircraft/model-gestures.js
   function bindModelGestures(canvas, { read, rotate, zoom, dragging }) {
     const pointers = /* @__PURE__ */ new Map();
@@ -2605,6 +2811,7 @@
         ]
       }
     ];
+    flights.push(...sampleFlights);
     let flightIndex = 0, routeProgress = 0, routePlaying = false, routeInView = false, routeManualPause = false, routeArrivalHold = 0, routeLongitude = 90, routeLatitude = 45;
     let fanAngle = 0, fanSpeed = 0, systemsClock = 0, lightsOn = true;
     let gearDown = false, gearPosition = 0, flapTarget = 0, flapPosition = 0, speedbrakeTarget = 0, speedbrakePosition = 0, autoTurnResume = 0, detail = "all", zoom = 1, visualZoom = 1, visualFocus = [0, 0, 0], visualAngle = 26 * D;
@@ -2917,6 +3124,7 @@
       motionText();
       flightText();
       fleetLog();
+      renderSampleFlights();
       galleryText();
       ownshipReadout();
       gameText();
@@ -9805,6 +10013,7 @@
       $("#route-name").textContent = f[lang];
       $("#route-meta").textContent = f.aircraft + " / " + f.callsign + " / " + f.reg;
       $("#route-duration").textContent = f.duration;
+      $("#route-timing").textContent = f.demo ? (lang === "en" ? "DEMO · " : "ДЕМО · ") + f.departure + " → " + arrivalTime(f.departure, f.duration) + " UTC" : "";
       $("#route-hangar").hidden = f.fleet === null;
       $("#route-state").textContent = routeProgress >= 1 ? lang === "en" ? "ARRIVED" : "ПРИБЫТИЕ" : routePlaying ? lang === "en" ? "EN ROUTE" : "НА МАРШРУТЕ" : lang === "en" ? "READY / PAUSED" : "ГОТОВ / ПАУЗА";
       $("#route-play").textContent = !motion ? routeProgress >= 1 ? lang === "en" ? "SHOW DEPARTURE" : "К ВЫЛЕТУ" : lang === "en" ? "SHOW ARRIVAL" : "К ПРИБЫТИЮ" : routePlaying ? lang === "en" ? "PAUSE ❚❚" : "ПАУЗА ❚❚" : lang === "en" ? "PLAY ROUTE ▷" : "ВОСПРОИЗВЕСТИ ▷";
@@ -9819,6 +10028,35 @@
         (b) => b.setAttribute("aria-pressed", String(+b.dataset.route === flightIndex))
       );
     }
+    function arrivalTime(departure, duration) {
+      const [hours, minutes] = departure.split(":").map(Number), [flightHours, flightMinutes] = duration.split(":").map(Number), total = hours * 60 + minutes + flightHours * 60 + flightMinutes, clock2 = String(Math.floor(total % 1440 / 60)).padStart(2, "0") + ":" + String(total % 60).padStart(2, "0");
+      return clock2 + (total >= 1440 ? " (+1)" : "");
+    }
+    function renderSampleFlights() {
+      const box = $("#example-routes"), selected = Number($("#example-fleet").value);
+      box.replaceChildren();
+      flights.forEach((flight, index) => {
+        if (!flight.demo || flight.fleet !== selected) return;
+        const row = document.createElement("button");
+        row.type = "button";
+        row.className = "example-route";
+        row.dataset.route = String(index);
+        row.setAttribute("aria-pressed", String(index === flightIndex));
+        const code = document.createElement("strong");
+        code.textContent = flight.from + " → " + flight.to;
+        const name = document.createElement("span");
+        name.textContent = flight[lang];
+        const timing = document.createElement("small");
+        timing.textContent = flight.departure + " → " + arrivalTime(flight.departure, flight.duration) + " UTC · " + flight.duration + " · " + flight.callsign;
+        row.append(code, name, timing);
+        box.append(row);
+      });
+    }
+    $("#example-fleet").addEventListener("change", renderSampleFlights);
+    $("#example-routes").addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-route]");
+      if (button) selectFlight(Number(button.dataset.route));
+    });
     function routePlan(f) {
       if (f.plan) return f.plan;
       const points = [f.a, ...f.via, f.b], distances = [0];
@@ -9840,6 +10078,10 @@
     }
     function selectFlight(i, scroll = true) {
       flightIndex = i;
+      if (flights[i].demo) {
+        $("#example-fleet").value = String(flights[i].fleet);
+        renderSampleFlights();
+      }
       routeProgress = 0;
       routeArrivalHold = 0;
       routeManualPause = false;
@@ -10028,13 +10270,13 @@
     function fleetLog() {
       const matches = flights.filter((f) => f.fleet === aircraftIndex);
       $("#fleet-log-title").textContent = fleet[aircraftIndex].name;
-      $("#fleet-log-description").textContent = matches.length ? lang === "en" ? "Selected flights on this aircraft" : "Избранные рейсы на этом самолёте" : lang === "en" ? "No matching flights in the selected logbook entries." : "В выбранных записях журнала рейсов на этом самолёте пока нет.";
+      $("#fleet-log-description").textContent = matches.length ? lang === "en" ? "Recorded and illustrative flights on this aircraft" : "Записанные и демонстрационные рейсы этого самолёта" : lang === "en" ? "No matching flights in the selected logbook entries." : "В выбранных записях журнала рейсов на этом самолёте пока нет.";
       const box = $("#fleet-log-flights");
       box.innerHTML = "";
       for (const f of matches) {
         const b = document.createElement("button");
         b.className = "fleet-flight";
-        b.textContent = f.from + " → " + f.to + " / " + f.duration + " ↗";
+        b.textContent = (f.demo ? lang === "en" ? "DEMO · " : "ДЕМО · " : "") + f.from + " → " + f.to + " / " + f.duration + " ↗";
         b.addEventListener("click", () => selectFlight(flights.indexOf(f)));
         box.append(b);
       }
@@ -10175,6 +10417,24 @@
       lightsOn = !lightsOn;
       articulationText();
       drawPlane();
+    });
+    const requestForm = $("#flight-request");
+    $("#request-timezone").value = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+    requestForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (!requestForm.reportValidity()) return;
+      const type = $("#request-type").selectedOptions[0].textContent, network = $("#request-network").value, date = $("#request-date").value, time = $("#request-time").value, timezone = $("#request-timezone").value.trim(), callsign = $("#request-callsign").value.trim(), route = $("#request-route").value.trim(), notes = $("#request-notes").value.trim(), subject = lang === "en" ? "Flight / ATC request" : "Заявка на полёт / ATC", body = lang === "en" ? `Request: ${type}
+Network: ${network}
+Date and time: ${date} ${time} (${timezone})
+Username: ${callsign}
+Route / airport: ${route}
+Details: ${notes}` : `Заявка: ${type}
+Сеть: ${network}
+Дата и время: ${date} ${time} (${timezone})
+Ник: ${callsign}
+Маршрут / аэропорт: ${route}
+Подробности: ${notes}`;
+      window.location.href = "mailto:deniska7best@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
     });
     function hudReadouts() {
       verticalSpeed = Math.sin(pitch * D) * airspeed * 101.269;

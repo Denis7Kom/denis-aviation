@@ -5035,3 +5035,141 @@ body.motion-off .radar-switch:after {
     min-height: 44px;
   }
 }
+
+.example-flights {
+  margin-top: 1.5rem;
+  padding: 1.3rem;
+  border: 1px solid rgba(100, 170, 225, 0.2);
+  background: rgba(7, 18, 31, 0.72);
+}
+.example-flights summary {
+  cursor: pointer;
+  color: #b7dcff;
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+.example-flights p {
+  color: #a8b5c5;
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+.example-flights label {
+  display: block;
+  color: #99aec2;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  margin: 1rem 0 0.5rem;
+}
+.example-flights select,
+.request-form input,
+.request-form select,
+.request-form textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 0.8rem;
+  border: 1px solid #31475c;
+  border-radius: 3px;
+  background: #0a1522;
+  color: #f1f7ff;
+  font: inherit;
+}
+.example-flights select:focus-visible,
+.request-form :is(input, select, textarea, button):focus-visible,
+.example-route:focus-visible {
+  outline: 2px solid #76c4ff;
+  outline-offset: 3px;
+}
+#example-routes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-top: 0.8rem;
+}
+.example-route {
+  display: grid;
+  text-align: left;
+  gap: 0.35rem;
+  padding: 1rem;
+  color: #e6f4ff;
+  background: #101f30;
+  border: 1px solid #2b445b;
+  cursor: pointer;
+  font: inherit;
+}
+.example-route:hover,
+.example-route[aria-pressed='true'] {
+  border-color: #72bbf5;
+  background: #132b40;
+}
+.example-route span,
+.example-route small {
+  color: #a8bdd1;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+.route-timing {
+  color: #81c5f7;
+  font-size: 0.82rem;
+}
+.request-card {
+  margin-bottom: 2rem;
+  padding: clamp(1.3rem, 4vw, 3rem);
+  background: linear-gradient(135deg, #101f30, #08121e);
+  border: 1px solid #29445d;
+}
+.request-card h2 {
+  margin: 0.8rem 0;
+}
+.request-card > p,
+.request-submit p {
+  color: #aabccc;
+  line-height: 1.65;
+}
+.request-card > p {
+  max-width: 65ch;
+}
+.request-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.8rem;
+}
+.request-form label {
+  display: grid;
+  gap: 0.45rem;
+  color: #c7d8e6;
+  font-size: 0.82rem;
+}
+.request-form textarea {
+  resize: vertical;
+}
+.request-wide {
+  grid-column: 1 / -1;
+}
+.request-submit {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.request-submit p {
+  flex: 1 1 260px;
+  font-size: 0.78rem;
+  margin: 0;
+}
+.atc-request-link {
+  margin: 0.7rem 0.7rem 0 0;
+}
+@media (max-width: 600px) {
+  #example-routes,
+  .request-form {
+    grid-template-columns: 1fr;
+  }
+  .request-wide {
+    grid-column: auto;
+  }
+  .request-submit .button {
+    width: 100%;
+  }
+}
