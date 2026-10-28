@@ -1271,37 +1271,72 @@ export function buildPlane(a, wireframe = false) {
     const stations = wingGeometry(a).stations;
     foil(stations, sign, wingColor, true);
     if (a.code === 'A321') {
-      // Thin swept fences have separate blades above and below the wingtip.
+      // A321-211 N156UW: the fence sweeps aft and tapers, with a shorter
+      // lower blade. Sections keep the silhouette joined to the wing skin.
+      // Reference: https://commons.wikimedia.org/wiki/File:Airbus_A321_wingtip_fence.jpg
       const q = stations.at(-1),
-        point = (side, y, z) => [sign * (q[0] + side * 0.028), q[1] + y, q[2] + z],
-        blade = (name, profile) => {
+        point = (side, y, z) => [sign * (q[0] + side * 0.018), q[1] + y, q[2] + z],
+        blade = (name, sections) => {
           part = { kind: 'wingtip-fence', component: name, sign };
-          for (const side of [-1, 1]) {
-            const vertices = profile.map(([y, z]) => point(side, y, z));
-            add(side > 0 ? vertices : [...vertices].reverse(), [178, 198, 217], true, null, 0.18);
+          for (let i = 1; i < sections.length; i++) {
+            const [y0, leading0, trailing0] = sections[i - 1],
+              [y1, leading1, trailing1] = sections[i];
+            for (const side of [-1, 1]) {
+              const vertices = [
+                point(side, y0, leading0),
+                point(side, y1, leading1),
+                point(side, y1, trailing1),
+                point(side, y0, trailing0),
+              ];
+              add(side > 0 ? vertices : [...vertices].reverse(), [174, 193, 212], true, null, 0.16);
+            }
+            for (const [z0, z1] of [
+              [leading0, leading1],
+              [trailing0, trailing1],
+            ])
+              add(
+                [point(-1, y0, z0), point(-1, y1, z1), point(1, y1, z1), point(1, y0, z0)],
+                [112, 137, 159],
+              );
           }
-          for (let i = 0; i < profile.length; i++) {
-            const a = profile[i],
-              b = profile[(i + 1) % profile.length];
-            add(
-              [point(-1, ...a), point(-1, ...b), point(1, ...b), point(1, ...a)],
-              [102, 129, 154],
-            );
-          }
+          const [y, leading, trailing] = sections.at(-1);
+          add(
+            [
+              point(-1, y, leading),
+              point(-1, y, trailing),
+              point(1, y, trailing),
+              point(1, y, leading),
+            ],
+            [112, 137, 159],
+          );
           part = null;
         };
       blade('upper', [
-        [0, 0.02],
-        [0.72, 0.3],
-        [0.72, 0.5],
-        [0, q[3] - 0.02],
+        [0, 0.01, q[3] - 0.02],
+        [0.2, 0.12, 0.74],
+        [0.42, 0.28, 0.69],
+        [0.64, 0.45, 0.71],
+        [0.78, 0.6, 0.73],
       ]);
       blade('lower', [
-        [0, 0.1],
-        [-0.44, 0.39],
-        [-0.44, 0.56],
-        [0, q[3] - 0.06],
+        [0, 0.09, q[3] - 0.04],
+        [-0.18, 0.23, 0.74],
+        [-0.38, 0.4, 0.72],
+        [-0.55, 0.57, 0.71],
       ]);
+      if (!wireframe) {
+        part = { kind: 'wingtip-fence', component: 'static-wick', sign };
+        for (const [y, z] of [
+          [0.74, 0.73],
+          [0.43, 0.69],
+          [-0.15, 0.74],
+          [-0.46, 0.71],
+        ]) {
+          const base = point(0, y, z);
+          beam(base, [base[0], base[1], base[2] + 0.16], 0.006, [74, 94, 113]);
+        }
+        part = null;
+      }
     }
 
     foil(
