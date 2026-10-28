@@ -405,6 +405,11 @@ button:disabled {
   justify-content: space-between;
   margin-top: 3px;
 }
+#login,
+#logout,
+#send {
+  padding-inline-end: 24px;
+}
 .button-arrow {
   font-size: 15px;
   font-weight: 400;

@@ -4510,7 +4510,7 @@ body.motion-off .radar-switch:after {
   justify-content: space-between;
   gap: 32px;
   min-height: 50px;
-  padding: 15px 20px;
+  padding: 15px 24px;
   border-radius: 5px;
   font-size: 11px;
 }
@@ -4634,7 +4634,7 @@ body.motion-off .radar-switch:after {
   .contact .contact-telegram {
     width: 100%;
     min-height: 50px;
-    padding: 14px 16px;
+    padding: 14px 22px;
     font-size: 10px;
     box-sizing: border-box;
   }
@@ -5215,7 +5215,7 @@ nav a[href='requests.html#new-request'] {
   width: fit-content;
   max-width: 100%;
   min-height: 52px;
-  padding: 15px 20px;
+  padding: 15px 24px;
   border-radius: 5px;
   font-size: 0.72rem;
   line-height: 1.45;
@@ -5238,6 +5238,6 @@ nav a[href='requests.html#new-request'] {
   .contact .request-card .booking-link {
     width: 100%;
     gap: 0.75rem;
-    padding: 14px 16px;
+    padding: 14px 22px;
   }
 }
