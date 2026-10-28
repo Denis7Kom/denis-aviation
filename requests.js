@@ -5,11 +5,23 @@ const config = {
   appId: '1:700960122590:web:6dd66719232e8aaa35c44f',
 };
 const $ = (s) => document.querySelector(s);
-let language = localStorage.getItem('requests-language') || 'ru',
+function readLanguage() {
+  try {
+    return (localStorage.getItem('dk-aviation-lang') ||
+      localStorage.getItem('requests-language')) === 'en'
+      ? 'en'
+      : 'ru';
+  } catch (_) {
+    return 'ru';
+  }
+}
+let language = readLanguage(),
   user = null,
-  unsubscribe = null;
+  unsubscribe = null,
+  lastNotice = null;
 const text = (ru, en) => (language === 'en' ? en : ru);
 const notice = (ru, en) => {
+  lastNotice = [ru, en];
   $('#notice').textContent = text(ru, en);
 };
 const isAdmin = (u) =>
@@ -29,16 +41,26 @@ function translate() {
   document.querySelectorAll('[data-ru]').forEach((el) => {
     el.textContent = el.dataset[language];
   });
-  $('#language').textContent = language === 'ru' ? 'EN' : 'RU';
+  document.querySelectorAll('[data-lang]').forEach((button) => {
+    button.setAttribute('aria-pressed', String(button.dataset.lang === language));
+  });
+  document.title =
+    language === 'en' ? 'Flight requests — Denis Aviation' : 'Заявки на полёт — Denis Aviation';
+  if (lastNotice) $('#notice').textContent = text(...lastNotice);
   $('#list-title').textContent = isAdmin(user)
     ? text('Все заявки', 'All requests')
     : text('Мои заявки', 'My requests');
 }
-$('#language').addEventListener('click', () => {
-  language = language === 'ru' ? 'en' : 'ru';
-  localStorage.setItem('requests-language', language);
-  translate();
-  if (user) subscribe();
+document.querySelectorAll('[data-lang]').forEach((button) => {
+  button.addEventListener('click', () => {
+    if (button.dataset.lang === language) return;
+    language = button.dataset.lang === 'en' ? 'en' : 'ru';
+    try {
+      localStorage.setItem('dk-aviation-lang', language);
+    } catch (_) {}
+    translate();
+    if (user) subscribe();
+  });
 });
 $('#form').elements.timezone.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 translate();
@@ -151,6 +173,8 @@ async function start() {
       $('#login').hidden = !!u;
       $('#logout').hidden = !u;
       $('#identity').textContent = u?.email || '';
+      $('#account-info').hidden = !u;
+      $('#auth-hint').hidden = !!u;
       translate();
       if (u) subscribe();
     });
