@@ -33,6 +33,19 @@ for (const aircraft of vm.runInContext('fleet', ctx)) {
             f.part.component === component,
         );
         assert(faces.length >= 4, 'each fence blade has enclosed sides');
+        const points = faces.flatMap((f) => f.p);
+        assert(
+          points.every((p) => Math.abs(Math.abs(p[0]) - tip[0]) < 0.021),
+          'fence sits at the outer wingtip',
+        );
+        assert(
+          points.every((p) => p[2] >= tip[2] + tip[3] * 0.47),
+          'fence sits on the aft half of the wingtip',
+        );
+        assert(
+          points.some((p) => p[2] > tip[2] + tip[3] * 0.96),
+          'fence reaches the trailing edge',
+        );
         const ys = faces.flatMap((f) => f.p.map((p) => p[1]));
         assert(
           component === 'upper' ? Math.max(...ys) > tip[1] + 0.6 : Math.min(...ys) < tip[1] - 0.35,

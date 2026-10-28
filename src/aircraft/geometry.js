@@ -1272,7 +1272,7 @@ export function buildPlane(a, wireframe = false) {
     foil(stations, sign, wingColor, true);
     if (a.code === 'A321') {
       // A321-211 N156UW: the fence sweeps aft and tapers, with a shorter
-      // lower blade. Sections keep the silhouette joined to the wing skin.
+      // lower blade. Both sit at the aft edge of the outer wingtip.
       // Reference: https://commons.wikimedia.org/wiki/File:Airbus_A321_wingtip_fence.jpg
       const q = stations.at(-1),
         point = (side, y, z) => [sign * (q[0] + side * 0.018), q[1] + y, q[2] + z],
@@ -1313,20 +1313,20 @@ export function buildPlane(a, wireframe = false) {
           part = null;
         };
       blade('upper', [
-        [0, 0.01, q[3] - 0.02],
-        [0.78, 0.66, 0.66],
+        [0, q[3] * 0.48, q[3] - 0.02],
+        [0.78, q[3] * 0.98, q[3] * 0.98],
       ]);
       blade('lower', [
-        [0, 0.09, q[3] - 0.04],
-        [-0.55, 0.64, 0.64],
+        [0, q[3] * 0.5, q[3] - 0.02],
+        [-0.55, q[3] * 0.98, q[3] * 0.98],
       ]);
       if (!wireframe) {
         part = { kind: 'wingtip-fence', component: 'static-wick', sign };
         for (const [y, z] of [
-          [0.62, 0.69],
-          [0.3, 0.746],
-          [-0.15, 0.742],
-          [-0.42, 0.673],
+          [0.62, q[3] * 0.978],
+          [0.3, q[3] * 0.976],
+          [-0.15, q[3] * 0.976],
+          [-0.42, q[3] * 0.978],
         ]) {
           const base = point(0, y, z);
           beam(base, [base[0], base[1], base[2] + 0.16], 0.006, [74, 94, 113]);
