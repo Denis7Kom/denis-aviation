@@ -10600,9 +10600,11 @@ Details: ${notes}` : `Заявка: ${type}
     function navigationState() {
       let current = "";
       for (const link of nav.querySelectorAll("a")) {
-        const section = $(link.getAttribute("href"));
+        const href = link.getAttribute("href");
+        if (!href?.startsWith("#")) continue;
+        const section = $(href);
         if (section && !section.hidden && section.getBoundingClientRect().top <= innerHeight * 0.42)
-          current = link.getAttribute("href");
+          current = href;
       }
       for (const link of nav.querySelectorAll("a")) {
         if (link.getAttribute("href") === current) link.setAttribute("aria-current", "location");

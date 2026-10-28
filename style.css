@@ -5184,6 +5184,29 @@ body.motion-off .radar-switch:after {
 .booking-action {
   margin-top: 1.4rem;
 }
+.booking-email {
+  margin-top: 1.2rem;
+}
+.booking-email summary {
+  width: fit-content;
+  color: #a8bfd3;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  cursor: pointer;
+}
+.booking-email summary:hover {
+  color: #e8f5ff;
+}
+.booking-email summary:focus-visible {
+  outline: 2px solid #91d5ff;
+  outline-offset: 4px;
+}
+.booking-email .request-form {
+  margin-top: 1.2rem;
+}
+nav a[href='requests.html#new-request'] {
+  color: #b3dcfa;
+}
 .contact .request-card .booking-link {
   display: inline-flex;
   align-items: center;

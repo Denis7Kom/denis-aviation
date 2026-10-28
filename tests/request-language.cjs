@@ -20,9 +20,14 @@ function boot(values, blocked = false) {
     en = element({ lang: 'en' });
   const translated = element({ ru: 'Заявка', en: 'Request' });
   const named = new Map([
-    ['#form', { elements: { timezone: {} } }],
+    ['#form', { ...element(), elements: { timezone: {} } }],
     ['#list-title', element()],
     ['#notice', element()],
+    ['#send', element()],
+    ['#send-label', element()],
+    ['#login', element()],
+    ['#logout', element()],
+    ['#form-auth-hint', element()],
   ]);
   const document = {
     title: '',

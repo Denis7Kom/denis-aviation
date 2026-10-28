@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="requests.css?v=4" />
+    <link rel="stylesheet" href="requests.css?v=5" />
   </head>
   <body>
     <div class="page-shell">
@@ -55,17 +55,17 @@
             </div>
             <p
               id="auth-hint"
-              data-ru="Войди через Google, чтобы начать."
-              data-en="Sign in with Google to get started."
+              data-ru="Заполни форму ниже. Google понадобится при отправке и для просмотра статуса."
+              data-en="Fill out the form below. Google sign-in is needed to send it and check its status."
             >
-              Войди через Google, чтобы начать.
+              Заполни форму ниже. Google понадобится при отправке и для просмотра статуса.
             </p>
             <div id="account-info" class="account-info" hidden>
               <span data-ru="ВЫ ВОШЛИ" data-en="SIGNED IN">ВЫ ВОШЛИ</span>
               <strong id="identity"></strong>
             </div>
             <div class="auth">
-              <button id="login" type="button">
+              <button id="login" type="button" disabled>
                 <span data-ru="Войти через Google" data-en="Sign in with Google"
                   >Войти через Google</span
                 ><span class="button-arrow" aria-hidden="true">↗</span>
@@ -77,10 +77,9 @@
             </div>
           </div>
         </section>
-        <p id="notice" role="status" aria-live="polite"></p>
-        <section id="area" hidden>
-          <div class="grid">
-            <section class="card form-card" aria-labelledby="form-title">
+        <section id="area">
+          <div class="grid is-guest">
+            <section id="new-request" class="card form-card" aria-labelledby="form-title">
               <div class="card-top">
                 <span>01 / REQUEST</span><span class="corner-mark" aria-hidden="true">+</span>
               </div>
@@ -92,7 +91,7 @@
               >
                 Укажи удобное время и детали предстоящего полёта.
               </p>
-              <form id="form">
+              <form id="form" method="post" action="#new-request">
                 <label
                   ><span data-ru="Тип" data-en="Type">Тип</span
                   ><select name="type">
@@ -123,34 +122,56 @@
                 /></label>
                 <label
                   ><span data-ru="Часовой пояс" data-en="Time zone">Часовой пояс</span
-                  ><input name="timezone" maxlength="80" required
-                /></label>
+                  ><input name="timezone" maxlength="80" required /><small
+                    data-ru="Определён автоматически, можно изменить"
+                    data-en="Detected automatically; you can change it"
+                    >Определён автоматически, можно изменить</small
+                  ></label
+                >
                 <label
                   ><span data-ru="Ник / позывной" data-en="Username / callsign">Ник / позывной</span
-                  ><input name="callsign" maxlength="80" required
+                  ><input name="callsign" maxlength="80" autocomplete="nickname" required
                 /></label>
                 <label class="form-wide"
                   ><span data-ru="Маршрут или аэропорт" data-en="Route or airport"
                     >Маршрут или аэропорт</span
-                  ><input name="route" maxlength="120" required
+                  ><input name="route" maxlength="120" placeholder="UUEE → LIRN" required
                 /></label>
                 <label class="form-wide"
-                  ><span data-ru="Контакт для ответа" data-en="Contact for reply"
-                    >Контакт для ответа</span
-                  ><input name="contact" maxlength="120" required
+                  ><span
+                    data-ru="Контакт для ответа (Telegram или email)"
+                    data-en="Contact for reply (Telegram or email)"
+                    >Контакт для ответа (Telegram или email)</span
+                  ><input name="contact" maxlength="120" placeholder="@username / email" required
                 /></label>
-                <label class="form-wide"
-                  ><span data-ru="Детали (необязательно)" data-en="Details (optional)"
-                    >Детали (необязательно)</span
-                  ><textarea name="notes" maxlength="1000" rows="3"></textarea>
-                </label>
-                <button class="form-wide" id="send" type="submit">
-                  <span data-ru="Отправить заявку" data-en="Send request">Отправить заявку</span
+                <details class="form-wide more-details">
+                  <summary
+                    data-ru="Добавить детали (необязательно)"
+                    data-en="Add details (optional)"
+                  >
+                    Добавить детали (необязательно)
+                  </summary>
+                  <label
+                    ><span data-ru="Детали" data-en="Details">Детали</span
+                    ><textarea name="notes" maxlength="1000" rows="3"></textarea>
+                  </label>
+                </details>
+                <button class="form-wide" id="send" type="submit" disabled>
+                  <span id="send-label">Подключение...</span
                   ><span class="button-arrow" aria-hidden="true">↗</span>
                 </button>
+                <p class="form-wide" id="notice" role="status" aria-live="polite"></p>
+                <p
+                  class="form-wide form-auth-hint"
+                  id="form-auth-hint"
+                  data-ru="После нажатия откроется вход через Google, затем заявка будет отправлена."
+                  data-en="After you click, sign in with Google and your request will be sent."
+                >
+                  После нажатия откроется вход через Google, затем заявка будет отправлена.
+                </p>
               </form>
             </section>
-            <section class="card list-card" aria-labelledby="list-title">
+            <section id="list-panel" class="card list-card" aria-labelledby="list-title" hidden>
               <div class="card-top">
                 <span>02 / FLIGHT BOARD</span><span class="live-indicator">● LIVE</span>
               </div>
@@ -163,6 +184,7 @@
                 Статус обновляется на этой странице. Время считается согласованным после
                 подтверждения.
               </p>
+              <p id="list-notice" role="status" aria-live="polite"></p>
               <div id="list" aria-live="polite"></div>
             </section>
           </div>
@@ -175,6 +197,6 @@
         >
       </footer>
     </div>
-    <script type="module" src="requests.js?v=3"></script>
+    <script type="module" src="requests.js?v=4"></script>
   </body>
 </html>

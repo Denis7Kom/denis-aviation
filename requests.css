@@ -219,7 +219,8 @@ p {
   align-items: center;
   gap: 12px;
 }
-#notice {
+#notice,
+#list-notice {
   margin: 14px 0;
   padding: 12px 16px;
   border-left: 2px solid #dfbf80;
@@ -227,8 +228,15 @@ p {
   color: #f5dba8;
   font-size: 12px;
 }
-#notice:empty {
+#notice:empty,
+#list-notice:empty {
   display: none;
+}
+#notice[data-kind='success'],
+#list-notice[data-kind='success'] {
+  border-left-color: #8bd9a8;
+  background: #163429;
+  color: #bceccd;
 }
 .grid {
   display: grid;
@@ -236,6 +244,14 @@ p {
   gap: 20px;
   align-items: start;
   padding-top: 30px;
+}
+.grid.is-guest {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 720px;
+  margin-inline: auto;
+}
+#new-request {
+  scroll-margin-top: 24px;
 }
 .card {
   position: relative;
@@ -291,6 +307,29 @@ label {
   min-width: 0;
   color: #c2d3e2;
   font-size: 12px;
+}
+.form-card label {
+  align-content: start;
+}
+label small {
+  color: #9cafc3;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.more-details summary {
+  color: #b9d9f2;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.more-details label {
+  margin-top: 14px;
+}
+.form-auth-hint {
+  margin: -7px 0 0;
+  color: #a8bbcc;
+  font-size: 11px;
+  line-height: 1.55;
 }
 input,
 select,
@@ -376,6 +415,10 @@ a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
+  outline: 2px solid #a2dfff;
+  outline-offset: 3px;
+}
+.more-details summary:focus-visible {
   outline: 2px solid #a2dfff;
   outline-offset: 3px;
 }
@@ -557,17 +600,19 @@ textarea:focus-visible {
     gap: 14px;
   }
 }
-@media (max-width: 360px) {
-  .back-link {
-    max-width: 63px;
-    white-space: normal;
-    line-height: 1.25;
-  }
+@media (max-width: 400px) {
   form {
     grid-template-columns: 1fr;
   }
   .form-wide {
     grid-column: auto;
+  }
+}
+@media (max-width: 360px) {
+  .back-link {
+    max-width: 63px;
+    white-space: normal;
+    line-height: 1.25;
   }
 }
 @media (prefers-reduced-motion: reduce) {
