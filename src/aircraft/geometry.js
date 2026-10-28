@@ -1278,7 +1278,7 @@ export function buildPlane(a, wireframe = false) {
         point = (side, y, z) => [
           sign * (q[0] + side * 0.018),
           q[1] + y,
-          q[2] + (q[3] - 0.02) + (z - (q[3] - 0.02)) * 2.25,
+          q[2] + q[3] + (z - (q[3] * 0.49 + q[3] - 0.02) / 2) * 2.7,
         ],
         blade = (name, sections) => {
           part = { kind: 'wingtip-fence', component: name, sign };
