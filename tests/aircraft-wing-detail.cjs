@@ -39,7 +39,7 @@ for (const aircraft of vm.runInContext('fleet', ctx)) {
           'fence sits at the outer wingtip',
         );
         assert(
-          points.every((p) => p[2] >= tip[2] + tip[3] * 0.22),
+          points.every((p) => p[2] >= tip[2] + tip[3] * -0.18),
           'fence remains attached to the outer wingtip chord',
         );
         assert(
@@ -49,8 +49,8 @@ for (const aircraft of vm.runInContext('fleet', ctx)) {
         const zs = points.map((p) => p[2]);
         const originalWidth = tip[3] * (component === 'upper' ? 0.5 : 0.48);
         assert(
-          Math.abs(Math.max(...zs) - Math.min(...zs) - originalWidth * 1.5) < 1e-8,
-          'fence chord is 50 percent wider',
+          Math.abs(Math.max(...zs) - Math.min(...zs) - originalWidth * 2.25) < 1e-8,
+          'fence chord is 50 percent wider again',
         );
         const ys = faces.flatMap((f) => f.p.map((p) => p[1]));
         assert(
