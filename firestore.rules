@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function admin() { return signedIn() && request.auth.token.email == 'deniska7best@gmail.com' && request.auth.token.email_verified == true && request.auth.token.firebase.sign_in_provider == 'google.com'; }
+    function textField(s, max) { return s is string && s.size() > 0 && s.size() <= max; }
+    match /flightRequests/{id} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['owner','type','network','date','time','timezone','callsign','route','contact','notes','status','createdAt'])
+        && request.resource.data.keys().hasAll(['owner','type','network','date','time','timezone','callsign','route','contact','notes','status','createdAt'])
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.type in ['flight','atc']
+        && request.resource.data.network in ['Infinite Flight','VATSIM','IVAO','Other']
+        && textField(request.resource.data.date, 10) && request.resource.data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && textField(request.resource.data.time, 5) && request.resource.data.time.matches('^[0-9]{2}:[0-9]{2}$')
+        && textField(request.resource.data.timezone,80) && textField(request.resource.data.callsign,80)
+        && textField(request.resource.data.route,120) && textField(request.resource.data.contact,120)
+        && request.resource.data.notes is string && request.resource.data.notes.size() <= 1000
+        && request.resource.data.status == 'new' && request.resource.data.createdAt == request.time;
+      allow read: if signedIn() && (admin() || resource.data.owner == request.auth.uid);
+      allow update: if admin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status in ['new','review','confirmed','declined','completed'];
+      allow delete: if false;
+    }
+  }
+}
