@@ -7771,14 +7771,10 @@ import {
     $('#route-from').textContent = f.from;
     $('#route-to').textContent = f.to;
     $('#route-name').textContent = f[lang];
-    $('#route-meta').textContent = f.aircraft + ' / ' + f.callsign + ' / ' + f.reg;
+    $('#route-meta').textContent = [f.aircraft, f.callsign, f.reg].filter(Boolean).join(' / ');
     $('#route-duration').textContent = f.duration;
     $('#route-timing').textContent = f.demo
-      ? (lang === 'en' ? 'DEMO · ' : 'ДЕМО · ') +
-        f.departure +
-        ' → ' +
-        arrivalTime(f.departure, f.duration) +
-        ' UTC'
+      ? f.departure + ' → ' + arrivalTime(f.departure, f.duration) + ' UTC'
       : '';
     $('#route-hangar').hidden = f.fleet === null;
     $('#route-state').textContent =
@@ -8099,8 +8095,8 @@ import {
     $('#fleet-log-title').textContent = fleet[aircraftIndex].name;
     $('#fleet-log-description').textContent = matches.length
       ? lang === 'en'
-        ? 'Recorded and illustrative flights on this aircraft'
-        : 'Записанные и демонстрационные рейсы этого самолёта'
+        ? 'Flights on this aircraft'
+        : 'Рейсы этого самолёта'
       : lang === 'en'
         ? 'No matching flights in the selected logbook entries.'
         : 'В выбранных записях журнала рейсов на этом самолёте пока нет.';
@@ -8109,14 +8105,7 @@ import {
     for (const f of matches) {
       const b = document.createElement('button');
       b.className = 'fleet-flight';
-      b.textContent =
-        (f.demo ? (lang === 'en' ? 'DEMO · ' : 'ДЕМО · ') : '') +
-        f.from +
-        ' → ' +
-        f.to +
-        ' / ' +
-        f.duration +
-        ' ↗';
+      b.textContent = f.from + ' → ' + f.to + ' / ' + f.duration + ' ↗';
       b.addEventListener('click', () => selectFlight(flights.indexOf(f)));
       box.append(b);
     }

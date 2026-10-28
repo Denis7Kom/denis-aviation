@@ -200,7 +200,7 @@ export const sampleFlights = [
   ...flight,
   demo: true,
   callsign: `SIM${String(i + 1).padStart(3, '0')}`,
-  reg: 'DEMO',
+  reg: '',
   aircraft: ['B777-300ER', 'A330-900', 'A330-300', 'A350-1000', 'B737-700', 'A321-200'][
     flight.fleet
   ],

@@ -610,7 +610,7 @@
     ...flight,
     demo: true,
     callsign: `SIM${String(i + 1).padStart(3, "0")}`,
-    reg: "DEMO",
+    reg: "",
     aircraft: ["B777-300ER", "A330-900", "A330-300", "A350-1000", "B737-700", "A321-200"][flight.fleet]
   }));
 
@@ -10011,9 +10011,9 @@
       $("#route-from").textContent = f.from;
       $("#route-to").textContent = f.to;
       $("#route-name").textContent = f[lang];
-      $("#route-meta").textContent = f.aircraft + " / " + f.callsign + " / " + f.reg;
+      $("#route-meta").textContent = [f.aircraft, f.callsign, f.reg].filter(Boolean).join(" / ");
       $("#route-duration").textContent = f.duration;
-      $("#route-timing").textContent = f.demo ? (lang === "en" ? "DEMO · " : "ДЕМО · ") + f.departure + " → " + arrivalTime(f.departure, f.duration) + " UTC" : "";
+      $("#route-timing").textContent = f.demo ? f.departure + " → " + arrivalTime(f.departure, f.duration) + " UTC" : "";
       $("#route-hangar").hidden = f.fleet === null;
       $("#route-state").textContent = routeProgress >= 1 ? lang === "en" ? "ARRIVED" : "ПРИБЫТИЕ" : routePlaying ? lang === "en" ? "EN ROUTE" : "НА МАРШРУТЕ" : lang === "en" ? "READY / PAUSED" : "ГОТОВ / ПАУЗА";
       $("#route-play").textContent = !motion ? routeProgress >= 1 ? lang === "en" ? "SHOW DEPARTURE" : "К ВЫЛЕТУ" : lang === "en" ? "SHOW ARRIVAL" : "К ПРИБЫТИЮ" : routePlaying ? lang === "en" ? "PAUSE ❚❚" : "ПАУЗА ❚❚" : lang === "en" ? "PLAY ROUTE ▷" : "ВОСПРОИЗВЕСТИ ▷";
@@ -10270,13 +10270,13 @@
     function fleetLog() {
       const matches = flights.filter((f) => f.fleet === aircraftIndex);
       $("#fleet-log-title").textContent = fleet[aircraftIndex].name;
-      $("#fleet-log-description").textContent = matches.length ? lang === "en" ? "Recorded and illustrative flights on this aircraft" : "Записанные и демонстрационные рейсы этого самолёта" : lang === "en" ? "No matching flights in the selected logbook entries." : "В выбранных записях журнала рейсов на этом самолёте пока нет.";
+      $("#fleet-log-description").textContent = matches.length ? lang === "en" ? "Flights on this aircraft" : "Рейсы этого самолёта" : lang === "en" ? "No matching flights in the selected logbook entries." : "В выбранных записях журнала рейсов на этом самолёте пока нет.";
       const box = $("#fleet-log-flights");
       box.innerHTML = "";
       for (const f of matches) {
         const b = document.createElement("button");
         b.className = "fleet-flight";
-        b.textContent = (f.demo ? lang === "en" ? "DEMO · " : "ДЕМО · " : "") + f.from + " → " + f.to + " / " + f.duration + " ↗";
+        b.textContent = f.from + " → " + f.to + " / " + f.duration + " ↗";
         b.addEventListener("click", () => selectFlight(flights.indexOf(f)));
         box.append(b);
       }
