@@ -31,7 +31,7 @@ export function airframe(a) {
         ex: 5.755,
         ez: -6.795,
         tail: 6.225,
-        tip: 2.4,
+        tip: 0.75,
         axles: 1,
         gearX: 3.795,
         gearZ: -0.285,
@@ -41,8 +41,8 @@ export function airframe(a) {
         noseGearD: 5.07,
         noseLength: 6.8,
         doors: [5.1, 13.9, 24.7, 36.2],
-        ru: 'Удлинённый фюзеляж · CFM56-5B · Четыре пары дверей · Винглеты Sharklets',
-        en: 'Stretched fuselage · CFM56-5B · Four door pairs · Sharklets',
+        ru: 'Удлинённый фюзеляж · CFM56-5B · Четыре пары дверей · Концевые шайбы',
+        en: 'Stretched fuselage · CFM56-5B · Four door pairs · Wingtip fences',
       },
       B77W: {
         engine: 2.04,
@@ -385,13 +385,6 @@ export function wingGeometry(a) {
           [15.8, 0.76, 2.82, 1.72, 0.07],
           [16.78, 0.91, 3.47, 1.22, 0.041],
           [17.05, 0.95, 3.64, 0.82, 0.025],
-          // Smoothly curved Sharklet, rising from the wing and sweeping aft.
-          [17.28, 1.05, 3.7, 0.77, 0.024],
-          [17.48, 1.25, 3.82, 0.71, 0.022],
-          [17.64, 1.65, 4.01, 0.62, 0.018],
-          [17.76, 2.2, 4.27, 0.5, 0.014],
-          [17.85, 2.83, 4.57, 0.36, 0.01],
-          [17.9, 3.35, 4.82, 0.22, 0.007],
         ];
     return finish(stations, stations[4], stations.at(-1));
   }
@@ -1277,6 +1270,40 @@ export function buildPlane(a, wireframe = false) {
   for (const sign of [-1, 1]) {
     const stations = wingGeometry(a).stations;
     foil(stations, sign, wingColor, true);
+    if (a.code === 'A321') {
+      // Thin swept fences have separate blades above and below the wingtip.
+      const q = stations.at(-1),
+        point = (side, y, z) => [sign * (q[0] + side * 0.028), q[1] + y, q[2] + z],
+        blade = (name, profile) => {
+          part = { kind: 'wingtip-fence', component: name, sign };
+          for (const side of [-1, 1]) {
+            const vertices = profile.map(([y, z]) => point(side, y, z));
+            add(side > 0 ? vertices : [...vertices].reverse(), [178, 198, 217], true, null, 0.18);
+          }
+          for (let i = 0; i < profile.length; i++) {
+            const a = profile[i],
+              b = profile[(i + 1) % profile.length];
+            add(
+              [point(-1, ...a), point(-1, ...b), point(1, ...b), point(1, ...a)],
+              [102, 129, 154],
+            );
+          }
+          part = null;
+        };
+      blade('upper', [
+        [0, 0.02],
+        [0.72, 0.3],
+        [0.72, 0.5],
+        [0, q[3] - 0.02],
+      ]);
+      blade('lower', [
+        [0, 0.1],
+        [-0.44, 0.39],
+        [-0.44, 0.56],
+        [0, q[3] - 0.06],
+      ]);
+    }
+
     foil(
       spec.stabilizer.map((s) => [s[0], s[1], half - s[2], s[3], s[4]]),
       sign,
