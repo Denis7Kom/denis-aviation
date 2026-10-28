@@ -23,7 +23,8 @@ let language = readLanguage(),
   authReady = false,
   serviceFailed = false,
   phase = '',
-  lastSubmitted = null;
+  lastSubmitted = null,
+  lastSnapshot = null;
 let db,
   auth,
   authSdk,
@@ -64,6 +65,9 @@ function translate() {
   document.querySelectorAll('[data-ru]').forEach((el) => {
     el.textContent = el.dataset[language];
   });
+  document.querySelectorAll('[data-placeholder-ru]').forEach((el) => {
+    el.placeholder = el.dataset[language === 'en' ? 'placeholderEn' : 'placeholderRu'];
+  });
   document.querySelectorAll('[data-lang]').forEach((button) => {
     button.setAttribute('aria-pressed', String(button.dataset.lang === language));
   });
@@ -76,6 +80,7 @@ function translate() {
     : text('Мои заявки', 'My requests');
   renderControls();
   renderConfirmation();
+  renderTimezoneOptions();
 }
 function renderConfirmation() {
   if (!lastSubmitted) return;
@@ -108,10 +113,91 @@ document.querySelectorAll('[data-lang]').forEach((button) => {
       localStorage.setItem('dk-aviation-lang', language);
     } catch (_) {}
     translate();
-    if (user) subscribe();
+    if (user && lastSnapshot) renderList(lastSnapshot);
   });
 });
-$('#form').elements.timezone.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+const commonZones = [
+  'UTC',
+  'Europe/Moscow',
+  'Europe/Rome',
+  'Europe/Madrid',
+  'Europe/London',
+  'Europe/Paris',
+  'Europe/Malta',
+  'Europe/Vienna',
+  'America/New_York',
+  'America/Chicago',
+  'America/Denver',
+  'America/Los_Angeles',
+  'America/Anchorage',
+  'Pacific/Honolulu',
+  'America/Mexico_City',
+  'America/Cancun',
+  'Asia/Tokyo',
+  'Asia/Hong_Kong',
+  'Asia/Singapore',
+  'Australia/Sydney',
+  'Australia/Canberra',
+];
+const zoneNames = {
+  UTC: ['UTC', 'UTC'],
+  'Europe/Moscow': ['Москва', 'Moscow'],
+  'Europe/Rome': ['Рим', 'Rome'],
+  'Europe/Madrid': ['Мадрид', 'Madrid'],
+  'Europe/London': ['Лондон', 'London'],
+  'Europe/Paris': ['Париж', 'Paris'],
+  'Europe/Malta': ['Мальта', 'Malta'],
+  'Europe/Vienna': ['Вена', 'Vienna'],
+  'America/New_York': ['Нью-Йорк', 'New York'],
+  'America/Chicago': ['Чикаго', 'Chicago'],
+  'America/Denver': ['Денвер', 'Denver'],
+  'America/Los_Angeles': ['Лос-Анджелес', 'Los Angeles'],
+  'America/Anchorage': ['Анкоридж', 'Anchorage'],
+  'Pacific/Honolulu': ['Гонолулу', 'Honolulu'],
+  'America/Mexico_City': ['Мехико', 'Mexico City'],
+  'America/Cancun': ['Канкун', 'Cancun'],
+  'Asia/Tokyo': ['Токио', 'Tokyo'],
+  'Asia/Hong_Kong': ['Гонконг', 'Hong Kong'],
+  'Asia/Singapore': ['Сингапур', 'Singapore'],
+  'Australia/Sydney': ['Сидней', 'Sydney'],
+  'Australia/Canberra': ['Канберра', 'Canberra'],
+};
+const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+let availableZones = [];
+try {
+  availableZones = Intl.supportedValuesOf ? Intl.supportedValuesOf('timeZone') : [];
+} catch (_) {}
+function timezoneLabel(zone) {
+  const name =
+    zoneNames[zone]?.[language === 'en' ? 1 : 0] || zone.split('/').pop().replaceAll('_', ' ');
+  let offset = '';
+  try {
+    const parts = new Intl.DateTimeFormat('en', {
+      timeZone: zone,
+      timeZoneName: 'shortOffset',
+    }).formatToParts(new Date());
+    offset = (parts.find((part) => part.type === 'timeZoneName')?.value || '').replace(
+      /^GMT/,
+      'UTC',
+    );
+  } catch (_) {}
+  return `${name}${offset && offset !== name ? ` · ${offset}` : ''}${zone === 'UTC' ? '' : ` · ${zone}`}`;
+}
+function renderTimezoneOptions() {
+  const select = $('#form').elements.timezone;
+  const previous = select.value || detectedTimezone;
+  const zones = [...new Set([...commonZones, detectedTimezone, previous, ...availableZones])];
+  select.replaceChildren();
+  for (const zone of zones) {
+    const option = document.createElement('option');
+    option.value = zone;
+    option.textContent = timezoneLabel(zone);
+    select.append(option);
+  }
+  select.value = previous;
+}
+renderTimezoneOptions();
+$('#form').elements.timezone.value = detectedTimezone;
 if (typeof window !== 'undefined') {
   const requestedType = new URLSearchParams(window.location.search).get('type');
   if (requestedType === 'flight' || requestedType === 'atc')
@@ -134,8 +220,18 @@ try {
   const saved = JSON.parse(localStorage.getItem(draftKey) || 'null');
   if (saved && typeof saved === 'object') {
     for (const key of draftFields) {
-      if (typeof saved[key] === 'string' && $('#form').elements[key])
+      if (typeof saved[key] === 'string' && $('#form').elements[key]) {
+        if (
+          key === 'timezone' &&
+          ![...$('#form').elements.timezone.options].some((option) => option.value === saved[key])
+        ) {
+          const option = document.createElement('option');
+          option.value = saved[key];
+          option.textContent = timezoneLabel(saved[key]);
+          $('#form').elements.timezone.append(option);
+        }
         $('#form').elements[key].value = saved[key];
+      }
     }
     if (saved.notes) $('.more-details').open = true;
     $('#save-draft').checked = true;
@@ -168,7 +264,10 @@ $('#new-form').addEventListener('click', () => {
   notice('', '');
 });
 $('#status-filter').addEventListener('change', () => {
-  if (user) subscribe();
+  if (isAdmin(user) && lastSnapshot) renderList(lastSnapshot);
+});
+$('#request-search').addEventListener('input', () => {
+  if (isAdmin(user) && lastSnapshot) renderList(lastSnapshot);
 });
 translate();
 function subscribe() {
@@ -180,74 +279,8 @@ function subscribe() {
   unsubscribe = onSnapshot(
     q,
     (snapshot) => {
-      list.replaceChildren();
-      if (snapshot.empty) {
-        const p = document.createElement('p');
-        p.textContent = text('Заявок пока нет.', 'No requests yet.');
-        list.append(p);
-        return;
-      }
-      const filter = isAdmin(user) ? $('#status-filter').value : 'all';
-      const entries = snapshot.docs
-        .filter((item) => !filter || filter === 'all' || item.data().status === filter)
-        .slice()
-        .sort((a, b) => (b.data().createdAt?.seconds || 0) - (a.data().createdAt?.seconds || 0));
-      if (!entries.length) {
-        const p = document.createElement('p');
-        p.textContent = text('Заявок с этим статусом нет.', 'No requests with this status.');
-        list.append(p);
-      }
-      for (const item of entries) {
-        const d = item.data(),
-          card = document.createElement('article');
-        card.className = 'entry';
-        card.dataset.status = Object.hasOwn(statuses, d.status) ? d.status : 'unknown';
-        const title = document.createElement('strong');
-        title.textContent = `${d.type === 'flight' ? text('Совместный полёт', 'Fly together') : 'ATC'} · ${d.network}`;
-        const details = document.createElement('p');
-        details.textContent = `${d.date} ${d.time} (${d.timezone})\n${d.callsign} · ${d.route}\n${text('Контакт', 'Contact')}: ${d.contact}${d.notes ? '\n' + d.notes : ''}`;
-        card.append(title, details);
-        if (isAdmin(user)) {
-          const label = document.createElement('label'),
-            span = document.createElement('span'),
-            select = document.createElement('select');
-          span.textContent = text('Статус', 'Status');
-          for (const [value, labels] of Object.entries(statuses)) {
-            const option = document.createElement('option');
-            option.value = value;
-            option.textContent = labels[language === 'en' ? 1 : 0];
-            select.append(option);
-          }
-          select.value = d.status;
-          select.addEventListener('change', async () => {
-            const selectedStatus = select.value;
-            card.dataset.status = selectedStatus;
-            select.disabled = true;
-            try {
-              await updateDoc(doc(db, 'flightRequests', item.id), { status: selectedStatus });
-              notice('Статус сохранён.', 'Status saved.', 'list', 'success');
-            } catch (_) {
-              select.value = d.status;
-              card.dataset.status = Object.hasOwn(statuses, d.status) ? d.status : 'unknown';
-              notice(
-                'Не удалось изменить статус. Проверь соединение и правила базы.',
-                'Could not change status. Check your connection and database rules.',
-                'list',
-              );
-            } finally {
-              select.disabled = false;
-            }
-          });
-          label.append(span, select);
-          card.append(label);
-        } else {
-          const status = document.createElement('p');
-          status.className = 'request-status';
-          status.textContent = `${text('Статус', 'Status')}: ${(statuses[d.status] || [d.status, d.status])[language === 'en' ? 1 : 0]}`;
-          card.append(status);
-        }
-        list.append(card);
-      }
+      lastSnapshot = snapshot;
+      renderList(snapshot);
     },
     () =>
       notice(
@@ -256,6 +289,98 @@ function subscribe() {
         'list',
       ),
   );
+}
+function renderList(snapshot) {
+  const list = $('#list');
+  list.replaceChildren();
+  const counts = { new: 0, review: 0, confirmed: 0 };
+  for (const item of snapshot.docs)
+    if (Object.hasOwn(counts, item.data().status)) counts[item.data().status]++;
+  if (isAdmin(user))
+    for (const [status, count] of Object.entries(counts))
+      $(`#count-${status}`).textContent = String(count);
+  if (snapshot.empty) {
+    const p = document.createElement('p');
+    p.textContent = text('Заявок пока нет.', 'No requests yet.');
+    list.append(p);
+    return;
+  }
+  const filter = isAdmin(user) ? $('#status-filter').value : 'all';
+  const search = isAdmin(user) ? $('#request-search').value.trim().toLocaleLowerCase() : '';
+  const entries = snapshot.docs
+    .filter((item) => {
+      const data = item.data();
+      return (
+        (!filter || filter === 'all' || data.status === filter) &&
+        (!search ||
+          [data.callsign, data.route, data.contact].some((value) =>
+            String(value || '')
+              .toLocaleLowerCase()
+              .includes(search),
+          ))
+      );
+    })
+    .slice()
+    .sort((a, b) => (b.data().createdAt?.seconds || 0) - (a.data().createdAt?.seconds || 0));
+  if (!entries.length) {
+    const p = document.createElement('p');
+    p.textContent = text(
+      'Заявок по выбранным условиям нет.',
+      'No requests match the selected filters.',
+    );
+    list.append(p);
+  }
+  for (const item of entries) {
+    const d = item.data(),
+      card = document.createElement('article');
+    card.className = 'entry';
+    card.dataset.status = Object.hasOwn(statuses, d.status) ? d.status : 'unknown';
+    const title = document.createElement('strong');
+    title.textContent = `${d.type === 'flight' ? text('Совместный полёт', 'Fly together') : 'ATC'} · ${d.network}`;
+    const details = document.createElement('p');
+    details.textContent = `${d.date} ${d.time} (${d.timezone})\n${d.callsign} · ${d.route}\n${text('Контакт', 'Contact')}: ${d.contact}${d.notes ? '\n' + d.notes : ''}`;
+    card.append(title, details);
+    if (isAdmin(user)) {
+      const label = document.createElement('label'),
+        span = document.createElement('span'),
+        select = document.createElement('select');
+      span.textContent = text('Статус', 'Status');
+      for (const [value, labels] of Object.entries(statuses)) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = labels[language === 'en' ? 1 : 0];
+        select.append(option);
+      }
+      select.value = d.status;
+      select.addEventListener('change', async () => {
+        const selectedStatus = select.value;
+        card.dataset.status = selectedStatus;
+        select.disabled = true;
+        try {
+          await updateDoc(doc(db, 'flightRequests', item.id), { status: selectedStatus });
+          notice('Статус сохранён.', 'Status saved.', 'list', 'success');
+        } catch (_) {
+          select.value = d.status;
+          card.dataset.status = Object.hasOwn(statuses, d.status) ? d.status : 'unknown';
+          notice(
+            'Не удалось изменить статус. Проверь соединение и правила базы.',
+            'Could not change status. Check your connection and database rules.',
+            'list',
+          );
+        } finally {
+          select.disabled = false;
+        }
+      });
+      label.append(span, select);
+      card.append(label);
+    } else {
+      const status = document.createElement('p');
+      status.className = 'request-status';
+      status.textContent = `${text('Статус', 'Status')}: ${(statuses[d.status] || [d.status, d.status])[language === 'en' ? 1 : 0]}`;
+      card.append(status);
+    }
+    list.append(card);
+  }
 }
 function signInError(error) {
   if (['auth/popup-closed-by-user', 'auth/cancelled-popup-request'].includes(error?.code)) {
@@ -404,10 +529,14 @@ async function start() {
       if (unsubscribe) unsubscribe();
       unsubscribe = null;
       $('#list').replaceChildren();
+      lastSnapshot = null;
+      $('#request-search').value = '';
+      $('#status-filter').value = 'all';
       lastListNotice = null;
       $('#list-notice').textContent = '';
       $('#list-panel').hidden = !u;
       $('#filter-label').hidden = !isAdmin(u);
+      $('#admin-tools').hidden = !isAdmin(u);
       $('.grid').classList.toggle('is-guest', !u);
       $('#login').hidden = !!u;
       $('#logout').hidden = !u;

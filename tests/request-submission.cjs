@@ -9,6 +9,7 @@ class Element {
     this.hidden = false;
     this.disabled = false;
     this.dataset = {};
+    this.value = '';
     this.classList = { toggle() {} };
   }
   addEventListener(type, handler) {
@@ -41,7 +42,10 @@ function boot(failImports = false, search = '', storage = new Map()) {
     contact: ' @test ',
     notes: ' optional ',
   };
-  form.elements = Object.fromEntries(Object.keys(form.fields).map((key) => [key, {}]));
+  form.elements = Object.fromEntries(Object.keys(form.fields).map((key) => [key, new Element()]));
+  Object.defineProperty(form.elements.timezone, 'options', {
+    get: () => form.elements.timezone.children,
+  });
   for (const key of Object.keys(form.fields).filter((key) => !['timezone', 'type'].includes(key)))
     Object.defineProperty(form.elements[key], 'value', {
       get: () => form.fields[key],
@@ -110,7 +114,7 @@ function boot(failImports = false, search = '', storage = new Map()) {
     query: (...args) => args,
     where: (...args) => args,
     onSnapshot: (_query, callback) => {
-      callback({ empty: true });
+      callback({ empty: true, docs: [] });
       return () => {};
     },
     addDoc: (_collection, data) => {

@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="requests.css?v=6" />
+    <link rel="stylesheet" href="requests.css?v=7" />
   </head>
   <body>
     <div class="page-shell">
@@ -144,10 +144,13 @@
                 /></label>
                 <label
                   ><span data-ru="Часовой пояс" data-en="Time zone">Часовой пояс</span
-                  ><input name="timezone" maxlength="80" required /><small
-                    data-ru="Определён автоматически, можно изменить"
-                    data-en="Detected automatically; you can change it"
-                    >Определён автоматически, можно изменить</small
+                  ><select name="timezone" id="timezone" required>
+                    <option value="UTC">UTC</option></select
+                  ><small
+                    data-ru="Определён автоматически. Смещение указано на сегодняшний день и может меняться."
+                    data-en="Detected automatically. Offsets are current and may change with daylight saving time."
+                    >Определён автоматически. Смещение указано на сегодняшний день и может
+                    меняться.</small
                   ></label
                 >
                 <label
@@ -213,6 +216,32 @@
                 Статус обновляется на этой странице. Время считается согласованным после
                 подтверждения.
               </p>
+              <div id="admin-tools" hidden>
+                <div class="status-counts" aria-label="Статистика заявок / Request counts">
+                  <div>
+                    <span data-ru="Новые" data-en="New">Новые</span
+                    ><strong id="count-new">0</strong>
+                  </div>
+                  <div>
+                    <span data-ru="На рассмотрении" data-en="In review">На рассмотрении</span
+                    ><strong id="count-review">0</strong>
+                  </div>
+                  <div>
+                    <span data-ru="Подтверждённые" data-en="Confirmed">Подтверждённые</span
+                    ><strong id="count-confirmed">0</strong>
+                  </div>
+                </div>
+                <label class="search-label"
+                  ><span data-ru="Поиск по заявкам" data-en="Search requests">Поиск по заявкам</span
+                  ><input
+                    id="request-search"
+                    type="search"
+                    autocomplete="off"
+                    data-placeholder-ru="Позывной, аэропорт или контакт"
+                    data-placeholder-en="Callsign, airport or contact"
+                    placeholder="Позывной, аэропорт или контакт"
+                /></label>
+              </div>
               <label id="filter-label" class="filter-label" hidden
                 ><span data-ru="Фильтр по статусу" data-en="Filter by status"
                   >Фильтр по статусу</span
@@ -248,6 +277,6 @@
         >
       </footer>
     </div>
-    <script type="module" src="requests.js?v=5"></script>
+    <script type="module" src="requests.js?v=6"></script>
   </body>
 </html>

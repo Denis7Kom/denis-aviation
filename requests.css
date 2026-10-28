@@ -675,3 +675,48 @@ textarea:focus-visible {
 .filter-label {
   margin-top: 22px;
 }
+
+.status-counts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 24px;
+}
+.status-counts > div {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #31536d;
+  background: #0a1826;
+  border-radius: 4px;
+}
+.status-counts span {
+  color: #aac3d7;
+  font-size: 10px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.status-counts strong {
+  color: #b8ddff;
+  font:
+    600 20px 'Manrope',
+    system-ui,
+    sans-serif;
+}
+.status-counts > div:nth-child(2) strong {
+  color: #ffe39b;
+}
+.status-counts > div:nth-child(3) strong {
+  color: #a5edc0;
+}
+.search-label {
+  margin-top: 20px;
+}
+.search-label input {
+  width: 100%;
+}
+@media (max-width: 360px) {
+  .status-counts > div {
+    padding: 10px 8px;
+  }
+}

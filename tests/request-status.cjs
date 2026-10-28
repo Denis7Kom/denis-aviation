@@ -36,7 +36,7 @@ const document = {
     return new Element(tag);
   },
 };
-document.querySelector('#form').elements = { timezone: {} };
+document.querySelector('#form').elements = { timezone: new Element() };
 const localStorage = { getItem: () => 'ru', setItem() {} };
 let callback,
   updateFails = false;
@@ -76,7 +76,7 @@ const fakeDoc = (status) => ({
     timezone: 'UTC',
     callsign: 'TEST',
     route: 'LIRN',
-    contact: 'test',
+    contact: status === 'review' ? '@Controller' : 'test',
     notes: '',
     status,
   }),
@@ -109,6 +109,32 @@ const render = () =>
     context,
   );
   render();
+  assert.equal(elements.get('#count-new').textContent, '1');
+  assert.equal(elements.get('#count-review').textContent, '1');
+  assert.equal(elements.get('#count-confirmed').textContent, '1');
+  elements.get('#request-search').value = 'lirn';
+  elements.get('#request-search').listeners.input();
+  assert.equal(elements.get('#list').children.length, 5);
+  elements.get('#request-search').value = 'CONTROLLER';
+  elements.get('#request-search').listeners.input();
+  assert.deepEqual(
+    elements.get('#list').children.map((card) => card.dataset.status),
+    ['review'],
+  );
+  elements.get('#status-filter').value = 'confirmed';
+  elements.get('#status-filter').listeners.change();
+  assert.match(elements.get('#list').children[0].textContent, /условиям/);
+  elements.get('#status-filter').value = 'all';
+  elements.get('#request-search').value = 'absent';
+  elements.get('#request-search').listeners.input();
+  assert.match(elements.get('#list').children[0].textContent, /условиям/);
+  assert.equal(
+    elements.get('#count-new').textContent,
+    '1',
+    'Counts include all statuses regardless of search',
+  );
+  elements.get('#request-search').value = '';
+  elements.get('#request-search').listeners.input();
   elements.get('#status-filter').value = 'confirmed';
   elements.get('#status-filter').listeners.change();
   render();

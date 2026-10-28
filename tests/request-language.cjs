@@ -9,6 +9,14 @@ function boot(values, blocked = false) {
     textContent: '',
     attributes: {},
     listeners: {},
+    children: [],
+    value: '',
+    replaceChildren(...items) {
+      this.children = items;
+    },
+    append(...items) {
+      this.children.push(...items);
+    },
     addEventListener(type, handler) {
       this.listeners[type] = handler;
     },
@@ -20,7 +28,7 @@ function boot(values, blocked = false) {
     en = element({ lang: 'en' });
   const translated = element({ ru: 'Заявка', en: 'Request' });
   const named = new Map([
-    ['#form', { ...element(), elements: { timezone: {} } }],
+    ['#form', { ...element(), elements: { timezone: element() } }],
     ['#list-title', element()],
     ['#notice', element()],
     ['#send', element()],
@@ -31,10 +39,12 @@ function boot(values, blocked = false) {
     ['#new-form', element()],
     ['#status-filter', element()],
     ['#save-draft', element()],
+    ['#request-search', element()],
   ]);
   const document = {
     title: '',
     documentElement: {},
+    createElement: () => element(),
     querySelector: (selector) => named.get(selector),
     querySelectorAll: (selector) =>
       selector === '[data-lang]' ? [ru, en] : selector === '[data-ru]' ? [translated] : [],
@@ -60,12 +70,26 @@ assert.equal(test.document.documentElement.lang, 'en');
 assert.equal(test.en.attributes['aria-pressed'], 'true');
 assert.equal(test.ru.attributes['aria-pressed'], 'false');
 assert.equal(test.translated.textContent, 'Request');
+const timezone = test.named.get('#form').elements.timezone;
+assert(
+  timezone.children.some(
+    (option) => option.value === 'Europe/Moscow' && option.textContent.includes('Moscow'),
+  ),
+);
+const selectedZone = timezone.value;
+assert(selectedZone, 'Device time zone is selected');
 vm.runInContext("notice('Сохранено', 'Saved');", test.context);
 test.ru.listeners.click();
 assert.equal(test.document.documentElement.lang, 'ru');
 assert.equal(test.ru.attributes['aria-pressed'], 'true');
 assert.equal(test.en.attributes['aria-pressed'], 'false');
 assert.equal(test.translated.textContent, 'Заявка');
+assert.equal(timezone.value, selectedZone, 'Switching language preserves the selected zone');
+assert(
+  timezone.children.some(
+    (option) => option.value === 'Europe/Moscow' && option.textContent.includes('Москва'),
+  ),
+);
 assert.equal(test.named.get('#notice').textContent, 'Сохранено');
 assert.equal(test.storage.get('dk-aviation-lang'), 'ru');
 const old = boot({ 'requests-language': 'en' });
