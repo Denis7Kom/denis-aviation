@@ -66,6 +66,7 @@ function subscribe() {
         const d = item.data(),
           card = document.createElement('article');
         card.className = 'entry';
+        card.dataset.status = Object.hasOwn(statuses, d.status) ? d.status : 'unknown';
         const title = document.createElement('strong');
         title.textContent = `${d.type === 'flight' ? text('Совместный полёт', 'Fly together') : 'ATC'} · ${d.network}`;
         const details = document.createElement('p');
@@ -84,12 +85,15 @@ function subscribe() {
           }
           select.value = d.status;
           select.addEventListener('change', async () => {
+            const selectedStatus = select.value;
+            card.dataset.status = selectedStatus;
             select.disabled = true;
             try {
-              await updateDoc(doc(db, 'flightRequests', item.id), { status: select.value });
+              await updateDoc(doc(db, 'flightRequests', item.id), { status: selectedStatus });
               notice('Статус сохранён.', 'Status saved.');
             } catch (_) {
               select.value = d.status;
+              card.dataset.status = Object.hasOwn(statuses, d.status) ? d.status : 'unknown';
               notice(
                 'Не удалось изменить статус. Проверь соединение и правила базы.',
                 'Could not change status. Check your connection and database rules.',
@@ -102,6 +106,7 @@ function subscribe() {
           card.append(label);
         } else {
           const status = document.createElement('p');
+          status.className = 'request-status';
           status.textContent = `${text('Статус', 'Status')}: ${(statuses[d.status] || [d.status, d.status])[language === 'en' ? 1 : 0]}`;
           card.append(status);
         }

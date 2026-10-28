@@ -5173,3 +5173,48 @@ body.motion-off .radar-switch:after {
     width: 100%;
   }
 }
+
+/* Keep the booking CTA aligned with its heading, independently of contact-panel styles. */
+.contact .request-card > p {
+  max-width: 65ch;
+  margin: 0;
+  color: #b8c9d9;
+  line-height: 1.65;
+}
+.booking-action {
+  margin-top: 1.4rem;
+}
+.contact .request-card .booking-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 52px;
+  padding: 15px 20px;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  text-align: left;
+  letter-spacing: 0.035em;
+}
+.booking-link span {
+  min-width: 0;
+}
+.contact .booking-link svg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+}
+.contact .booking-link:focus-visible {
+  outline: 2px solid #91d5ff;
+  outline-offset: 4px;
+}
+@media (max-width: 600px) {
+  .contact .request-card .booking-link {
+    width: 100%;
+    gap: 0.75rem;
+    padding: 14px 16px;
+  }
+}

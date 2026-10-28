@@ -313,3 +313,57 @@ textarea:focus-visible {
     gap: 7px;
   }
 }
+
+/* Status names remain visible alongside colour for accessibility. */
+.entry {
+  --status-ink: #c1d2df;
+  --status-border: #526a7d;
+  --status-bg: #172839;
+}
+.entry[data-status='new'] {
+  --status-ink: #a9dcff;
+  --status-border: #478ac4;
+  --status-bg: #102d48;
+}
+.entry[data-status='review'] {
+  --status-ink: #ffe39b;
+  --status-border: #a17b39;
+  --status-bg: #3b2d14;
+}
+.entry[data-status='confirmed'] {
+  --status-ink: #a5edc0;
+  --status-border: #418c64;
+  --status-bg: #123528;
+}
+.entry[data-status='declined'] {
+  --status-ink: #ffb7b7;
+  --status-border: #ab5b67;
+  --status-bg: #3b1c27;
+}
+.entry[data-status='completed'] {
+  --status-ink: #d6c6ff;
+  --status-border: #8067b3;
+  --status-bg: #2c2442;
+}
+.entry .request-status {
+  display: inline-flex;
+  max-width: 100%;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--status-border);
+  border-radius: 4px;
+  background: var(--status-bg);
+  color: var(--status-ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.entry label > select {
+  color: var(--status-ink);
+  border-color: var(--status-border);
+  background-color: var(--status-bg);
+  font-weight: 700;
+}
+.entry label > select option {
+  color: #edf5ff;
+  background: #101f30;
+}
