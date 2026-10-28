@@ -1314,19 +1314,19 @@ export function buildPlane(a, wireframe = false) {
         };
       blade('upper', [
         [0, q[3] * 0.48, q[3] - 0.02],
-        [0.78, q[3] * 0.98, q[3] * 0.98],
+        [1.09, q[3] * 0.98, q[3] * 0.98],
       ]);
       blade('lower', [
         [0, q[3] * 0.5, q[3] - 0.02],
-        [-0.55, q[3] * 0.98, q[3] * 0.98],
+        [-0.77, q[3] * 0.98, q[3] * 0.98],
       ]);
       if (!wireframe) {
         part = { kind: 'wingtip-fence', component: 'static-wick', sign };
         for (const [y, z] of [
-          [0.62, q[3] * 0.978],
-          [0.3, q[3] * 0.976],
-          [-0.15, q[3] * 0.976],
-          [-0.42, q[3] * 0.978],
+          [0.87, q[3] * 0.978],
+          [0.42, q[3] * 0.976],
+          [-0.21, q[3] * 0.976],
+          [-0.59, q[3] * 0.978],
         ]) {
           const base = point(0, y, z);
           beam(base, [base[0], base[1], base[2] + 0.16], 0.006, [74, 94, 113]);
