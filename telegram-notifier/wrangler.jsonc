@@ -1,0 +1,14 @@
+{
+  "name": "denis-aviation-telegram",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": false,
+  "triggers": { "crons": ["*/5 * * * *"] },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "denis-aviation-notifier",
+      "database_id": "REPLACE_WITH_DATABASE_ID",
+    },
+  ],
+}
