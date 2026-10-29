@@ -738,3 +738,17 @@ textarea:focus-visible {
     padding: 10px 8px;
   }
 }
+
+.entry[data-status='cancelled'] {
+  --status-ink: #c5cbd3;
+  --status-border: #748190;
+  --status-bg: #26313b;
+}
+.entry button.cancel-request {
+  display: block;
+  margin-top: 12px;
+  border-color: #a66e77;
+  background: transparent;
+  color: #ffb7b7;
+}
+.entry button.cancel-request:hover { background: #3b1c27; }
