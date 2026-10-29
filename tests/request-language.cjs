@@ -40,6 +40,10 @@ function boot(values, blocked = false) {
     ['#status-filter', element()],
     ['#save-draft', element()],
     ['#request-search', element()],
+    ['#show-new-requests', element()],
+    ['#enable-browser-alerts', element()],
+    ['#browser-alert-status', element()],
+    ['#admin-alert-count', element()],
   ]);
   const document = {
     title: '',
