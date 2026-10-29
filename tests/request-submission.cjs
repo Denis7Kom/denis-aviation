@@ -113,7 +113,7 @@ function boot(failImports = false, search = '', storage = new Map()) {
     collection: () => 'requests',
     query: (...args) => args,
     where: (...args) => args,
-    onSnapshot: (_query, callback) => {
+    onSnapshot: (_query, _options, callback) => {
       callback({ empty: true, docs: [] });
       return () => {};
     },

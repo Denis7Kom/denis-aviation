@@ -700,6 +700,52 @@ textarea:focus-visible {
   gap: 8px;
   margin-top: 24px;
 }
+.admin-alert {
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid #376b87;
+  border-radius: 4px;
+  background: #0b2636;
+}
+.admin-alert-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #b4e7ff;
+  font-size: 12px;
+}
+.admin-alert-heading > span {
+  color: #8be7b2;
+  font-size: 9px;
+}
+#admin-alert-count {
+  margin: 10px 0 4px;
+  color: #edf8ff;
+  font-size: 15px;
+  font-weight: 700;
+}
+.admin-alert-help {
+  margin: 6px 0;
+  color: #aac3d7;
+  font-size: 11px;
+}
+.admin-alert-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.admin-alert-actions button {
+  flex: 1 1 160px;
+}
+.admin-alert-actions #enable-browser-alerts {
+  border-color: #5b829a;
+  background: transparent;
+  color: #d9efff;
+}
+.admin-alert-actions #enable-browser-alerts:hover:not(:disabled) {
+  background: #173b50;
+}
 .status-counts > div {
   display: grid;
   gap: 10px;

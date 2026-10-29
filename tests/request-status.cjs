@@ -50,7 +50,7 @@ const context = vm.createContext({
   fakeWhere: (...args) => args,
   fakeQuery: (...args) => args,
   fakeDoc: (...args) => args,
-  fakeOnSnapshot: (_q, cb) => {
+  fakeOnSnapshot: (_q, _options, cb) => {
     callback = cb;
     return () => {};
   },
