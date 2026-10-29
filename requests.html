@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="requests.css?v=11" />
+    <link rel="stylesheet" href="requests.css?v=12" />
   </head>
   <body>
     <div class="page-shell">
@@ -223,6 +223,10 @@
                     <strong id="admin-alert-title" data-ru="Оповещения о заявках" data-en="Request alerts">Оповещения о заявках</strong>
                   </div>
                   <p id="admin-alert-count" role="status" aria-live="polite"></p>
+                  <div id="admin-alert-preview" class="admin-alert-preview" hidden>
+                    <strong data-ru="Последняя новая заявка" data-en="Latest new request">Последняя новая заявка</strong>
+                    <p id="admin-alert-details"></p>
+                  </div>
                   <p class="admin-alert-help" data-ru="Оповещения работают, пока эта страница открыта и вы вошли как администратор." data-en="Alerts work while this page is open and you are signed in as the administrator.">Оповещения работают, пока эта страница открыта и вы вошли как администратор.</p>
                   <div class="admin-alert-actions">
                     <button id="show-new-requests" type="button" data-ru="Показать новые" data-en="Show new requests">Показать новые</button>
@@ -291,6 +295,6 @@
         >
       </footer>
     </div>
-    <script type="module" src="requests.js?v=8"></script>
+    <script type="module" src="requests.js?v=9"></script>
   </body>
 </html>
