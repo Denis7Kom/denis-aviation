@@ -24,7 +24,9 @@ let language = readLanguage(),
   serviceFailed = false,
   phase = '',
   lastSubmitted = null,
-  lastSnapshot = null;
+  lastSnapshot = null,
+  adminKnownIds = null,
+  adminAlertProblem = false;
 let db,
   auth,
   authSdk,
@@ -62,6 +64,65 @@ const statuses = {
   completed: ['Завершена', 'Completed'],
   cancelled: ['Отменена', 'Cancelled'],
 };
+function browserAlertsSupported() {
+  return typeof Notification !== 'undefined' && typeof Notification.requestPermission === 'function';
+}
+function renderAdminAlerts() {
+  const button = $('#enable-browser-alerts');
+  const status = $('#browser-alert-status');
+  document.title = text('Заявки на полёт — Denis Aviation', 'Flight requests — Denis Aviation');
+  button.disabled = false;
+  status.textContent = '';
+  if (!browserAlertsSupported()) {
+    button.disabled = true;
+    button.textContent = text('Уведомления браузера недоступны', 'Browser notifications unavailable');
+  } else if (Notification.permission === 'granted') {
+    button.disabled = true;
+    button.textContent = text('Уведомления браузера включены', 'Browser notifications enabled');
+  } else if (Notification.permission === 'denied') {
+    button.disabled = true;
+    button.textContent = text('Уведомления браузера заблокированы', 'Browser notifications blocked');
+    status.textContent = text('Разрешите уведомления для сайта в настройках браузера.', 'Allow notifications for this site in your browser settings.');
+  } else {
+    button.textContent = text('Включить уведомления браузера', 'Enable browser notifications');
+  }
+  if (!isAdmin(user)) {
+    $('#admin-alert-count').textContent = '';
+    return;
+  }
+  if (adminAlertProblem || !lastSnapshot) {
+    $('#admin-alert-count').textContent = adminAlertProblem
+      ? text('Не удалось загрузить заявки.', 'Could not load requests.')
+      : text('Проверяем заявки...', 'Checking requests...');
+    return;
+  }
+  const count = lastSnapshot.docs.filter((item) => item.data().status === 'new').length;
+  $('#admin-alert-count').textContent = lastSnapshot.metadata?.fromCache
+    ? text(`Новых заявок: ${count} · соединение восстанавливается`, `New requests: ${count} · reconnecting`)
+    : text(`Новых заявок: ${count}`, `New requests: ${count}`);
+  if (count) document.title = `(${count}) ${document.title}`;
+}
+function announceNewRequests(snapshot) {
+  if (!isAdmin(user) || snapshot.metadata?.fromCache) return;
+  const confirmed = snapshot.docs.filter((item) => !item.metadata?.hasPendingWrites);
+  const currentIds = new Set(adminKnownIds || []);
+  if (adminKnownIds) {
+    const count = confirmed.filter((item) => !adminKnownIds.has(item.id) && item.data().status === 'new').length;
+    if (count && browserAlertsSupported() && Notification.permission === 'granted') {
+      try {
+        const alert = new Notification(text('Новая заявка на сайте', 'New request on the site'), {
+          body: text(`Новых заявок: ${count}. Откройте список заявок.`, `New requests: ${count}. Open the request list.`),
+          icon: 'favicon.svg',
+        });
+        alert.onclick = () => { window.focus(); alert.close(); };
+      } catch (_) {
+        // Browser or OS notifications may be unavailable; the in-page alert still works.
+      }
+    }
+  }
+  for (const item of confirmed) currentIds.add(item.id);
+  adminKnownIds = currentIds;
+}
 function translate() {
   document.documentElement.lang = language;
   document.querySelectorAll('[data-ru]').forEach((el) => {
@@ -83,6 +144,7 @@ function translate() {
   renderControls();
   renderConfirmation();
   renderTimezoneOptions();
+  renderAdminAlerts();
 }
 function renderConfirmation() {
   if (!lastSubmitted) return;
@@ -271,6 +333,23 @@ $('#status-filter').addEventListener('change', () => {
 $('#request-search').addEventListener('input', () => {
   if (isAdmin(user) && lastSnapshot) renderList(lastSnapshot);
 });
+$('#show-new-requests').addEventListener('click', () => {
+  if (!isAdmin(user) || !lastSnapshot) return;
+  $('#status-filter').value = 'new';
+  $('#request-search').value = '';
+  renderList(lastSnapshot);
+  $('#list').scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+});
+$('#enable-browser-alerts').addEventListener('click', async () => {
+  if (!isAdmin(user) || !browserAlertsSupported() || Notification.permission !== 'default') return;
+  try {
+    await Notification.requestPermission();
+  } catch (_) {
+    $('#browser-alert-status').textContent = text('Не удалось включить уведомления браузера.', 'Could not enable browser notifications.');
+    return;
+  }
+  renderAdminAlerts();
+});
 translate();
 function subscribe() {
   if (unsubscribe) unsubscribe();
@@ -280,16 +359,27 @@ function subscribe() {
   const q = isAdmin(user) ? ref : query(ref, where('owner', '==', user.uid));
   unsubscribe = onSnapshot(
     q,
+    { includeMetadataChanges: true },
     (snapshot) => {
+      announceNewRequests(snapshot);
       lastSnapshot = snapshot;
+      adminAlertProblem = false;
       renderList(snapshot);
+      // Rebuild the title before adding the current count.
+      document.title = text('Заявки на полёт — Denis Aviation', 'Flight requests — Denis Aviation');
+      renderAdminAlerts();
     },
-    () =>
+    () => {
+      adminAlertProblem = true;
+      lastSnapshot = null;
+      document.title = text('Заявки на полёт — Denis Aviation', 'Flight requests — Denis Aviation');
+      renderAdminAlerts();
       notice(
         'Не удалось загрузить заявки. Проверь соединение и правила Firestore.',
         'Could not load requests. Check your connection and Firestore rules.',
         'list',
-      ),
+      );
+    },
   );
 }
 function renderList(snapshot) {
@@ -561,6 +651,8 @@ async function start() {
       unsubscribe = null;
       $('#list').replaceChildren();
       lastSnapshot = null;
+      adminKnownIds = null;
+      adminAlertProblem = false;
       $('#request-search').value = '';
       $('#status-filter').value = 'all';
       lastListNotice = null;
