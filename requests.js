@@ -67,9 +67,42 @@ const statuses = {
 function browserAlertsSupported() {
   return typeof Notification !== 'undefined' && typeof Notification.requestPermission === 'function';
 }
+function formatRequestDetails(data) {
+  const value = (field) => String(field || '—');
+  const type = data.type === 'atc'
+    ? text('Диспетчерский контроль', 'ATC control')
+    : text('Совместный полёт', 'Fly together');
+  return [
+    `${text('Тип', 'Type')}: ${type}`,
+    `${text('Сеть', 'Network')}: ${value(data.network)}`,
+    `${text('Дата и время', 'Date and time')}: ${value(data.date)} ${value(data.time)} (${value(data.timezone)})`,
+    `${text('Позывной', 'Callsign')}: ${value(data.callsign)}`,
+    `${text('Маршрут или аэропорт', 'Route or airport')}: ${value(data.route)}`,
+    `${text('Контакт', 'Contact')}: ${value(data.contact)}`,
+    `${text('Детали', 'Details')}: ${value(data.notes)}`,
+  ].join('\n');
+}
+function openRequestFromAlert(id) {
+  window.focus();
+  if (!isAdmin(user) || !lastSnapshot) return;
+  $('#status-filter').value = 'all';
+  $('#request-search').value = '';
+  renderList(lastSnapshot);
+  const card = Array.from($('#list').children).find((element) => element.dataset.requestId === id);
+  if (card) {
+    card.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+    card.focus?.({ preventScroll: true });
+  } else {
+    $('#list').scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+  }
+}
 function renderAdminAlerts() {
   const button = $('#enable-browser-alerts');
   const status = $('#browser-alert-status');
+  const preview = $('#admin-alert-preview');
+  const details = $('#admin-alert-details');
+  preview.hidden = true;
+  details.textContent = '';
   document.title = text('Заявки на полёт — Denis Aviation', 'Flight requests — Denis Aviation');
   button.disabled = false;
   status.textContent = '';
@@ -96,25 +129,37 @@ function renderAdminAlerts() {
       : text('Проверяем заявки...', 'Checking requests...');
     return;
   }
-  const count = lastSnapshot.docs.filter((item) => item.data().status === 'new').length;
+  const newRequests = lastSnapshot.docs.filter((item) => item.data().status === 'new');
+  const count = newRequests.length;
   $('#admin-alert-count').textContent = lastSnapshot.metadata?.fromCache
     ? text(`Новых заявок: ${count} · соединение восстанавливается`, `New requests: ${count} · reconnecting`)
     : text(`Новых заявок: ${count}`, `New requests: ${count}`);
   if (count) document.title = `(${count}) ${document.title}`;
+  if (count) {
+    const newest = newRequests.slice().sort((a, b) => {
+      const left = a.data().createdAt;
+      const right = b.data().createdAt;
+      return (right?.seconds ?? -Infinity) - (left?.seconds ?? -Infinity)
+        || (right?.nanoseconds ?? 0) - (left?.nanoseconds ?? 0)
+        || a.id.localeCompare(b.id);
+    })[0];
+    details.textContent = formatRequestDetails(newest.data());
+    preview.hidden = false;
+  }
 }
 function announceNewRequests(snapshot) {
   if (!isAdmin(user) || snapshot.metadata?.fromCache) return;
   const confirmed = snapshot.docs.filter((item) => !item.metadata?.hasPendingWrites);
   const currentIds = new Set(adminKnownIds || []);
   if (adminKnownIds) {
-    const count = confirmed.filter((item) => !adminKnownIds.has(item.id) && item.data().status === 'new').length;
-    if (count && browserAlertsSupported() && Notification.permission === 'granted') {
-      try {
+    const newRequests = confirmed.filter((item) => !adminKnownIds.has(item.id) && item.data().status === 'new');
+    if (newRequests.length && browserAlertsSupported() && Notification.permission === 'granted') {
+      for (const item of newRequests) try {
         const alert = new Notification(text('Новая заявка на сайте', 'New request on the site'), {
-          body: text(`Новых заявок: ${count}. Откройте список заявок.`, `New requests: ${count}. Open the request list.`),
+          body: formatRequestDetails(item.data()),
           icon: 'favicon.svg',
         });
-        alert.onclick = () => { window.focus(); alert.close(); };
+        alert.onclick = () => { alert.close(); openRequestFromAlert(item.id); };
       } catch (_) {
         // Browser or OS notifications may be unavailable; the in-page alert still works.
       }
@@ -426,6 +471,8 @@ function renderList(snapshot) {
     const d = item.data(),
       card = document.createElement('article');
     card.className = 'entry';
+    card.dataset.requestId = item.id;
+    card.tabIndex = -1;
     card.dataset.status = Object.hasOwn(statuses, d.status) ? d.status : 'unknown';
     const title = document.createElement('strong');
     title.textContent = `${d.type === 'flight' ? text('Совместный полёт', 'Fly together') : 'ATC'} · ${d.network}`;

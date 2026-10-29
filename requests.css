@@ -724,6 +724,25 @@ textarea:focus-visible {
   font-size: 15px;
   font-weight: 700;
 }
+.admin-alert-preview {
+  margin: 14px 0;
+  padding: 14px;
+  border: 1px solid #31536d;
+  border-radius: 4px;
+  background: #091c2b;
+}
+.admin-alert-preview strong {
+  color: #b4e7ff;
+  font-size: 11px;
+}
+#admin-alert-details {
+  margin: 8px 0 0;
+  color: #d8eafa;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 .admin-alert-help {
   margin: 6px 0;
   color: #aac3d7;
