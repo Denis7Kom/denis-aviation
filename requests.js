@@ -35,7 +35,8 @@ let db,
   addDoc,
   serverTimestamp,
   updateDoc,
-  doc;
+  doc,
+  runTransaction;
 const text = (ru, en) => (language === 'en' ? en : ru);
 const notice = (ru, en, location = 'form', kind = '') => {
   if (location === 'list') {
@@ -59,6 +60,7 @@ const statuses = {
   confirmed: ['Подтверждена', 'Confirmed'],
   declined: ['Отклонена', 'Declined'],
   completed: ['Завершена', 'Completed'],
+  cancelled: ['Отменена', 'Cancelled'],
 };
 function translate() {
   document.documentElement.lang = language;
@@ -346,12 +348,14 @@ function renderList(snapshot) {
         select = document.createElement('select');
       span.textContent = text('Статус', 'Status');
       for (const [value, labels] of Object.entries(statuses)) {
+        if (value === 'cancelled' && d.status !== 'cancelled') continue;
         const option = document.createElement('option');
         option.value = value;
         option.textContent = labels[language === 'en' ? 1 : 0];
         select.append(option);
       }
       select.value = d.status;
+      if (d.status === 'cancelled') select.disabled = true;
       select.addEventListener('change', async () => {
         const selectedStatus = select.value;
         card.dataset.status = selectedStatus;
@@ -378,6 +382,33 @@ function renderList(snapshot) {
       status.className = 'request-status';
       status.textContent = `${text('Статус', 'Status')}: ${(statuses[d.status] || [d.status, d.status])[language === 'en' ? 1 : 0]}`;
       card.append(status);
+    }
+    if (user && d.owner === user.uid && ['new', 'review', 'confirmed'].includes(d.status)) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'cancel-request';
+      button.textContent = text('Отменить заявку', 'Cancel request');
+      button.addEventListener('click', async () => {
+        if (!window.confirm(text('Отменить эту заявку?', 'Cancel this request?'))) return;
+        button.disabled = true;
+        const uid = user?.uid;
+        try {
+          await runTransaction(db, async (transaction) => {
+            const ref = doc(db, 'flightRequests', item.id);
+            const current = await transaction.get(ref);
+            if (!current.exists() || current.data().owner !== uid ||
+                !['new', 'review', 'confirmed'].includes(current.data().status))
+              throw new Error('Request is no longer cancellable');
+            transaction.update(ref, { status: 'cancelled' });
+          });
+          notice('Заявка отменена.', 'Request cancelled.', 'list', 'success');
+        } catch (_) {
+          notice('Не удалось отменить заявку. Возможно, её статус изменился. Обнови страницу и попробуй снова.',
+            'Could not cancel the request. Its status may have changed. Refresh the page and try again.', 'list');
+          button.disabled = false;
+        }
+      });
+      card.append(button);
     }
     list.append(card);
   }
@@ -500,7 +531,7 @@ async function start() {
     const app = appSdk.initializeApp(config);
     auth = authSdk.getAuth(app);
     db = fs.getFirestore(app);
-    ({ collection, query, where, onSnapshot, addDoc, serverTimestamp, updateDoc, doc } = fs);
+    ({ collection, query, where, onSnapshot, addDoc, serverTimestamp, updateDoc, doc, runTransaction } = fs);
     $('#login').addEventListener('click', async () => {
       if (!authReady || phase) return;
       phase = 'signing-in';
