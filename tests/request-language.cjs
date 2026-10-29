@@ -44,6 +44,8 @@ function boot(values, blocked = false) {
     ['#enable-browser-alerts', element()],
     ['#browser-alert-status', element()],
     ['#admin-alert-count', element()],
+    ['#admin-alert-preview', element()],
+    ['#admin-alert-details', element()],
   ]);
   const document = {
     title: '',
