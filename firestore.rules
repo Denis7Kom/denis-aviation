@@ -18,8 +18,15 @@ service cloud.firestore {
         && request.resource.data.notes is string && request.resource.data.notes.size() <= 1000
         && request.resource.data.status == 'new' && request.resource.data.createdAt == request.time;
       allow read: if signedIn() && (admin() || resource.data.owner == request.auth.uid);
-      allow update: if admin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
-        && request.resource.data.status in ['new','review','confirmed','declined','completed'];
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && (
+          (admin() && resource.data.status != 'cancelled'
+            && request.resource.data.status in ['new','review','confirmed','declined','completed'])
+          || (resource.data.owner == request.auth.uid
+            && resource.data.status in ['new','review','confirmed']
+            && request.resource.data.status == 'cancelled')
+        );
       allow delete: if false;
     }
   }
