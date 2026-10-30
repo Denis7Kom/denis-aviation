@@ -116,6 +116,7 @@ function snapshot(docs, fromCache = false) {
   snapshot([
     request('old', 'new', false, { createdAt: { seconds: 1 } }),
     request('older', 'new', false, { createdAt: { seconds: 2 }, callsign: 'LATEST' }),
+    request('historic', 'cancelled'),
   ]);
   assert.equal(alerts.length, 0, 'Initial cached and server documents are not new arrivals');
   assert.match(elements.get('#admin-alert-count').textContent, /2/);
@@ -177,6 +178,41 @@ function snapshot(docs, fromCache = false) {
   assert.equal(alerts.length, 4, 'Each simultaneously arriving request gets its own notification');
   assert.match(alerts[2].options.body, /FIRST/);
   assert.match(alerts[3].options.body, /SECOND/);
+  const cancellation = request('old', 'cancelled', false, {
+    callsign: 'CANCEL-1',
+    contact: 'contact-1',
+    notes: 'extra-1',
+  });
+  snapshot([cancellation, request('older')], true);
+  assert.equal(alerts.length, 4, 'Cached cancellations do not trigger alerts');
+  snapshot([request('old', 'cancelled', true), request('older')]);
+  assert.equal(alerts.length, 4, 'Pending cancellations do not trigger alerts');
+  snapshot([cancellation, request('older')]);
+  assert.equal(alerts.length, 5, 'Confirmed cancellation triggers one alert');
+  assert.equal(alerts[4].title, 'Заявка отменена');
+  assert.match(alerts[4].options.body, /CANCEL-1/);
+  assert.match(alerts[4].options.body, /contact-1/);
+  assert.match(alerts[4].options.body, /extra-1/);
+  assert.match(elements.get('#admin-cancellation-alert').textContent, /Заявка отменена/);
+  assert.match(elements.get('#admin-cancellation-alert').textContent, /CANCEL-1/);
+  assert.equal(elements.get('#admin-cancellation-alert').hidden, false);
+  alerts[4].onclick();
+  assert(elements.get('#list').children.find((card) => card.dataset.requestId === 'old').focused);
+  snapshot([cancellation, request('older')]);
+  assert.equal(alerts.length, 5, 'Unchanged cancellation is not repeated');
+  NotificationMock.permission = 'denied';
+  snapshot([cancellation, request('older', 'cancelled', false, { callsign: 'CANCEL-2' })]);
+  assert.equal(alerts.length, 5, 'No browser alert when permission is denied');
+  assert.match(
+    elements.get('#admin-cancellation-alert').textContent,
+    /CANCEL-2/,
+    'Cancellation remains visible on the page',
+  );
+  NotificationMock.permission = 'granted';
+  vm.runInContext("language = 'en'; renderAdminAlerts();", context);
+  assert.match(elements.get('#admin-cancellation-alert').textContent, /Request cancelled/);
+  vm.runInContext("language = 'ru'; renderAdminAlerts();", context);
+  alerts.length = 4;
   elements.get('#request-search').value = 'hidden';
   elements.get('#show-new-requests').listeners.click();
   assert.equal(elements.get('#status-filter').value, 'new');

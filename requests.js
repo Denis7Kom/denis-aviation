@@ -26,6 +26,8 @@ let language = readLanguage(),
   lastSubmitted = null,
   lastSnapshot = null,
   adminKnownIds = null,
+  adminKnownStatuses = null,
+  adminCancellations = [],
   adminAlertProblem = false,
   visitorKnownStatuses = null,
   visitorUpdates = [];
@@ -185,6 +187,11 @@ function renderAdminAlerts() {
   const status = $('#browser-alert-status');
   const preview = $('#admin-alert-preview');
   const details = $('#admin-alert-details');
+  const cancellations = $('#admin-cancellation-alert');
+  cancellations.hidden = !isAdmin(user) || !adminCancellations.length;
+  cancellations.textContent = isAdmin(user)
+    ? adminCancellations.map((data) => `${text('Заявка отменена', 'Request cancelled')}\n${formatRequestDetails(data)}`).join('\n\n')
+    : '';
   preview.hidden = true;
   details.textContent = '';
   document.title = text('Заявки на полёт — Denis Aviation', 'Flight requests — Denis Aviation');
@@ -249,6 +256,25 @@ function announceNewRequests(snapshot) {
       }
     }
   }
+  if (adminKnownStatuses) {
+    for (const item of confirmed) {
+      const data = item.data();
+      if (adminKnownStatuses.has(item.id) && adminKnownStatuses.get(item.id) !== 'cancelled' && data.status === 'cancelled') {
+        adminCancellations.push(data);
+        if (adminCancellations.length > 10) adminCancellations.shift();
+        if (browserAlertsSupported() && Notification.permission === 'granted') {
+          try {
+            const alert = new Notification(text('Заявка отменена', 'Request cancelled'), {
+              body: formatRequestDetails(data), icon: 'favicon.svg',
+            });
+            alert.onclick = () => { alert.close(); openRequestFromAlert(item.id); };
+          } catch (_) {}
+        }
+      }
+    }
+  }
+  if (!adminKnownStatuses) adminKnownStatuses = new Map();
+  for (const item of confirmed) adminKnownStatuses.set(item.id, item.data().status);
   for (const item of confirmed) currentIds.add(item.id);
   adminKnownIds = currentIds;
 }
@@ -811,6 +837,8 @@ async function start() {
       $('#list').replaceChildren();
       lastSnapshot = null;
       adminKnownIds = null;
+      adminKnownStatuses = null;
+      adminCancellations = [];
       visitorKnownStatuses = null;
       visitorUpdates = [];
       $('#visitor-tools').hidden = !u || !!isAdmin(u);

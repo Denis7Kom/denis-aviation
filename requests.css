@@ -836,3 +836,7 @@ textarea:focus-visible {
   white-space: pre-line;
   color: #d8e8ff;
 }
+
+#admin-cancellation-alert {
+  white-space: pre-line;
+}
