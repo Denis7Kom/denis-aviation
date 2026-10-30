@@ -2,6 +2,15 @@
 
 This is a separate scheduled Cloudflare Worker; the GitHub Pages site and Firestore security rules are not changed. Every five minutes it queries Firestore for applications after a persisted `(createdAt, document name)` cursor and sends one generic message per application. It does not filter on request status. Telegram receives only a generic notification and the link to the requests page, never the application contents.
 
+## Last observed deployment status
+
+The Worker and D1 binding were deployed, but delivery to Telegram was **not confirmed**.
+The last reported test on 29 October 2026 returned `Missing Worker configuration` in a
+scheduled invocation. This is a historical observation, not a claim about the current
+deployment. Inspect the latest active version and logs before diagnosing it. The separate
+[browser alert](../docs/requests-and-notifications.md#оповещение-на-сайте) works only while
+the administrator's request page is open.
+
 ## Security and setup prerequisites
 
 - Use a Workers **Free** account and a D1 database; do not upgrade to a paid plan if you want to avoid charges.
@@ -11,10 +20,13 @@ This is a separate scheduled Cloudflare Worker; the GitHub Pages site and Firest
 
 ## Deploy using Wrangler
 
-From this directory, after authenticating Wrangler in the Cloudflare account:
+Run the following from the `telegram-notifier` directory after authenticating Wrangler
+in the correct Cloudflare account. The tracked `wrangler.jsonc` already names the existing
+Worker and database. Do not create a second database or reset existing state just to
+redeploy the Worker.
 
-1. Create the database: `npx wrangler d1 create denis-aviation-notifier`. Put the returned database ID into `wrangler.jsonc` in place of `REPLACE_WITH_DATABASE_ID`.
-2. Run `npx wrangler d1 execute denis-aviation-notifier --remote --file schema.sql`. This establishes the starting cursor at that moment. Existing applications from before the initialization are not notified. Do not delete or reinitialize this database unless intentionally resetting notification state.
+1. For a **new** installation only, create a D1 database with `npx wrangler d1 create denis-aviation-notifier` and configure its returned ID and the `DB` binding in `wrangler.jsonc`. For the existing installation, use its configured database.
+2. For a **new** database only, run `npx wrangler d1 execute denis-aviation-notifier --remote --file schema.sql`. This establishes the initial cursor at that moment. Existing applications from before initialization are not notified. Preserve the existing database and state when debugging or redeploying.
 3. Deploy the Worker with `npx wrangler deploy`, then add the three secrets via **Workers & Pages → your Worker → Settings → Variables and Secrets → Add → Secret**. Deploy the changes. Until secrets are configured, scheduled runs fail safely. The cron is already configured at five-minute intervals.
 4. Watch the scheduled invocation logs for errors. Test using a dedicated, authorized test application and confirm that the private Telegram chat receives a message. This project must not claim successful delivery until this end-to-end test passes.
 
@@ -23,3 +35,19 @@ The Worker processes up to ten applications per run; a backlog drains over subse
 ## Reliability
 
 The cursor advances only after Telegram accepts each message. The D1 lease prevents simultaneous normal scheduled runs. If Telegram accepts a message but the following database write fails, the retry may send a duplicate; exactly-once delivery cannot be guaranteed. A delayed or failed run may postpone a notification. The Worker exposes no HTTP handler and never changes request statuses.
+
+## Troubleshooting
+
+- `Missing Worker configuration`: at least one of `DB`, `GOOGLE_SERVICE_ACCOUNT`,
+  `TELEGRAM_BOT_TOKEN` or `TELEGRAM_CHAT_ID` was absent or empty in that invocation.
+  Check the names, the D1 binding and the active deployed version; this error does not
+  identify which one is missing. Do not print or share secret values.
+- `Invalid service account configuration`: the received value is not valid JSON or lacks
+  the expected service-account type, email or private key. Store the entire JSON key as
+  the `GOOGLE_SERVICE_ACCOUNT` secret; do not expose it in logs or screenshots.
+- `Notification state is not initialized`: the Worker could not find its state row in D1.
+  Verify the binding points to the intended existing database before taking any action
+  on the state.
+- A Google, Firestore or Telegram request error is a later-stage failure. Use the latest
+  status code and configuration to diagnose it; a successful build alone does not
+  establish that an authenticated read or a Telegram send worked.

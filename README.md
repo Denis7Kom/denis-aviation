@@ -1,7 +1,7 @@
 # Denis Komarov — Aviation
 
 Personal aviation portfolio with six procedural aircraft, an interactive flight network,
-a recorded flight log and a local flight-control demo.
+a recorded flight log, a local flight-control demo and a flight-request page.
 
 [Open the website](https://denis7kom.github.io/denis-aviation/)
 
@@ -16,20 +16,23 @@ npm run dev
 ```
 
 Open `http://localhost:8000`. GitHub Pages serves the committed static files; the
-published website does not need Node.js, a backend or third-party JavaScript at runtime.
+published website does not need Node.js at runtime. The request page loads the Firebase
+JavaScript SDK and uses Firebase Authentication and Cloud Firestore; it requires a network
+connection and the corresponding Firebase configuration. The site also uses hosted fonts.
 
 ## Commands
 
-| Command               | Purpose                                                  |
-| --------------------- | -------------------------------------------------------- |
-| `npm run build`       | Bundle source modules into the published `app.js`        |
-| `npm run build:check` | Fail if the committed bundle differs from the source     |
-| `npm run format`      | Format authored JavaScript, CSS, tests and documentation |
-| `npm run check`       | Check the bundle, formatting and regression tests        |
-| `npm run dev`         | Serve the repository on port 8000                        |
+| Command               | Purpose                                               |
+| --------------------- | ----------------------------------------------------- |
+| `npm run build`       | Bundle source modules into the published `app.js`     |
+| `npm run build:check` | Fail if the committed bundle differs from the source  |
+| `npm run format`      | Format the configured source, tests and documentation |
+| `npm run check`       | Check the bundle, formatting and regression tests     |
+| `npm run dev`         | Serve the repository on port 8000                     |
 
 Run `npm run build` after editing `src/` and commit both the source and generated bundle.
-Do not edit `app.js` directly.
+Do not edit `app.js` directly. The separate `requests.js` file is served directly; it is
+not generated from `src/`.
 
 ## Structure
 
@@ -41,6 +44,11 @@ src/
   data/airports.js       Airport data and hub/favourite classification
 scripts/                 Build and test entry points
 tests/                  Geometry, rendering and flight-simulation regressions
+requests.html           Flight-request form and administrator panel
+requests.js             Firebase authentication, request handling and browser alerts
+requests.css            Flight-request page styles
+firestore.rules         Version-controlled Firestore rules; deploy separately in Firebase
+telegram-notifier/      Separate scheduled Cloudflare Worker and D1 state
 aircraft-renderer.js    WebGL, depth-buffer fallback and cached wireframe renderer
 app.js                  Generated browser bundle
 index.html              Published markup and bilingual page content
@@ -49,19 +57,26 @@ assets/                 Photographs and documents
 ```
 
 See [architecture and invariants](docs/architecture.md) before changing aircraft geometry
-or the animation loop. [QA_CHECKLIST.md](QA_CHECKLIST.md) covers manual visual checks.
+or the animation loop. The [request and notification guide](docs/requests-and-notifications.md)
+describes access rules, the browser alert and its limitations in Russian. The separate
+[Telegram Worker guide](telegram-notifier/README.md) covers configuration and troubleshooting.
+[QA_CHECKLIST.md](QA_CHECKLIST.md) covers manual checks.
 
 ## Verification
 
 Tests run in Node.js without a browser. They cover mesh validity, moving parts,
 glazing clearance, navigation-light attachment, depth occlusion, wireframe caching
-and flight-game rules. Tests extract functions from the **shipped bundle** using a
+flight-game rules, request UI behaviour and the Telegram Worker's mocked integrations.
+The flight and rendering tests extract functions from the **shipped bundle** using a
 JavaScript parser, so formatting and braces inside strings do not break fixtures.
 
 A separate preservation contract checks that the structural refactor retains the
 original authored statements, data, renderer and published HTML/CSS. Local resource
 checks also catch missing images, documents and scripts before deployment. Browser checks
 remain necessary for visual appearance, responsive layout and GPU/driver differences.
+The request tests use mocks: they do not test deployed Firestore Security Rules, Google
+authentication or actual browser/Telegram delivery. Verify those separately as described
+in the request guide and QA checklist.
 
 ## Copyright
 
