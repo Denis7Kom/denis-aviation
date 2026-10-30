@@ -13,20 +13,24 @@ Run `npm ci` and `npm run check` before publishing. The checks cover:
 - Local resource paths, gallery metadata, file signatures and deferred script order.
 - Mocked request form, translations, status display and browser-alert behaviour.
 - Telegram Worker cursor, retry and lock logic with mocked external services.
+- The separate `npm run test:firestore-rules` suite exercises repository rules in an
+  isolated Firestore emulator; GitHub Actions runs it as an additional job. See the
+  [setup instructions](README.md#verification).
 
 These checks do not replace browser tests or validate the factual contents of documents.
 External destinations and remote font availability are outside the local resource check.
 
 ## Request and notification checks
 
-The Node.js tests use mocks. They do **not** execute Firestore Security Rules or prove
-that a production Firebase, browser or Telegram connection works. The browser alert was
+The request UI tests use mocks. The separate emulator suite executes the repository's
+Firestore rules, but neither suite proves that those rules are deployed or that a
+production Firebase, browser or Telegram connection works. The browser alert was
 inspected with test data on 30 October 2026; live delivery with the administrator's
 account was not confirmed by that check.
 
-Before claiming access rules are verified, compare the rules deployed in Firebase with
-`firestore.rules` and use the Firestore emulator or a rules simulator with isolated test
-documents and authenticated test identities. Exercise direct reads and writes, including:
+Before claiming production access rules are verified, compare the rules deployed in
+Firebase with `firestore.rules`. The emulator suite exercises direct reads and writes
+with isolated test documents and authenticated test identities, including:
 
 - Owner A can read and cancel A's request from `new`, `review` or `confirmed`.
 - User B cannot read A's document or change A's status to `cancelled`, even with A's

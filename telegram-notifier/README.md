@@ -40,11 +40,15 @@ The cursor advances only after Telegram accepts each message. The D1 lease preve
 
 - `Missing Worker configuration`: at least one of `DB`, `GOOGLE_SERVICE_ACCOUNT`,
   `TELEGRAM_BOT_TOKEN` or `TELEGRAM_CHAT_ID` was absent or empty in that invocation.
-  Check the names, the D1 binding and the active deployed version; this error does not
-  identify which one is missing. Do not print or share secret values.
+  In the updated Worker, the error lists the missing binding names, never their values.
+  Older deployed versions may omit the names. Check the D1 binding, the names and the
+  active deployed version. Do not print or share secret values.
 - `Invalid service account configuration`: the received value is not valid JSON or lacks
   the expected service-account type, email or private key. Store the entire JSON key as
   the `GOOGLE_SERVICE_ACCOUNT` secret; do not expose it in logs or screenshots.
+- `Invalid service account private key`: the private key in that JSON could not be
+  decoded or imported. Check the stored JSON privately; never include it in a support
+  request or a log.
 - `Notification state is not initialized`: the Worker could not find its state row in D1.
   Verify the binding points to the intended existing database before taking any action
   on the state.
