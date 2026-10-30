@@ -87,28 +87,34 @@ a {
 .back-link:hover {
   color: #fff;
 }
-/* Match the language control on the main portfolio page. */
+/* Compact language selector shared with the main page. */
 .languages {
-  display: flex;
-  gap: 4px;
+  display: inline-flex;
   align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid #6e9dc244;
+  border-radius: 9px;
+  background: #081422;
 }
 .languages button {
-  min-width: 30px;
-  min-height: 36px;
-  padding: 9px 5px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0 7px;
   border: 0;
-  background: none;
-  color: #8296b1;
+  border-radius: 6px;
+  background: transparent;
+  color: #91a8be;
   font: 10px var(--mono);
   cursor: pointer;
-  transition: color 0.2s;
+  transition: background 0.2s, color 0.2s;
 }
-.languages button:hover,
 .languages button[aria-pressed='true'] {
   color: #fff;
-  background: none;
+  background: #254861;
+  box-shadow: 0 1px 4px #0006;
 }
+.languages button:focus-visible { outline: 2px solid #b4e7ff; outline-offset: 2px; }
 .hero {
   position: relative;
   display: grid;
