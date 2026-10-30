@@ -295,10 +295,6 @@ function translate() {
   $('#list-title').textContent = isAdmin(user)
     ? text('Все заявки', 'All requests')
     : text('Мои заявки', 'My requests');
-  const calendarLabel = text('Выбрать дату в календаре', 'Choose a date from the calendar');
-  $('#open-date-picker').setAttribute('aria-label', calendarLabel);
-  $('#open-date-picker').setAttribute('title', calendarLabel);
-  $('#date-picker').setAttribute('aria-label', calendarLabel);
   renderControls();
   renderConfirmation();
   renderTimezoneOptions();
@@ -453,7 +449,7 @@ try {
           option.textContent = timezoneLabel(saved[key]);
           $('#form').elements.timezone.append(option);
         }
-        $('#form').elements[key].value = key === 'date' ? displayDate(saved[key]) : saved[key];
+        $('#form').elements[key].value = key === 'date' ? (parseDate(saved[key]) || parseDate(displayDate(saved[key])) || '') : saved[key];
       }
     }
     if (saved.notes) $('.more-details').open = true;
@@ -481,30 +477,6 @@ function syncTime() {
 }
 timeHours.addEventListener('change', syncTime);
 timeMinutes.addEventListener('change', syncTime);
-const dateInput = $('#form').elements.date;
-const datePicker = $('#date-picker');
-$('#open-date-picker').addEventListener('click', () => {
-  if (typeof datePicker.showPicker === 'function') {
-    try { datePicker.showPicker(); return; } catch (_) {}
-  }
-  datePicker.dataset.fallback = 'true';
-  datePicker.setAttribute('aria-hidden', 'false');
-  datePicker.tabIndex = 0;
-  datePicker.focus?.();
-});
-function syncDatePicker() {
-  if (dateInput) datePicker.value = parseDate(dateInput.value) || '';
-}
-function selectCalendarDate() {
-  if (!dateInput) return;
-  dateInput.value = displayDate(datePicker.value);
-  saveDraft();
-}
-syncDatePicker();
-dateInput?.addEventListener('input', syncDatePicker);
-dateInput?.addEventListener('change', syncDatePicker);
-datePicker.addEventListener('input', selectCalendarDate);
-datePicker.addEventListener('change', selectCalendarDate);
 function saveDraft() {
   try {
     if (!$('#save-draft').checked) {
@@ -739,9 +711,10 @@ $('#form').addEventListener('submit', async (event) => {
     notice('Выбери часы и минуты.', 'Choose hours and minutes.');
     return;
   }
-  const parsedDate = parseDate(data.date);
+  const parsedDate = /^\d{4}-\d{2}-\d{2}$/.test(data.date || '')
+    ? parseDate(displayDate(data.date)) : null;
   if (!parsedDate) {
-    notice('Укажи существующую дату в формате ДД-ММ-ГГГГ.', 'Enter a valid date in DD-MM-YYYY format.');
+    notice('Выбери существующую дату.', 'Choose a valid date.');
     return;
   }
   data.date = parsedDate;
