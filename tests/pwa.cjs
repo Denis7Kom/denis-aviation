@@ -77,7 +77,11 @@ vm.runInNewContext(readFileSync('sw.js', 'utf8'), {
   });
   await task;
   assert(entries.has(resolve('./index.html')), 'Entry page is cached');
-  for (const src of ['style.css?v=languages-78', 'app.js?v=italiano-77', 'assets/hero-night.png']) {
+  for (const src of [
+    'style.css?v=request-outline-79',
+    'app.js?v=italiano-77',
+    'assets/hero-night.png',
+  ]) {
     assert(entries.has(resolve(src)), `Missing offline resource ${src}`);
     assert(existsSync(src.split('?')[0]));
   }
