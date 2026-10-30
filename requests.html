@@ -13,7 +13,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="requests.css?v=12" />
+    <link rel="stylesheet" href="requests.css?v=13" />
   </head>
   <body>
     <div class="page-shell">
@@ -137,7 +137,7 @@
                 >
                 <label
                   ><span data-ru="Дата" data-en="Date">Дата</span
-                  ><input type="date" name="date" required
+                  ><input type="text" name="date" placeholder="ДД-ММ-ГГГГ" data-placeholder-ru="ДД-ММ-ГГГГ" data-placeholder-en="DD-MM-YYYY" pattern="[0-9]{2}-[0-9]{2}-[0-9]{4}" maxlength="10" required
                 /></label>
                 <label
                   ><span data-ru="Время" data-en="Time">Время</span
@@ -217,6 +217,12 @@
                 Статус обновляется на этой странице. Время считается согласованным после
                 подтверждения.
               </p>
+              <div id="visitor-tools" class="admin-alert" hidden>
+                <div class="admin-alert-heading"><span aria-hidden="true">●</span><strong data-ru="Изменения статуса" data-en="Status updates">Изменения статуса</strong></div>
+                <p class="admin-alert-help" data-ru="Оставь страницу открытой для уведомлений браузера. Изменения за время отсутствия появятся при следующем входе на этом устройстве." data-en="Keep this page open for browser notifications. Changes while away appear when you return on this device.">Оставь страницу открытой для уведомлений браузера. Изменения за время отсутствия появятся при следующем входе на этом устройстве.</p>
+                <p id="visitor-alert-status" class="admin-alert-details" role="status" aria-live="polite"></p>
+                <div class="admin-alert-actions"><button id="enable-visitor-alerts" type="button"></button></div>
+              </div>
               <div id="admin-tools" hidden>
                 <div class="admin-alert" aria-labelledby="admin-alert-title">
                   <div class="admin-alert-heading">
@@ -296,6 +302,6 @@
         >
       </footer>
     </div>
-    <script type="module" src="requests.js?v=9"></script>
+    <script type="module" src="requests.js?v=10"></script>
   </body>
 </html>

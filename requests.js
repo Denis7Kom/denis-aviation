@@ -26,7 +26,9 @@ let language = readLanguage(),
   lastSubmitted = null,
   lastSnapshot = null,
   adminKnownIds = null,
-  adminAlertProblem = false;
+  adminAlertProblem = false,
+  visitorKnownStatuses = null,
+  visitorUpdates = [];
 let db,
   auth,
   authSdk,
@@ -64,6 +66,72 @@ const statuses = {
   completed: ['Завершена', 'Completed'],
   cancelled: ['Отменена', 'Cancelled'],
 };
+function displayDate(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));
+  return match ? `${match[3]}-${match[2]}-${match[1]}` : String(value || '');
+}
+function parseDate(value) {
+  const match = /^(\d{2})-(\d{2})-(\d{4})$/.exec(String(value || '').trim());
+  if (!match) return null;
+  const [, day, month, year] = match;
+  const date = new Date(`${year}-${month}-${day}T00:00:00Z`);
+  const iso = `${year}-${month}-${day}`;
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === iso ? iso : null;
+}
+function renderVisitorAlerts() {
+  const button = $('#enable-visitor-alerts');
+  const info = $('#visitor-alert-status');
+  if (!browserAlertsSupported()) {
+    button.disabled = true;
+    button.textContent = text('Уведомления браузера недоступны', 'Browser notifications unavailable');
+  } else if (Notification.permission === 'granted') {
+    button.disabled = true;
+    button.textContent = text('Уведомления браузера включены', 'Browser notifications enabled');
+  } else if (Notification.permission === 'denied') {
+    button.disabled = true;
+    button.textContent = text('Уведомления браузера заблокированы', 'Browser notifications blocked');
+  } else {
+    button.disabled = false;
+    button.textContent = text('Включить уведомления браузера', 'Enable browser notifications');
+  }
+  info.textContent = visitorUpdates.map(({ callsign, status }) =>
+    `${callsign}: ${(statuses[status] || [status, status])[language === 'en' ? 1 : 0]}`
+  ).join('\n');
+}
+function announceVisitorChanges(snapshot) {
+  if (!user || isAdmin(user) || snapshot.metadata?.fromCache) return;
+  const key = `dk-request-statuses-v1:${user.uid}`;
+  if (visitorKnownStatuses === null) {
+    try {
+      const saved = JSON.parse(localStorage.getItem(key) || 'null');
+      visitorKnownStatuses = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    } catch (_) { visitorKnownStatuses = {}; }
+  }
+  const next = { ...visitorKnownStatuses };
+  for (const item of snapshot.docs) {
+    if (item.metadata?.hasPendingWrites) continue;
+    const data = item.data();
+    if (!Object.hasOwn(statuses, data.status)) continue;
+    if (Object.hasOwn(visitorKnownStatuses, item.id) && visitorKnownStatuses[item.id] !== data.status) {
+      const update = { callsign: String(data.callsign || '—'), status: data.status };
+      visitorUpdates.push(update);
+      if (visitorUpdates.length > 10) visitorUpdates.shift();
+      if (browserAlertsSupported() && Notification.permission === 'granted') {
+        try {
+          const alert = new Notification(text('Статус заявки изменён', 'Request status changed'), {
+            body: `${update.callsign}: ${(statuses[update.status])[language === 'en' ? 1 : 0]}`,
+            icon: 'favicon.svg',
+          });
+          alert.onclick = () => { alert.close(); openRequestFromAlert(item.id); };
+        } catch (_) {}
+      }
+    }
+    next[item.id] = data.status;
+  }
+  visitorKnownStatuses = next;
+  try { localStorage.setItem(key, JSON.stringify(next)); } catch (_) {}
+  renderVisitorAlerts();
+}
 function browserAlertsSupported() {
   return typeof Notification !== 'undefined' && typeof Notification.requestPermission === 'function';
 }
@@ -75,7 +143,7 @@ function formatRequestDetails(data) {
   return [
     `${text('Тип', 'Type')}: ${type}`,
     `${text('Сеть', 'Network')}: ${value(data.network)}`,
-    `${text('Дата и время', 'Date and time')}: ${value(data.date)} ${value(data.time)} (${value(data.timezone)})`,
+    `${text('Дата и время', 'Date and time')}: ${displayDate(data.date)} ${value(data.time)} (${value(data.timezone)})`,
     `${text('Позывной', 'Callsign')}: ${value(data.callsign)}`,
     `${text('Маршрут или аэропорт', 'Route or airport')}: ${value(data.route)}`,
     `${text('Контакт', 'Contact')}: ${value(data.contact)}`,
@@ -84,7 +152,7 @@ function formatRequestDetails(data) {
 }
 function openRequestFromAlert(id) {
   window.focus();
-  if (!isAdmin(user) || !lastSnapshot) return;
+  if (!user || !lastSnapshot) return;
   $('#status-filter').value = 'all';
   $('#request-search').value = '';
   renderList(lastSnapshot);
@@ -190,12 +258,13 @@ function translate() {
   renderConfirmation();
   renderTimezoneOptions();
   renderAdminAlerts();
+  renderVisitorAlerts();
 }
 function renderConfirmation() {
   if (!lastSubmitted) return;
   const d = lastSubmitted;
   $('#confirmation-summary').textContent =
-    `${d.type === 'atc' ? text('Диспетчерский контроль', 'ATC control') : text('Совместный полёт', 'Fly together')} · ${d.network}\n${d.date} ${d.time} (${d.timezone})\n${d.callsign} · ${d.route}`;
+    `${d.type === 'atc' ? text('Диспетчерский контроль', 'ATC control') : text('Совместный полёт', 'Fly together')} · ${d.network}\n${displayDate(d.date)} ${d.time} (${d.timezone})\n${d.callsign} · ${d.route}`;
 }
 function renderControls() {
   $('#send').disabled = !authReady || !!phase;
@@ -339,7 +408,7 @@ try {
           option.textContent = timezoneLabel(saved[key]);
           $('#form').elements.timezone.append(option);
         }
-        $('#form').elements[key].value = saved[key];
+        $('#form').elements[key].value = key === 'date' ? displayDate(saved[key]) : saved[key];
       }
     }
     if (saved.notes) $('.more-details').open = true;
@@ -395,6 +464,11 @@ $('#enable-browser-alerts').addEventListener('click', async () => {
   }
   renderAdminAlerts();
 });
+$('#enable-visitor-alerts').addEventListener('click', async () => {
+  if (!user || isAdmin(user) || !browserAlertsSupported() || Notification.permission !== 'default') return;
+  try { await Notification.requestPermission(); } catch (_) {}
+  renderVisitorAlerts();
+});
 translate();
 function subscribe() {
   if (unsubscribe) unsubscribe();
@@ -407,6 +481,7 @@ function subscribe() {
     { includeMetadataChanges: true },
     (snapshot) => {
       announceNewRequests(snapshot);
+      announceVisitorChanges(snapshot);
       lastSnapshot = snapshot;
       adminAlertProblem = false;
       renderList(snapshot);
@@ -477,7 +552,7 @@ function renderList(snapshot) {
     const title = document.createElement('strong');
     title.textContent = `${d.type === 'flight' ? text('Совместный полёт', 'Fly together') : 'ATC'} · ${d.network}`;
     const details = document.createElement('p');
-    details.textContent = `${d.date} ${d.time} (${d.timezone})\n${d.callsign} · ${d.route}\n${text('Контакт', 'Contact')}: ${d.contact}${d.notes ? '\n' + d.notes : ''}`;
+    details.textContent = `${displayDate(d.date)} ${d.time} (${d.timezone})\n${d.callsign} · ${d.route}\n${text('Контакт', 'Contact')}: ${d.contact}${d.notes ? '\n' + d.notes : ''}`;
     card.append(title, details);
     if (isAdmin(user)) {
       const label = document.createElement('label'),
@@ -570,6 +645,12 @@ $('#form').addEventListener('submit', async (event) => {
   const form = event.currentTarget;
   if (!authReady || phase || !form.reportValidity()) return;
   const data = Object.fromEntries(new FormData(form).entries());
+  const parsedDate = parseDate(data.date);
+  if (!parsedDate) {
+    notice('Укажи существующую дату в формате ДД-ММ-ГГГГ.', 'Enter a valid date in DD-MM-YYYY format.');
+    return;
+  }
+  data.date = parsedDate;
   for (const key of ['timezone', 'callsign', 'route', 'contact', 'notes'])
     data[key] = data[key].trim();
   if (!data.timezone || !data.callsign || !data.route || !data.contact) {
@@ -699,6 +780,9 @@ async function start() {
       $('#list').replaceChildren();
       lastSnapshot = null;
       adminKnownIds = null;
+      visitorKnownStatuses = null;
+      visitorUpdates = [];
+      $('#visitor-tools').hidden = !u || !!isAdmin(u);
       adminAlertProblem = false;
       $('#request-search').value = '';
       $('#status-filter').value = 'all';

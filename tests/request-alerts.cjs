@@ -56,6 +56,7 @@ class NotificationMock {
   close() {}
 }
 let callback, onError;
+const storage = new Map();
 const context = vm.createContext({
   document,
   Intl,
@@ -63,7 +64,10 @@ const context = vm.createContext({
   URLSearchParams,
   Notification: NotificationMock,
   window: { location: { search: '' }, focus() {} },
-  localStorage: { getItem: () => 'ru', setItem() {} },
+  localStorage: {
+    getItem: (key) => storage.get(key) || null,
+    setItem: (key, value) => storage.set(key, value),
+  },
   fakeCollection: () => 'requests',
   fakeWhere: (...args) => args,
   fakeQuery: (...args) => args,
@@ -133,7 +137,7 @@ function snapshot(docs, fromCache = false) {
   for (const expected of [
     'Совместный полёт',
     'VATSIM',
-    '2026-11-01',
+    '01-11-2026',
     '12:00',
     'UTC',
     'TEST',
@@ -189,6 +193,31 @@ function snapshot(docs, fromCache = false) {
   assert.equal(alerts.length, 4, 'Visitor receives no administrator alert');
   assert.equal(elements.get('#admin-alert-count').textContent, '');
   assert.equal(elements.get('#admin-alert-preview').hidden, true);
+  NotificationMock.permission = 'default';
+  await elements.get('#enable-visitor-alerts').listeners.click();
+  assert.equal(NotificationMock.permission, 'granted', 'Visitor explicitly enables notifications');
+  snapshot([request('visitor', 'review')], true);
+  assert.equal(alerts.length, 4, 'Cached status changes do not notify');
+  snapshot([request('visitor', 'review', true)]);
+  assert.equal(alerts.length, 4, 'Pending writes do not notify');
+  snapshot([request('visitor', 'review')]);
+  assert.equal(alerts.length, 5);
+  assert.match(alerts[4].options.body, /Рассматривается/);
+  assert.match(elements.get('#visitor-alert-status').textContent, /Рассматривается/);
+  alerts[4].onclick();
+  assert(
+    elements.get('#list').children.find((card) => card.dataset.requestId === 'visitor').focused,
+  );
+  vm.runInContext('visitorKnownStatuses = null; visitorUpdates = []; subscribe();', context);
+  snapshot([request('visitor', 'confirmed')]);
+  assert.equal(alerts.length, 6, 'A status changed while away is detected on return');
+  assert.match(alerts[5].options.body, /Подтверждена/);
+  vm.runInContext(
+    "user = {uid:'other',email:'other@example.com',emailVerified:true,providerData:[{providerId:'google.com'}]}; visitorKnownStatuses = null; visitorUpdates = []; subscribe();",
+    context,
+  );
+  snapshot([request('visitor', 'declined')]);
+  assert.equal(alerts.length, 6, 'A different account does not inherit the previous baseline');
   console.log(
     'PASS: administrator alerts, cached snapshots, status updates, permissions and visitor isolation',
   );
