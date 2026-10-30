@@ -324,10 +324,16 @@ label {
   padding: 0;
   border: 0;
 }
-.time-field legend {
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
   padding: 0;
-  color: #c2d3e2;
-  font-size: 12px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 .time-controls {
   display: grid;
@@ -338,51 +344,9 @@ label {
 .time-controls label { gap: 4px; }
 .time-controls label span { color: #9cafc3; font-size: 10px; }
 .time-controls select { padding-inline: 9px 24px; background-position: right 8px center; }
-.date-control {
-  position: relative;
-  min-width: 0;
-}
-.date-control input {
+#request-date {
   width: 100%;
   min-width: 0;
-  padding-right: 54px;
-}
-button#open-date-picker {
-  position: absolute;
-  right: 3px;
-  top: 3px;
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  min-height: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 4px;
-  color: #b4e7ff;
-  background: transparent;
-}
-button#open-date-picker:hover { background: #18344b; }
-button#open-date-picker:focus-visible { outline: 2px solid #b4e7ff; outline-offset: -2px; }
-#date-picker {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 1px;
-  height: 1px;
-  min-height: 0;
-  padding: 0;
-  opacity: 0;
-  pointer-events: none;
-}
-#date-picker[data-fallback='true'] {
-  position: static;
-  width: 100%;
-  height: auto;
-  min-height: 48px;
-  padding: 12px 13px;
-  opacity: 1;
-  pointer-events: auto;
 }
 label small {
   color: #9cafc3;

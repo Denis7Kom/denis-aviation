@@ -49,8 +49,6 @@ function boot(values, blocked = false) {
     ['#admin-cancellation-alert', element()],
     ['#enable-visitor-alerts', element()],
     ['#visitor-alert-status', element()],
-    ['#date-picker', element()],
-    ['#open-date-picker', element()],
     ['#time-hours', element()],
     ['#time-minutes', element()],
   ]);

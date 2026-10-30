@@ -34,7 +34,7 @@ function boot(failImports = false, search = '', storage = new Map()) {
   form.fields = {
     type: 'flight',
     network: 'VATSIM',
-    date: '01-11-2099',
+    date: '2099-11-01',
     time: '18:30',
     timezone: 'Europe/Rome',
     callsign: ' TEST01 ',
@@ -212,24 +212,7 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   draft.get('#time-hours').value = '18';
   draft.get('#time-minutes').value = '30';
   draft.get('#time-minutes').listeners.change();
-  assert.equal(draft.get('#date-picker').value, '2099-11-01');
-  let opened = false;
-  draft.get('#date-picker').showPicker = () => {
-    opened = true;
-  };
-  draft.get('#open-date-picker').listeners.click();
-  assert(opened, 'Calendar button opens the native picker');
-  draft.get('#date-picker').value = '2099-12-24';
-  draft.get('#date-picker').listeners.change();
-  assert.equal(draft.form.fields.date, '24-12-2099', 'Calendar updates the visible date');
-  draft.form.fields.date = '25-12-2099';
-  draft.form.elements.date.listeners.input();
-  assert.equal(draft.get('#date-picker').value, '2099-12-25', 'Manual input updates the calendar');
-  draft.form.fields.date = '31-02-2099';
-  draft.form.elements.date.listeners.input();
-  assert.equal(draft.get('#date-picker').value, '', 'Invalid manual dates clear the calendar');
-  draft.get('#date-picker').value = '2099-11-01';
-  draft.get('#date-picker').listeners.change();
+  assert.equal(draft.form.fields.date, '2099-11-01', 'Date uses the native input value');
   draft.form.listeners.input();
   assert.equal(storage.has('dk-flight-request-draft-v1'), false);
   draft.get('#save-draft').checked = true;
@@ -240,17 +223,12 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   assert.equal(restored.form.fields.callsign, ' TEST01 ');
   assert.equal(restored.get('#time-hours').value, '18', 'Draft restores hours');
   assert.equal(restored.get('#time-minutes').value, '30', 'Draft restores minutes');
-  restored.get('#open-date-picker').listeners.click();
-  assert.equal(
-    restored.get('#date-picker').dataset.fallback,
-    'true',
-    'A usable fallback is shown when showPicker is unavailable',
-  );
-  assert.equal(
-    restored.get('#date-picker').value,
-    '2099-11-01',
-    'Restored draft updates the calendar',
-  );
+  assert.equal(restored.form.fields.date, '2099-11-01', 'Draft restores the date');
+  const legacyStorage = new Map([
+    ['dk-flight-request-draft-v1', JSON.stringify({ date: '01-11-2099' })],
+  ]);
+  const legacyDraft = boot(false, '', legacyStorage);
+  assert.equal(legacyDraft.form.fields.date, '2099-11-01', 'Old date drafts are restored');
   assert.equal(restored.get('#save-draft').checked, true);
   restored.get('#save-draft').checked = false;
   restored.form.listeners.change();
@@ -278,15 +256,15 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   assert.equal(app.getSignInCalls(), 0, 'Whitespace-only required fields are rejected');
   app.form.fields.contact = ' @test ';
 
-  app.form.fields.date = '31-02-2099';
+  app.form.fields.date = '2099-02-31';
   await app.submit();
   assert.equal(app.getSignInCalls(), 0);
   assert.match(app.get('#notice').textContent, /существующую дату/);
-  app.form.fields.date = '01-01-2001';
+  app.form.fields.date = '2001-01-01';
   await app.submit();
   assert.equal(app.getSignInCalls(), 0);
   assert.match(app.get('#notice').textContent, /прошло/);
-  app.form.fields.date = '01-11-2099';
+  app.form.fields.date = '2099-11-01';
   app.form.fields.timezone = 'Invalid/Zone';
   await app.submit();
   assert.equal(app.getSignInCalls(), 0);
@@ -341,7 +319,7 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   Object.assign(app.form.fields, {
     type: 'atc',
     network: 'Infinite Flight',
-    date: '01-11-2099',
+    date: '2099-11-01',
     time: '19:00',
     callsign: 'TEST02',
     route: 'LIRN',
