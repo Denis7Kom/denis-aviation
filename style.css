@@ -5226,6 +5226,15 @@ body.motion-off .radar-switch:after {
 nav a[href='requests.html#new-request'] {
   color: #b3dcfa;
 }
+nav a[href='requests.html#new-request']::before {
+  position: absolute;
+  content: '';
+  inset: -6px -10px;
+  border: 1px solid #8bcaff80;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
 .contact .request-card .booking-link {
   display: inline-flex;
   align-items: center;
