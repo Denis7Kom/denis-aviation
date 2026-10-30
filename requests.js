@@ -132,8 +132,7 @@ function announceVisitorChanges(snapshot) {
         status: data.status, type: data.type, network: data.network, date: data.date,
         time: data.time, timezone: data.timezone, callsign: data.callsign, route: data.route,
       };
-      visitorUpdates.push(update);
-      if (visitorUpdates.length > 10) visitorUpdates.shift();
+      visitorUpdates = [update];
       if (browserAlertsSupported() && Notification.permission === 'granted') {
         try {
           const alert = new Notification(text('Статус заявки изменён', 'Request status changed'), {
@@ -296,6 +295,10 @@ function translate() {
   $('#list-title').textContent = isAdmin(user)
     ? text('Все заявки', 'All requests')
     : text('Мои заявки', 'My requests');
+  const calendarLabel = text('Выбрать дату в календаре', 'Choose a date from the calendar');
+  $('#open-date-picker').setAttribute('aria-label', calendarLabel);
+  $('#open-date-picker').setAttribute('title', calendarLabel);
+  $('#date-picker').setAttribute('aria-label', calendarLabel);
   renderControls();
   renderConfirmation();
   renderTimezoneOptions();
@@ -459,6 +462,15 @@ try {
 } catch (_) {}
 const dateInput = $('#form').elements.date;
 const datePicker = $('#date-picker');
+$('#open-date-picker').addEventListener('click', () => {
+  if (typeof datePicker.showPicker === 'function') {
+    try { datePicker.showPicker(); return; } catch (_) {}
+  }
+  datePicker.dataset.fallback = 'true';
+  datePicker.setAttribute('aria-hidden', 'false');
+  datePicker.tabIndex = 0;
+  datePicker.focus?.();
+});
 function syncDatePicker() {
   if (dateInput) datePicker.value = parseDate(dateInput.value) || '';
 }

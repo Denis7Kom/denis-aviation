@@ -21,6 +21,9 @@ class Element {
   addEventListener(name, handler) {
     this.listeners[name] = handler;
   }
+  setAttribute(name, value) {
+    this[name] = value;
+  }
 }
 const elements = new Map();
 const document = {

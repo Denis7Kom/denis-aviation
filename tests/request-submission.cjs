@@ -199,6 +199,12 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   const draft = boot(false, '', storage);
   await flush();
   assert.equal(draft.get('#date-picker').value, '2099-11-01');
+  let opened = false;
+  draft.get('#date-picker').showPicker = () => {
+    opened = true;
+  };
+  draft.get('#open-date-picker').listeners.click();
+  assert(opened, 'Calendar button opens the native picker');
   draft.get('#date-picker').value = '2099-12-24';
   draft.get('#date-picker').listeners.change();
   assert.equal(draft.form.fields.date, '24-12-2099', 'Calendar updates the visible date');
@@ -218,6 +224,12 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   const restored = boot(false, '', storage);
   await flush();
   assert.equal(restored.form.fields.callsign, ' TEST01 ');
+  restored.get('#open-date-picker').listeners.click();
+  assert.equal(
+    restored.get('#date-picker').dataset.fallback,
+    'true',
+    'A usable fallback is shown when showPicker is unavailable',
+  );
   assert.equal(
     restored.get('#date-picker').value,
     '2099-11-01',
