@@ -13,7 +13,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="requests.css?v=13" />
+    <link rel="stylesheet" href="requests.css?v=14" />
   </head>
   <body>
     <div class="page-shell">
@@ -135,10 +135,14 @@
                     <option value="Other" data-ru="Другая" data-en="Other">Другая</option>
                   </select></label
                 >
-                <label
-                  ><span data-ru="Дата" data-en="Date">Дата</span
-                  ><input type="text" name="date" placeholder="ДД-ММ-ГГГГ" data-placeholder-ru="ДД-ММ-ГГГГ" data-placeholder-en="DD-MM-YYYY" pattern="[0-9]{2}-[0-9]{2}-[0-9]{4}" maxlength="10" required
-                /></label>
+                <div class="date-field">
+                  <label><span data-ru="Дата" data-en="Date">Дата</span>
+                    <input type="text" name="date" placeholder="ДД-ММ-ГГГГ" data-placeholder-ru="ДД-ММ-ГГГГ" data-placeholder-en="DD-MM-YYYY" pattern="[0-9]{2}-[0-9]{2}-[0-9]{4}" maxlength="10" required />
+                  </label>
+                  <label class="date-picker-label"><span data-ru="Или выбери в календаре" data-en="Or choose from the calendar">Или выбери в календаре</span>
+                    <input id="date-picker" type="date" />
+                  </label>
+                </div>
                 <label
                   ><span data-ru="Время" data-en="Time">Время</span
                   ><input type="time" name="time" required
@@ -302,6 +306,6 @@
         >
       </footer>
     </div>
-    <script type="module" src="requests.js?v=10"></script>
+    <script type="module" src="requests.js?v=11"></script>
   </body>
 </html>

@@ -48,6 +48,7 @@ function boot(values, blocked = false) {
     ['#admin-alert-details', element()],
     ['#enable-visitor-alerts', element()],
     ['#visitor-alert-status', element()],
+    ['#date-picker', element()],
   ]);
   const document = {
     title: '',

@@ -198,6 +198,18 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   const storage = new Map();
   const draft = boot(false, '', storage);
   await flush();
+  assert.equal(draft.get('#date-picker').value, '2099-11-01');
+  draft.get('#date-picker').value = '2099-12-24';
+  draft.get('#date-picker').listeners.change();
+  assert.equal(draft.form.fields.date, '24-12-2099', 'Calendar updates the visible date');
+  draft.form.fields.date = '25-12-2099';
+  draft.form.elements.date.listeners.input();
+  assert.equal(draft.get('#date-picker').value, '2099-12-25', 'Manual input updates the calendar');
+  draft.form.fields.date = '31-02-2099';
+  draft.form.elements.date.listeners.input();
+  assert.equal(draft.get('#date-picker').value, '', 'Invalid manual dates clear the calendar');
+  draft.get('#date-picker').value = '2099-11-01';
+  draft.get('#date-picker').listeners.change();
   draft.form.listeners.input();
   assert.equal(storage.has('dk-flight-request-draft-v1'), false);
   draft.get('#save-draft').checked = true;
@@ -206,6 +218,11 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   const restored = boot(false, '', storage);
   await flush();
   assert.equal(restored.form.fields.callsign, ' TEST01 ');
+  assert.equal(
+    restored.get('#date-picker').value,
+    '2099-11-01',
+    'Restored draft updates the calendar',
+  );
   assert.equal(restored.get('#save-draft').checked, true);
   restored.get('#save-draft').checked = false;
   restored.form.listeners.change();
