@@ -34,7 +34,7 @@ function boot(failImports = false, search = '', storage = new Map()) {
   form.fields = {
     type: 'flight',
     network: 'VATSIM',
-    date: '2099-11-01',
+    date: '01-11-2099',
     time: '18:30',
     timezone: 'Europe/Rome',
     callsign: ' TEST01 ',
@@ -228,11 +228,15 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   assert.equal(app.getSignInCalls(), 0, 'Whitespace-only required fields are rejected');
   app.form.fields.contact = ' @test ';
 
-  app.form.fields.date = '2001-01-01';
+  app.form.fields.date = '31-02-2099';
+  await app.submit();
+  assert.equal(app.getSignInCalls(), 0);
+  assert.match(app.get('#notice').textContent, /существующую дату/);
+  app.form.fields.date = '01-01-2001';
   await app.submit();
   assert.equal(app.getSignInCalls(), 0);
   assert.match(app.get('#notice').textContent, /прошло/);
-  app.form.fields.date = '2099-11-01';
+  app.form.fields.date = '01-11-2099';
   app.form.fields.timezone = 'Invalid/Zone';
   await app.submit();
   assert.equal(app.getSignInCalls(), 0);
@@ -264,6 +268,7 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   assert.equal(app.get('#send').disabled, true);
   assert.equal(app.getWrites().length, 1);
   assert.equal(app.getWrites()[0].owner, app.fakeUser.uid);
+  assert.equal(app.getWrites()[0].date, '2099-11-01');
   assert.equal(app.getWrites()[0].callsign, 'TEST01');
   assert.equal(app.getWrites()[0].notes, 'optional');
   assert.equal(app.getWrites()[0].status, 'new');
@@ -276,6 +281,7 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   assert.equal(app.get('#confirmation').hidden, false);
   assert.equal(app.form.hidden, true);
   assert.match(app.get('#confirmation-summary').textContent, /TEST01/);
+  assert.match(app.get('#confirmation-summary').textContent, /01-11-2099/);
   assert.match(app.get('#notice').textContent, /сохранена/);
   app.get('#new-form').listeners.click();
   assert.equal(app.form.hidden, false);
@@ -285,7 +291,7 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   Object.assign(app.form.fields, {
     type: 'atc',
     network: 'Infinite Flight',
-    date: '2099-11-01',
+    date: '01-11-2099',
     time: '19:00',
     callsign: 'TEST02',
     route: 'LIRN',

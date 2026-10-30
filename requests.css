@@ -817,3 +817,8 @@ textarea:focus-visible {
   color: #ffb7b7;
 }
 .entry button.cancel-request:hover { background: #3b1c27; }
+
+#visitor-alert-status {
+  white-space: pre-line;
+  color: #d8e8ff;
+}
