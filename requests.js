@@ -42,6 +42,7 @@ let db,
   doc,
   runTransaction;
 const italian = {
+  'Callsign': 'Nominativo',
   'Flight requests — Denis Aviation': 'Richieste di volo — Denis Aviation',
   'ATC control': 'Controllo ATC', 'Fly together': 'Volo insieme',
   'Account email': 'Email dell’account', 'All requests': 'Tutte le richieste',

@@ -10925,7 +10925,7 @@ Details: ${notes}` : `Заявка: ${type}
         "AFL246 is linked to radar. Bank changes heading; pitch changes altitude.": "AFL246 è collegato al radar. Il rollio cambia la prua; il beccheggio cambia la quota.",
         "Unknown command or arguments. Type help.": "Comando o parametri sconosciuti. Digita help."
       };
-      const say = (ru, en) => lang === "it" ? consoleItalian[en] || en : lang === "en" ? en : ru;
+      const say = (ru, en, it) => lang === "it" ? it || consoleItalian[en] || en : lang === "en" ? en : ru;
       const go = (id) => $(id).scrollIntoView({ behavior: motion ? "smooth" : "auto", block: "center" });
       if (cmd === "clear" && !parts.length) {
         commandOutput.innerHTML = "";
@@ -10935,7 +10935,8 @@ Details: ${notes}` : `Заявка: ${type}
       if (cmd === "help" && !parts.length)
         reply = say(
           "help — команды\npilot — профиль\nflights — рейсы\nhangar [b777 | a330-900 | a330-300 | a350-1000 | b737-700 | a321-200]\nfly RJFF BIKF — показать рейс\nwireframe — объём / каркас\nmotion on | off — анимации\nhud — управление самолётом\nclear — очистить консоль",
-          "help — commands\npilot — profile\nflights — flight log\nhangar [b777 | a330-900 | a330-300 | a350-1000 | b737-700 | a321-200]\nfly RJFF BIKF — explore a flight\nwireframe — solid / wireframe\nmotion on | off — animations\nhud — control your aircraft\nclear — clear console"
+          "help — commands\npilot — profile\nflights — flight log\nhangar [b777 | a330-900 | a330-300 | a350-1000 | b737-700 | a321-200]\nfly RJFF BIKF — explore a flight\nwireframe — solid / wireframe\nmotion on | off — animations\nhud — control your aircraft\nclear — clear console",
+          "help — comandi\npilot — profilo\nflights — diario di volo\nhangar [b777 | a330-900 | a330-300 | a350-1000 | b737-700 | a321-200]\nfly RJFF BIKF — esplora un volo\nwireframe — solido / wireframe\nmotion on | off — animazioni\nhud — comandi di volo\nclear — pulisci la console"
         );
       else if (cmd === "pilot" && !parts.length)
         reply = "Denis Komarov / VATSIM 250+ h / Infinite Flight 600+ h / VATRUS";
