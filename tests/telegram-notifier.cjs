@@ -38,6 +38,38 @@ const { readFileSync } = require('node:fs');
     TELEGRAM_BOT_TOKEN: 'TEST_SECRET_TOKEN',
     TELEGRAM_CHAT_ID: '100',
   };
+  for (const name of ['DB', 'GOOGLE_SERVICE_ACCOUNT', 'TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID']) {
+    await assert.rejects(
+      run({ ...env, [name]: undefined }),
+      (error) =>
+        error.message === `Missing Worker configuration: ${name}` &&
+        !error.message.includes('TEST_SECRET_TOKEN'),
+    );
+  }
+  await assert.rejects(
+    run({ ...env, TELEGRAM_CHAT_ID: '  ' }),
+    /Missing Worker configuration: TELEGRAM_CHAT_ID/,
+  );
+  await assert.rejects(
+    run({ ...env, GOOGLE_SERVICE_ACCOUNT: 'null' }),
+    /Invalid service account configuration/,
+  );
+  const malformedKey = JSON.stringify({
+    type: 'service_account',
+    client_email: 'test@example.invalid',
+    private_key: 'PRIVATE_KEY_CONTENT',
+  });
+  await assert.rejects(
+    run({ ...env, GOOGLE_SERVICE_ACCOUNT: malformedKey }),
+    (error) =>
+      error.message === 'Invalid service account private key' &&
+      !error.message.includes('PRIVATE_KEY_CONTENT'),
+  );
+  await assert.rejects(
+    run(env, async () => Response.json(null)),
+    /Google did not provide an access token/,
+  );
+  assert.equal(sql.prepare('SELECT lock_until FROM notifier_state WHERE id=1').get().lock_until, 0);
   const documentName = (id) =>
     `projects/denis-komarov---aviation/databases/(default)/documents/flightRequests/${id}`;
   const documents = ['a', 'b'].map((id) => ({

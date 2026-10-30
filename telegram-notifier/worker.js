@@ -20,7 +20,16 @@ async function googleToken(raw, fetcher) {
   } catch (_) {
     throw new Error('Invalid service account configuration');
   }
-  if (!key.client_email || !key.private_key || key.type !== 'service_account')
+  if (
+    !key ||
+    typeof key !== 'object' ||
+    Array.isArray(key) ||
+    key.type !== 'service_account' ||
+    typeof key.client_email !== 'string' ||
+    !key.client_email.trim() ||
+    typeof key.private_key !== 'string' ||
+    !key.private_key.trim()
+  )
     throw new Error('Invalid service account configuration');
   const now = Math.floor(Date.now() / 1000);
   const header = base64url(encoder.encode(JSON.stringify({ alg: 'RS256', typ: 'JWT' })));
@@ -35,18 +44,23 @@ async function googleToken(raw, fetcher) {
       }),
     ),
   );
-  const pem = key.private_key.replace(
-    /-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g,
-    '',
-  );
-  const pkcs8 = Uint8Array.from(atob(pem), (c) => c.charCodeAt(0));
-  const cryptoKey = await crypto.subtle.importKey(
-    'pkcs8',
-    pkcs8,
-    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-    false,
-    ['sign'],
-  );
+  let cryptoKey;
+  try {
+    const pem = key.private_key.replace(
+      /-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g,
+      '',
+    );
+    const pkcs8 = Uint8Array.from(atob(pem), (c) => c.charCodeAt(0));
+    cryptoKey = await crypto.subtle.importKey(
+      'pkcs8',
+      pkcs8,
+      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      false,
+      ['sign'],
+    );
+  } catch (_) {
+    throw new Error('Invalid service account private key');
+  }
   const unsigned = `${header}.${payload}`;
   const signature = await crypto.subtle.sign(
     'RSASSA-PKCS1-v1_5',
@@ -69,7 +83,7 @@ async function googleToken(raw, fetcher) {
   } catch (_) {
     throw new Error('Invalid Google token response');
   }
-  if (!data.access_token) throw new Error('Google did not provide an access token');
+  if (!data?.access_token) throw new Error('Google did not provide an access token');
   return data.access_token;
 }
 
@@ -135,12 +149,20 @@ async function sendTelegram(env, fetcher) {
   } catch (_) {
     throw new Error('Invalid Telegram response');
   }
-  if (!result.ok) throw new Error('Telegram did not accept the message');
+  if (!result?.ok) throw new Error('Telegram did not accept the message');
 }
 
 export async function run(env, fetcher = fetch) {
-  if (!env.DB || !env.GOOGLE_SERVICE_ACCOUNT || !env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID)
-    throw new Error('Missing Worker configuration');
+  const required = [
+    ['DB', env.DB],
+    ['GOOGLE_SERVICE_ACCOUNT', env.GOOGLE_SERVICE_ACCOUNT],
+    ['TELEGRAM_BOT_TOKEN', env.TELEGRAM_BOT_TOKEN],
+    ['TELEGRAM_CHAT_ID', env.TELEGRAM_CHAT_ID],
+  ];
+  const missing = required
+    .filter(([, value]) => !value || (typeof value === 'string' && !value.trim()))
+    .map(([name]) => name);
+  if (missing.length) throw new Error(`Missing Worker configuration: ${missing.join(', ')}`);
   const id = crypto.randomUUID();
   const now = Date.now();
   const locked = await env.DB.prepare(

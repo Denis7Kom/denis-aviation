@@ -8,6 +8,7 @@
     "format": "prettier --write src scripts tests aircraft-renderer.js README.md docs .github/workflows .prettierrc.json package.json style.css gallery-data.js QA_CHECKLIST.md",
     "format:check": "prettier --check src scripts tests aircraft-renderer.js README.md docs .github/workflows .prettierrc.json package.json style.css gallery-data.js QA_CHECKLIST.md",
     "test": "node scripts/test.mjs",
+    "test:firestore-rules": "bash scripts/test-firestore-rules.sh",
     "check": "npm run build:check && npm run format:check && npm test",
     "dev": "python3 -m http.server 8000"
   },

@@ -22,13 +22,14 @@ connection and the corresponding Firebase configuration. The site also uses host
 
 ## Commands
 
-| Command               | Purpose                                               |
-| --------------------- | ----------------------------------------------------- |
-| `npm run build`       | Bundle source modules into the published `app.js`     |
-| `npm run build:check` | Fail if the committed bundle differs from the source  |
-| `npm run format`      | Format the configured source, tests and documentation |
-| `npm run check`       | Check the bundle, formatting and regression tests     |
-| `npm run dev`         | Serve the repository on port 8000                     |
+| Command                        | Purpose                                               |
+| ------------------------------ | ----------------------------------------------------- |
+| `npm run build`                | Bundle source modules into the published `app.js`     |
+| `npm run build:check`          | Fail if the committed bundle differs from the source  |
+| `npm run format`               | Format the configured source, tests and documentation |
+| `npm run check`                | Check the bundle, formatting and regression tests     |
+| `npm run test:firestore-rules` | Test Firestore rules against a local emulator         |
+| `npm run dev`                  | Serve the repository on port 8000                     |
 
 Run `npm run build` after editing `src/` and commit both the source and generated bundle.
 Do not edit `app.js` directly. The separate `requests.js` file is served directly; it is
@@ -60,7 +61,8 @@ See [architecture and invariants](docs/architecture.md) before changing aircraft
 or the animation loop. The [request and notification guide](docs/requests-and-notifications.md)
 describes access rules, the browser alert and its limitations in Russian. The separate
 [Telegram Worker guide](telegram-notifier/README.md) covers configuration and troubleshooting.
-[QA_CHECKLIST.md](QA_CHECKLIST.md) covers manual checks.
+[QA_CHECKLIST.md](QA_CHECKLIST.md) covers manual checks, and the
+[security review](docs/security-review.md) records the remaining deployment checks.
 
 ## Verification
 
@@ -77,6 +79,20 @@ remain necessary for visual appearance, responsive layout and GPU/driver differe
 The request tests use mocks: they do not test deployed Firestore Security Rules, Google
 authentication or actual browser/Telegram delivery. Verify those separately as described
 in the request guide and QA checklist.
+
+The separate Firestore rules suite uses Java 17, an isolated demo project and the
+Firestore emulator. It tests the rules in this repository, including direct attempts to
+read or cancel another user's request, but does not inspect deployed Firebase rules:
+
+```sh
+npm ci --prefix tests/firestore-security --ignore-scripts
+curl -fLsS https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v1.19.8.jar -o /tmp/firestore-emulator-v1.19.8.jar
+FIRESTORE_EMULATOR_JAR=/tmp/firestore-emulator-v1.19.8.jar npm run test:firestore-rules
+```
+
+The runner checks the emulator JAR's SHA-256, binds it to localhost on port 8088 and
+refuses to use an already-running service. GitHub Actions runs the same suite. The test
+package pins a patched `@grpc/grpc-js` version for its Node-only Firebase dependency.
 
 ## Copyright
 
