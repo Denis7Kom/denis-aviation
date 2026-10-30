@@ -91,16 +91,16 @@ a {
 .languages {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  padding: 3px;
+  gap: 1px;
+  padding: 2px;
   border: 1px solid #6e9dc244;
   border-radius: 9px;
   background: #081422;
 }
 .languages button {
-  min-width: 34px;
-  min-height: 34px;
-  padding: 0 7px;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0 5px;
   border: 0;
   border-radius: 6px;
   background: transparent;
