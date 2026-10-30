@@ -6,9 +6,12 @@ service cloud.firestore {
     function textField(s, max) { return s is string && s.size() > 0 && s.size() <= max; }
     match /flightRequests/{id} {
       allow create: if signedIn()
-        && request.resource.data.keys().hasOnly(['owner','type','network','date','time','timezone','callsign','route','contact','notes','status','createdAt'])
-        && request.resource.data.keys().hasAll(['owner','type','network','date','time','timezone','callsign','route','contact','notes','status','createdAt'])
+        && request.resource.data.keys().hasOnly(['owner','ownerEmail','type','network','date','time','timezone','callsign','route','contact','notes','status','createdAt'])
+        && request.resource.data.keys().hasAll(['owner','ownerEmail','type','network','date','time','timezone','callsign','route','contact','notes','status','createdAt'])
         && request.resource.data.owner == request.auth.uid
+        && request.auth.token.email_verified == true
+        && textField(request.auth.token.email, 320)
+        && request.resource.data.ownerEmail == request.auth.token.email
         && request.resource.data.type in ['flight','atc']
         && request.resource.data.network in ['Infinite Flight','VATSIM','IVAO','Other']
         && textField(request.resource.data.date, 10) && request.resource.data.date.matches('^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$')

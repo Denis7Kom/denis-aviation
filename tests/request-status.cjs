@@ -80,6 +80,7 @@ const fakeDoc = (status) => ({
     callsign: 'TEST',
     route: 'LIRN',
     contact: status === 'review' ? '@Controller' : 'test',
+    ownerEmail: 'pilot@example.invalid',
     notes: '',
     status,
   }),
@@ -107,11 +108,21 @@ const render = () =>
         c.children[2].textContent.includes('Статус'),
     ),
   );
+  assert(
+    cards.every((c) => !c.children[1].textContent.includes('pilot@example.invalid')),
+    'Visitor does not see account email in the card',
+  );
   vm.runInContext(
     `user = {uid:'admin',email:'deniska7best@gmail.com',emailVerified:true,providerData:[{providerId:'google.com'}]}; subscribe();`,
     context,
   );
   render();
+  assert(
+    elements
+      .get('#list')
+      .children.every((c) => c.children[1].textContent.includes('pilot@example.invalid')),
+    'Admin sees account email',
+  );
   assert.equal(elements.get('#count-new').textContent, '1');
   assert.equal(elements.get('#count-review').textContent, '1');
   assert.equal(elements.get('#count-confirmed').textContent, '1');

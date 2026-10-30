@@ -587,7 +587,7 @@ function renderList(snapshot) {
       return (
         (!filter || filter === 'all' || data.status === filter) &&
         (!search ||
-          [data.callsign, data.route, data.contact].some((value) =>
+          [data.callsign, data.route, data.contact, data.ownerEmail].some((value) =>
             String(value || '')
               .toLocaleLowerCase()
               .includes(search),
@@ -615,6 +615,9 @@ function renderList(snapshot) {
     title.textContent = `${d.type === 'flight' ? text('Совместный полёт', 'Fly together') : 'ATC'} · ${d.network}`;
     const details = document.createElement('p');
     details.textContent = `${displayDate(d.date)} ${d.time} (${d.timezone})\n${d.callsign} · ${d.route}\n${text('Контакт', 'Contact')}: ${d.contact}${d.notes ? '\n' + d.notes : ''}`;
+    if (isAdmin(user)) {
+      details.textContent += `\n${text('Почта аккаунта', 'Account email')}: ${d.ownerEmail || text('нет данных', 'unavailable')}`;
+    }
     card.append(title, details);
     if (isAdmin(user)) {
       const label = document.createElement('label'),
@@ -769,6 +772,7 @@ $('#form').addEventListener('submit', async (event) => {
     await addDoc(collection(db, 'flightRequests'), {
       ...data,
       owner: submittingUser.uid,
+      ownerEmail: submittingUser.email,
       status: 'new',
       createdAt: serverTimestamp(),
     });

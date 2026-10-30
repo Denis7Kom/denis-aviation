@@ -297,6 +297,11 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   assert.equal(app.getWrites().length, 1);
   assert.equal(app.getWrites()[0].owner, app.fakeUser.uid);
   assert.equal(app.getWrites()[0].date, '2099-11-01');
+  assert.equal(
+    app.getWrites()[0].ownerEmail,
+    'guest@example.com',
+    'Store the sending account email',
+  );
   assert.equal(app.getWrites()[0].callsign, 'TEST01');
   assert.equal(app.getWrites()[0].notes, 'optional');
   assert.equal(app.getWrites()[0].status, 'new');

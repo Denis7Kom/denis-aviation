@@ -60,6 +60,7 @@ const guest = environment.unauthenticatedContext().firestore();
 const path = (db, id) => doc(db, 'flightRequests', id);
 const request = (owner, status = 'new') => ({
   owner,
+  ownerEmail: `${owner}@example.invalid`,
   type: 'flight',
   network: 'VATSIM',
   date: '2030-01-01',
@@ -102,6 +103,30 @@ try {
     setDoc(path(bob, 'forged-owner'), { ...request('alice'), createdAt: serverTimestamp() }),
   );
   await assertFails(setDoc(path(alice, 'forged-time'), request('alice')));
+  await assertFails(
+    setDoc(path(alice, 'forged-email'), {
+      ...request('alice'),
+      ownerEmail: 'bob@example.invalid',
+      createdAt: serverTimestamp(),
+    }),
+  );
+  const { ownerEmail: ignoredEmail, ...missingEmail } = request('alice');
+  await assertFails(
+    setDoc(path(alice, 'missing-email'), { ...missingEmail, createdAt: serverTimestamp() }),
+  );
+  await assertFails(
+    setDoc(path(noEmail, 'no-email-create'), {
+      ...request('no-email'),
+      createdAt: serverTimestamp(),
+    }),
+  );
+  await assertFails(
+    setDoc(path(notVerified, 'unverified-email'), {
+      ...request('not-verified'),
+      ownerEmail: 'deniska7best@gmail.com',
+      createdAt: serverTimestamp(),
+    }),
+  );
   await assertFails(
     setDoc(path(alice, 'extra-field'), {
       ...request('alice'),
@@ -155,6 +180,8 @@ try {
   await assertFails(updateDoc(path(bob, 'alice-new'), { status: 'cancelled' }));
   await assertFails(updateDoc(path(guest, 'alice-new'), { status: 'cancelled' }));
   await assertFails(updateDoc(path(alice, 'alice-new'), { route: 'altered' }));
+  await assertFails(updateDoc(path(alice, 'alice-new'), { ownerEmail: 'bob@example.invalid' }));
+  await assertFails(updateDoc(path(admin, 'alice-new'), { ownerEmail: 'bob@example.invalid' }));
   await assertFails(updateDoc(path(alice, 'alice-new'), { status: 'confirmed' }));
   await assertFails(updateDoc(path(alice, 'alice-new'), { status: 'cancelled', owner: 'bob' }));
   await assertFails(
