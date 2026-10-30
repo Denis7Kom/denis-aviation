@@ -42,6 +42,7 @@ let db,
   doc,
   runTransaction;
 const italian = {
+  'Flight requests — Denis Aviation': 'Richieste di volo — Denis Aviation',
   'ATC control': 'Controllo ATC', 'Fly together': 'Volo insieme',
   'Account email': 'Email dell’account', 'All requests': 'Tutte le richieste',
   'My requests': 'Le mie richieste', 'Status': 'Stato', 'Date and time': 'Data e ora',
@@ -322,7 +323,7 @@ function translate() {
     el.textContent = el.dataset[language] || el.dataset.en || el.dataset.ru;
   });
   document.querySelectorAll('[data-placeholder-ru]').forEach((el) => {
-    el.placeholder = el.dataset[language === 'en' ? 'placeholderEn' : 'placeholderRu'];
+    el.placeholder = el.dataset[language === 'it' ? 'placeholderIt' : language === 'en' ? 'placeholderEn' : 'placeholderRu'];
   });
   document.querySelectorAll('[data-lang]').forEach((button) => {
     button.setAttribute('aria-pressed', String(button.dataset.lang === language));

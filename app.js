@@ -2749,7 +2749,7 @@
       } catch (_) {
       }
     }
-    let lang = read("dk-aviation-lang") === "en" ? "en" : "ru", motion = !reduced.matches && read("dk-aviation-motion") !== "off";
+    let lang = ["ru", "en", "it"].includes(read("dk-aviation-lang")) ? read("dk-aviation-lang") : "ru", motion = !reduced.matches && read("dk-aviation-motion") !== "off";
     let aircraftIndex = 0, airportIndex = 0, tabIndex = 0, wire = false, angle = 26 * D, viewPitch = 0, dragging = false;
     let phase = 0, raf = 0, last = 0, bank = 0, targetBank = 0, longitude = -20, latitude = 30, targetLon = 37.4125, targetLat = 40.3;
     const flights = [
@@ -2862,7 +2862,12 @@
     ];
     const gallery = Array.isArray(window.DK_GALLERY) ? window.DK_GALLERY : [];
     let galleryIndex = 0, galleryOpener = null;
-    const translations = $$("[data-en]").map((n) => ({ n, ru: n.innerHTML, en: n.dataset.en }));
+    const translations = $$("[data-en]").map((n) => ({
+      n,
+      ru: n.innerHTML,
+      en: n.dataset.en,
+      it: n.dataset.it || n.dataset.en
+    }));
     const countryNames = {
       ru: ["Россия", "Russia"],
       it: ["Италия", "Italy"],
@@ -2902,7 +2907,7 @@
       );
     }
     function renderNetwork() {
-      const en = lang === "en", results = matchingAirports(), searching = !!networkQuery.trim(), visible = networkExpanded || searching ? results : results.slice(0, 6), ids = new Set(visible.map((x) => x.i));
+      const en = lang !== "ru", results = matchingAirports(), searching = !!networkQuery.trim(), visible = networkExpanded || searching ? results : results.slice(0, 6), ids = new Set(visible.map((x) => x.i));
       networkButtons.forEach((b, i) => {
         b.hidden = !ids.has(i);
       });
@@ -2912,10 +2917,10 @@
         b.tabIndex = active ? 0 : -1;
       });
       $("#network-browser").dataset.role = searching ? "search" : networkRole;
-      $("#network-results").textContent = searching ? en ? "SEARCH ALL AIRPORTS" : "ПОИСК ПО ВСЕМ АЭРОПОРТАМ" : (en ? {
-        main: "PRIMARY FLIGHT BASES",
-        favorite: "FAVOURITE AIRPORTS",
-        frequent: "FREQUENT DESTINATIONS"
+      $("#network-results").textContent = searching ? en ? lang === "it" ? "CERCA IN TUTTI GLI AEROPORTI" : "SEARCH ALL AIRPORTS" : "ПОИСК ПО ВСЕМ АЭРОПОРТАМ" : (en ? {
+        main: lang === "it" ? "BASI DI VOLO PRINCIPALI" : "PRIMARY FLIGHT BASES",
+        favorite: lang === "it" ? "AEROPORTI PREFERITI" : "FAVOURITE AIRPORTS",
+        frequent: lang === "it" ? "DESTINAZIONI FREQUENTI" : "FREQUENT DESTINATIONS"
       } : {
         main: "ПОСТОЯННЫЕ БАЗЫ",
         favorite: "ЛЮБИМЫЕ АЭРОПОРТЫ",
@@ -2923,28 +2928,32 @@
       })[networkRole];
       $("#network-count").textContent = visible.length + " / " + results.length;
       $("#network-empty").hidden = results.length !== 0;
-      $("#network-empty").textContent = en ? "No airports found. Try another city, code or country." : "Ничего не найдено. Попробуй другой город, код или страну.";
+      $("#network-empty").textContent = en ? lang === "it" ? "Nessun aeroporto trovato. Prova un’altra città, codice o paese." : "No airports found. Try another city, code or country." : "Ничего не найдено. Попробуй другой город, код или страну.";
       const more = $("#network-more");
       more.hidden = searching || results.length <= 6;
-      more.textContent = networkExpanded ? en ? "Show less" : "Свернуть список" : en ? "Show all " + results.length : "Показать все " + results.length;
+      more.textContent = networkExpanded ? en ? lang === "it" ? "Mostra meno" : "Show less" : "Свернуть список" : en ? (lang === "it" ? "Mostra tutti " : "Show all ") + results.length : "Показать все " + results.length;
       more.setAttribute("aria-expanded", String(networkExpanded));
       $("#network-reset").hidden = !networkQuery && !networkCountry;
-      $("#network-search").placeholder = en ? "City or airport code" : "Город или код аэропорта";
+      $("#network-search").placeholder = en ? lang === "it" ? "Città o codice aeroporto" : "City or airport code" : "Город или код аэропорта";
       $("#network-search").setAttribute(
         "aria-label",
-        en ? "Search all 35 airports" : "Поиск по всем 35 аэропортам"
+        en ? lang === "it" ? "Cerca in tutti i 35 aeroporti" : "Search all 35 airports" : "Поиск по всем 35 аэропортам"
       );
       $("#network-country").setAttribute(
         "aria-label",
-        en ? "Country or territory" : "Страна или территория"
+        en ? lang === "it" ? "Paese o territorio" : "Country or territory" : "Страна или территория"
       );
-      $("#network-country").options[0].textContent = en ? "All countries" : "Все страны";
+      $("#network-country").options[0].textContent = en ? lang === "it" ? "Tutti i paesi" : "All countries" : "Все страны";
       Array.from($("#network-country").options).slice(1).forEach((o) => {
-        o.textContent = countryNames[o.value][en ? 1 : 0];
+        o.textContent = lang === "it" ? new Intl.DisplayNames(["it"], { type: "region" }).of(o.value.toUpperCase()) : countryNames[o.value][en ? 1 : 0];
       });
       $$("[data-network-role]").forEach((b) => {
         const role = b.dataset.networkRole;
-        const name = (en ? { main: "Hubs", favorite: "Favourites", frequent: "Destinations" } : { main: "Хабы", favorite: "Любимые", frequent: "Направления" })[role];
+        const name = (en ? {
+          main: lang === "it" ? "Hub" : "Hubs",
+          favorite: lang === "it" ? "Preferiti" : "Favourites",
+          frequent: lang === "it" ? "Destinazioni" : "Destinations"
+        } : { main: "Хабы", favorite: "Любимые", frequent: "Направления" })[role];
         b.querySelector("span").textContent = name;
         b.querySelector("small").textContent = airports.filter((a) => airportRole(a) === role).length;
       });
@@ -3003,18 +3012,40 @@
       if (!networkExpanded)
         $("#network-tabs").scrollIntoView({ block: "nearest", behavior: motion ? "smooth" : "auto" });
     });
+    function airportCity(a) {
+      if (lang === "it")
+        return {
+          Moscow: "Mosca",
+          Rome: "Roma",
+          Naples: "Napoli",
+          "Saint Petersburg": "San Pietroburgo",
+          Venice: "Venezia",
+          Genoa: "Genova",
+          Madrid: "Madrid",
+          Barcelona: "Barcellona",
+          Gibraltar: "Gibilterra",
+          "Mexico City": "Città del Messico",
+          Tokyo: "Tokyo"
+        }[a[3]] || a[3];
+      return a[lang === "ru" ? 2 : 3];
+    }
+    function airportName(a) {
+      if (lang === "it")
+        return a[5].replace("International Airport", "Aeroporto internazionale").replace("Intercontinental Airport", "Aeroporto intercontinentale").replace("National Airport", "Aeroporto nazionale").replace("Airport", "Aeroporto");
+      return a[lang === "ru" ? 4 : 5];
+    }
     function airportText() {
-      const a = airports[airportIndex], en = lang === "en", role = airportRole(a);
+      const a = airports[airportIndex], en = lang !== "ru", role = airportRole(a);
       $("#airport-role").textContent = {
-        main: en ? "MAIN HUB" : "ОСНОВНОЙ ХАБ",
-        favorite: en ? "FAVOURITE AIRPORT" : "ЛЮБИМЫЙ АЭРОПОРТ",
-        frequent: en ? "FREQUENT DESTINATION" : "ЧАСТОЕ НАПРАВЛЕНИЕ"
+        main: en ? lang === "it" ? "HUB PRINCIPALE" : "MAIN HUB" : "ОСНОВНОЙ ХАБ",
+        favorite: en ? lang === "it" ? "AEROPORTO PREFERITO" : "FAVOURITE AIRPORT" : "ЛЮБИМЫЙ АЭРОПОРТ",
+        frequent: en ? lang === "it" ? "DESTINAZIONE FREQUENTE" : "FREQUENT DESTINATION" : "ЧАСТОЕ НАПРАВЛЕНИЕ"
       }[role];
       $("#airport-role").dataset.role = role;
-      $("#network-totals").textContent = airports.length + (en ? " AIRPORTS / " : " АЭРОПОРТОВ / ") + new Set(airports.map((a2) => a2[8])).size + (en ? " COUNTRIES & TERRITORIES" : " СТРАН И ТЕРРИТОРИЙ");
+      $("#network-totals").textContent = airports.length + (en ? lang === "it" ? " AEROPORTI / " : " AIRPORTS / " : " АЭРОПОРТОВ / ") + new Set(airports.map((a2) => a2[8])).size + (en ? lang === "it" ? " PAESI E TERRITORI" : " COUNTRIES & TERRITORIES" : " СТРАН И ТЕРРИТОРИЙ");
       $("#airport-code").textContent = a[0] + " / " + a[1];
-      $("#airport-city").textContent = a[en ? 3 : 2];
-      $("#airport-name").textContent = a[en ? 5 : 4];
+      $("#airport-city").textContent = airportCity(a);
+      $("#airport-name").textContent = airportName(a);
       $("#coordinates").textContent = Math.abs(a[6]).toFixed(2) + "° " + (a[6] < 0 ? "S" : "N") + " / " + Math.abs(a[7]).toFixed(2) + "° " + (a[7] < 0 ? "W" : "E");
       $$("[data-airport]").forEach((b) => {
         const i = Number(b.dataset.airport), x = airports[i];
@@ -3023,24 +3054,31 @@
           UUDD: en ? "Domodedovo" : "Домодедово",
           UUWW: en ? "Vnukovo" : "Внуково"
         };
-        b.querySelector("span").textContent = shortNames[x[0]] ? x[en ? 3 : 2] + " · " + shortNames[x[0]] : x[en ? 3 : 2];
+        b.querySelector("span").textContent = shortNames[x[0]] ? airportCity(x) + " · " + shortNames[x[0]] : airportCity(x);
         b.setAttribute("aria-pressed", String(i === airportIndex));
-        b.setAttribute("title", x[en ? 3 : 2] + " / " + x[0] + " — " + x[en ? 5 : 4]);
+        b.setAttribute("title", airportCity(x) + " / " + x[0] + " — " + airportName(x));
       });
       $("#globe").setAttribute(
         "aria-label",
-        (en ? "Flight network. Selected: " : "География полётов. Выбран: ") + a[en ? 3 : 2] + " / " + a[0]
+        (en ? lang === "it" ? "Rete di volo. Selezionato: " : "Flight network. Selected: " : "География полётов. Выбран: ") + airportCity(a) + " / " + a[0]
       );
       renderNetwork();
     }
     function modelText() {
       const a = fleet[aircraftIndex];
-      $("#airframe-signature").textContent = airframe(a)[lang];
-      $("#model-description").textContent = a.name + " · " + (lang === "en" ? "Favourite aircraft" : "Один из моих фаворитов");
+      $("#airframe-signature").textContent = lang === "it" ? {
+        B77W: "Estremità alari allungate · Grandi gondole GE90 · Carrelli principali a 6 ruote",
+        A339: "Winglet raccordati · Trent 7000 · Carrelli principali a 4 ruote",
+        A333: "Winglet angolati · Gondole sottili · Carrelli principali a 4 ruote",
+        A35K: "Estremità alari curve · Maschera della cabina · Carrelli principali a 6 ruote",
+        B737: "Winglet · CFM56 · Carrello principale a 2 ruote",
+        A321: "Fusoliera allungata · CFM56 · Quattro coppie di porte · Wingtip fence"
+      }[a.code] : airframe(a)[lang];
+      $("#model-description").textContent = a.name + " · " + (lang !== "ru" ? lang === "it" ? "Aereo preferito" : "Favourite aircraft" : "Один из моих фаворитов");
       $("#model-index").textContent = a.code + " / 0" + (aircraftIndex + 1);
       $("#aircraft").setAttribute(
         "aria-label",
-        (lang === "en" ? "Stylized model: " : "Стилизованная модель: ") + a.name
+        (lang !== "ru" ? lang === "it" ? "Modello stilizzato: " : "Stylized model: " : "Стилизованная модель: ") + a.name
       );
     }
     let atcPanelAnimation = null, atcContentAnimation = null;
@@ -3104,7 +3142,7 @@
       $("#motion").setAttribute("aria-pressed", String(motion));
       $("#motion").setAttribute(
         "aria-label",
-        lang === "en" ? motion ? "Pause animations" : "Enable animations" : motion ? "Выключить анимацию" : "Включить анимацию"
+        lang !== "ru" ? motion ? lang === "it" ? "Metti in pausa le animazioni" : "Pause animations" : lang === "it" ? "Attiva le animazioni" : "Enable animations" : motion ? "Выключить анимацию" : "Включить анимацию"
       );
       $("#motion-text").textContent = motion ? "MOTION ON" : "MOTION OFF";
     }
@@ -3113,9 +3151,12 @@
       $("#atc-copy-status").textContent = "";
       document.documentElement.lang = l;
       $$("[data-aria-ru]").forEach(
-        (n) => n.setAttribute("aria-label", n.dataset[l === "en" ? "ariaEn" : "ariaRu"])
+        (n) => n.setAttribute(
+          "aria-label",
+          n.dataset[l === "it" ? "ariaIt" : l === "en" ? "ariaEn" : "ariaRu"]
+        )
       );
-      const description = l === "en" ? "Denis Komarov — virtual aviation. 350+ hours on VATSIM, 600+ hours in Infinite Flight, VATRUS training, favourite aircraft, three main hubs and thirty-five airports." : "Денис Комаров — виртуальная авиация. 350+ часов в VATSIM, 600+ часов в Infinite Flight, подготовка VATRUS, избранный флот, три основных хаба и 35 аэропортов.";
+      const description = l === "it" ? "Denis Komarov — aviazione virtuale. Oltre 350 ore su VATSIM, oltre 600 ore su Infinite Flight, formazione VATRUS, aeromobili preferiti, tre hub e 35 aeroporti." : l === "en" ? "Denis Komarov — virtual aviation. 350+ hours on VATSIM, 600+ hours in Infinite Flight, VATRUS training, favourite aircraft, three main hubs and thirty-five airports." : "Денис Комаров — виртуальная авиация. 350+ часов в VATSIM, 600+ часов в Infinite Flight, подготовка VATRUS, избранный флот, три основных хаба и 35 аэропортов.";
       $$('meta[name=description],meta[property="og:description"]').forEach(
         (n) => n.content = description
       );
@@ -3160,9 +3201,9 @@
       const status = $("#atc-copy-status");
       try {
         await navigator.clipboard.writeText("DENISKOM");
-        status.textContent = lang === "en" ? "Username copied" : "Ник скопирован";
+        status.textContent = lang !== "ru" ? lang === "it" ? "Nome utente copiato" : "Username copied" : "Ник скопирован";
       } catch (_) {
-        status.textContent = lang === "en" ? "Select and copy DENISKOM above" : "Выдели и скопируй DENISKOM выше";
+        status.textContent = lang !== "ru" ? lang === "it" ? "Seleziona e copia DENISKOM sopra" : "Select and copy DENISKOM above" : "Выдели и скопируй DENISKOM выше";
       }
       atcCopyTimer = setTimeout(() => {
         status.textContent = "";
@@ -9592,7 +9633,9 @@
       return [0, 0];
     }
     function radarNm(value) {
-      return value.toLocaleString(lang === "en" ? "en-US" : "ru-RU", { maximumFractionDigits: 2 });
+      return value.toLocaleString(lang === "it" ? "it-IT" : lang !== "ru" ? "en-US" : "ru-RU", {
+        maximumFractionDigits: 2
+      });
     }
     function radarTargets() {
       return [
@@ -9698,13 +9741,13 @@
       safetyText();
     }
     function safetyText() {
-      const en = lang === "en", level = safetyAlert.level, target = safetyAlert.target, labels = en ? {
-        clear: "No conflicts",
-        caution: "Possible encounter · " + target,
-        danger: "Unsafe separation · " + target,
-        collision: "Collision · " + target,
-        ground: "Flight ended · Ground impact",
-        terrain: "Low altitude · Stop descending"
+      const en = lang !== "ru", level = safetyAlert.level, target = safetyAlert.target, labels = en ? {
+        clear: lang === "it" ? "Nessun conflitto" : "No conflicts",
+        caution: (lang === "it" ? "Possibile avvicinamento · " : "Possible encounter · ") + target,
+        danger: (lang === "it" ? "Separazione insufficiente · " : "Unsafe separation · ") + target,
+        collision: (lang === "it" ? "Collisione · " : "Collision · ") + target,
+        ground: lang === "it" ? "Volo terminato · Impatto al suolo" : "Flight ended · Ground impact",
+        terrain: lang === "it" ? "Quota bassa · Interrompi la discesa" : "Low altitude · Stop descending"
       } : {
         clear: "Конфликтов нет",
         caution: "Возможное сближение · " + target,
@@ -9727,30 +9770,36 @@
       const title = $("#flight-safety-title");
       if (title.textContent !== labels[level]) title.textContent = labels[level];
       const detail2 = $("#flight-safety-detail");
-      detail2.textContent = target && Number.isFinite(safetyAlert.range) ? safetyAlert.range.toLocaleString(en ? "en-US" : "ru-RU", {
+      detail2.textContent = target && Number.isFinite(safetyAlert.range) ? safetyAlert.range.toLocaleString(lang === "it" ? "it-IT" : en ? "en-US" : "ru-RU", {
         minimumFractionDigits: 1,
         maximumFractionDigits: 1
-      }) + " NM / " + Math.round(safetyAlert.altGap) + " FT" : level === "clear" ? en ? radarTraffic.length + " aircraft nearby" : radarTraffic.length + " самолёта рядом" : level === "terrain" ? en ? "Check altitude and pitch" : "Проверь высоту и тангаж" : "";
-      $("#flight-penalty").textContent = en ? "Unsafe encounters: " + conflictCount + " · Penalty: " + safetyPenalty : "Опасных сближений: " + conflictCount + " · Штраф: " + safetyPenalty;
+      }) + " NM / " + Math.round(safetyAlert.altGap) + " FT" : level === "clear" ? en ? radarTraffic.length + (lang === "it" ? " aerei nelle vicinanze" : " aircraft nearby") : radarTraffic.length + " самолёта рядом" : level === "terrain" ? en ? lang === "it" ? "Controlla quota e beccheggio" : "Check altitude and pitch" : "Проверь высоту и тангаж" : "";
+      $("#flight-penalty").textContent = en ? (lang === "it" ? "Avvicinamenti pericolosi: " : "Unsafe encounters: ") + conflictCount + (lang === "it" ? " · Penalità: " : " · Penalty: ") + safetyPenalty : "Опасных сближений: " + conflictCount + " · Штраф: " + safetyPenalty;
     }
     function radarTargetDetails() {
-      const t = radarTargets().find((t2) => t2.label === radarSelected), en = lang === "en";
+      const t = radarTargets().find((t2) => t2.label === radarSelected), en = lang !== "ru";
       if (!t) return;
       const e = t.east - ownEast, n = t.north - ownNorth, distance = Math.hypot(e, n), bearing = (Math.atan2(e, n) / D + 360) % 360, own = t.label === "AFL246", hdg = String(Math.round(t.heading) % 360).padStart(3, "0"), brg = String(Math.round(bearing) % 360).padStart(3, "0");
       const metric = (label, value) => "<div><span>" + label + "</span><strong>" + value + "</strong></div>";
-      const markup = metric(en ? "Heading" : "Курс", hdg + "°") + metric(
-        en ? "Altitude" : "Высота",
-        Math.round(t.altitude).toLocaleString(en ? "en-US" : "ru-RU") + " <small>FT</small>"
-      ) + metric(en ? "Speed" : "Скорость", Math.round(t.speed) + " <small>KT</small>") + (own ? "" : metric(
-        en ? "Distance from you" : "Расстояние от тебя",
+      const markup = metric(en ? lang === "it" ? "Prua" : "Heading" : "Курс", hdg + "°") + metric(
+        en ? lang === "it" ? "Quota" : "Altitude" : "Высота",
+        Math.round(t.altitude).toLocaleString(lang === "it" ? "it-IT" : en ? "en-US" : "ru-RU") + " <small>FT</small>"
+      ) + metric(
+        en ? lang === "it" ? "Velocità" : "Speed" : "Скорость",
+        Math.round(t.speed) + " <small>KT</small>"
+      ) + (own ? "" : metric(
+        en ? lang === "it" ? "Distanza da te" : "Distance from you" : "Расстояние от тебя",
         distance.toFixed(1) + " <small>NM</small>"
-      ) + metric(en ? "Bearing from you" : "Направление от тебя", brg + "°"));
+      ) + metric(
+        en ? lang === "it" ? "Rilevamento da te" : "Bearing from you" : "Направление от тебя",
+        brg + "°"
+      ));
       const output = $("#radar-target-data");
       if (output.innerHTML !== markup) output.innerHTML = markup;
       const [originE, originN] = radarOrigin(), visible = radarTargets().filter(
         (q) => Math.hypot(q.east - originE, q.north - originN) <= radarRange
       ).length;
-      $("#radar-summary").textContent = en ? visible + " of 4 aircraft · Fixed centre" : visible + " из 4 самолётов · Неподвижный центр";
+      $("#radar-summary").textContent = en ? visible + (lang === "it" ? " di 4 aerei · Centro fisso" : " of 4 aircraft · Fixed centre") : visible + " из 4 самолётов · Неподвижный центр";
     }
     function drawRadar() {
       const c = begin(radar);
@@ -9932,11 +9981,15 @@
       c.textAlign = "center";
       c.fillStyle = "#a8c8da";
       c.font = "9px monospace";
-      c.fillText((lang === "en" ? "RADIUS " : "РАДИУС ") + radarNm(radarRange) + " NM", cx, h - 31);
+      c.fillText(
+        (lang !== "ru" ? lang === "it" ? "RAGGIO " : "RADIUS " : "РАДИУС ") + radarNm(radarRange) + " NM",
+        cx,
+        h - 31
+      );
       c.font = "8px monospace";
       c.fillStyle = "#83aa92";
       c.fillText(
-        (lang === "en" ? "RINGS " : "ШАГ КОЛЕЦ ") + radarNm(radarRange / 4) + " NM · " + (lang === "en" ? "AUTO" : "АВТО"),
+        (lang !== "ru" ? lang === "it" ? "ANELLI " : "RINGS " : "ШАГ КОЛЕЦ ") + radarNm(radarRange / 4) + " NM · " + (lang !== "ru" ? "AUTO" : "АВТО"),
         cx,
         h - 16
       );
@@ -10014,19 +10067,19 @@
       const f = flights[flightIndex];
       $("#route-from").textContent = f.from;
       $("#route-to").textContent = f.to;
-      $("#route-name").textContent = f[lang];
+      $("#route-name").textContent = f[lang === "it" ? "en" : lang];
       $("#route-meta").textContent = [f.aircraft, f.callsign, f.reg].filter(Boolean).join(" / ");
       $("#route-duration").textContent = f.duration;
       $("#route-timing").textContent = f.demo ? f.departure + " → " + arrivalTime(f.departure, f.duration) + " UTC" : "";
       $("#route-hangar").hidden = f.fleet === null;
-      $("#route-state").textContent = routeProgress >= 1 ? lang === "en" ? "ARRIVED" : "ПРИБЫТИЕ" : routePlaying ? lang === "en" ? "EN ROUTE" : "НА МАРШРУТЕ" : lang === "en" ? "READY / PAUSED" : "ГОТОВ / ПАУЗА";
-      $("#route-play").textContent = !motion ? routeProgress >= 1 ? lang === "en" ? "SHOW DEPARTURE" : "К ВЫЛЕТУ" : lang === "en" ? "SHOW ARRIVAL" : "К ПРИБЫТИЮ" : routePlaying ? lang === "en" ? "PAUSE ❚❚" : "ПАУЗА ❚❚" : lang === "en" ? "PLAY ROUTE ▷" : "ВОСПРОИЗВЕСТИ ▷";
+      $("#route-state").textContent = routeProgress >= 1 ? lang !== "ru" ? lang === "it" ? "ARRIVATO" : "ARRIVED" : "ПРИБЫТИЕ" : routePlaying ? lang !== "ru" ? lang === "it" ? "IN ROTTA" : "EN ROUTE" : "НА МАРШРУТЕ" : lang !== "ru" ? lang === "it" ? "PRONTO / IN PAUSA" : "READY / PAUSED" : "ГОТОВ / ПАУЗА";
+      $("#route-play").textContent = !motion ? routeProgress >= 1 ? lang !== "ru" ? lang === "it" ? "MOSTRA PARTENZA" : "SHOW DEPARTURE" : "К ВЫЛЕТУ" : lang !== "ru" ? lang === "it" ? "MOSTRA ARRIVO" : "SHOW ARRIVAL" : "К ПРИБЫТИЮ" : routePlaying ? lang !== "ru" ? lang === "it" ? "PAUSA ❚❚" : "PAUSE ❚❚" : "ПАУЗА ❚❚" : lang !== "ru" ? lang === "it" ? "AVVIA ROTTA ▷" : "PLAY ROUTE ▷" : "ВОСПРОИЗВЕСТИ ▷";
       $("#route-play").setAttribute("aria-pressed", String(routePlaying));
       $("#route-percent").textContent = Math.round(routeProgress * 100) + "%";
       $("#route-scrub").value = Math.round(routeProgress * 1e3);
       $("#route-globe").setAttribute(
         "aria-label",
-        f[lang] + " · " + Math.round(routeProgress * 100) + "%"
+        f[lang === "it" ? "en" : lang] + " · " + Math.round(routeProgress * 100) + "%"
       );
       $$("[data-route]").forEach(
         (b) => b.setAttribute("aria-pressed", String(+b.dataset.route === flightIndex))
@@ -10049,7 +10102,7 @@
         const code = document.createElement("strong");
         code.textContent = flight.from + " → " + flight.to;
         const name = document.createElement("span");
-        name.textContent = flight[lang];
+        name.textContent = flight[lang === "it" ? "en" : lang];
         const timing = document.createElement("small");
         timing.textContent = flight.departure + " → " + arrivalTime(flight.departure, flight.duration) + " UTC · " + flight.duration + " · " + flight.callsign;
         row.append(code, name, timing);
@@ -10274,7 +10327,7 @@
     function fleetLog() {
       const matches = flights.filter((f) => f.fleet === aircraftIndex);
       $("#fleet-log-title").textContent = fleet[aircraftIndex].name;
-      $("#fleet-log-description").textContent = matches.length ? lang === "en" ? "Flights on this aircraft" : "Рейсы этого самолёта" : lang === "en" ? "No matching flights in the selected logbook entries." : "В выбранных записях журнала рейсов на этом самолёте пока нет.";
+      $("#fleet-log-description").textContent = matches.length ? lang !== "ru" ? lang === "it" ? "Voli con questo aeromobile" : "Flights on this aircraft" : "Рейсы этого самолёта" : lang !== "ru" ? lang === "it" ? "Nessun volo corrispondente nelle voci selezionate." : "No matching flights in the selected logbook entries." : "В выбранных записях журнала рейсов на этом самолёте пока нет.";
       const box = $("#fleet-log-flights");
       box.innerHTML = "";
       for (const f of matches) {
@@ -10356,14 +10409,14 @@
       drawPlane();
     });
     function articulationText() {
-      const en = lang === "en", gearMoving = Math.abs(gearPosition - (gearDown ? 1 : 0)) > 1e-3;
+      const en = lang !== "ru", gearMoving = Math.abs(gearPosition - (gearDown ? 1 : 0)) > 1e-3;
       for (const [id, on, moving, label, state] of [
         [
           "gear-toggle",
           gearDown,
           gearMoving,
-          en ? "GEAR" : "ШАССИ",
-          gearMoving ? gearDown ? en ? "EXTENDING" : "ВЫПУСК" : en ? "RETRACTING" : "УБОРКА" : gearDown ? en ? "DOWN" : "ВЫПУЩЕНЫ" : en ? "UP" : "УБРАНЫ"
+          en ? lang === "it" ? "CARRELLO" : "GEAR" : "ШАССИ",
+          gearMoving ? gearDown ? en ? lang === "it" ? "ESTENSIONE" : "EXTENDING" : "ВЫПУСК" : en ? lang === "it" ? "RETRAZIONE" : "RETRACTING" : "УБОРКА" : gearDown ? en ? lang === "it" ? "ESTESO" : "DOWN" : "ВЫПУЩЕНЫ" : en ? lang === "it" ? "RETRATTO" : "UP" : "УБРАНЫ"
         ]
       ]) {
         const b = $("#" + id);
@@ -10373,7 +10426,7 @@
         if (output.textContent !== state) output.textContent = state;
       }
       $("#lights-toggle").setAttribute("aria-pressed", String(lightsOn));
-      $("#lights-toggle .control-name").textContent = en ? "LIGHTS" : "ОГНИ";
+      $("#lights-toggle .control-name").textContent = en ? lang === "it" ? "LUCI" : "LIGHTS" : "ОГНИ";
     }
     $("#gear-toggle").addEventListener("click", () => {
       gearDown = !gearDown;
@@ -10427,7 +10480,12 @@
     requestForm.addEventListener("submit", (event) => {
       event.preventDefault();
       if (!requestForm.reportValidity()) return;
-      const type = $("#request-type").selectedOptions[0].textContent, network = $("#request-network").value, date = $("#request-date").value, time = $("#request-time").value, timezone = $("#request-timezone").value.trim(), callsign = $("#request-callsign").value.trim(), route = $("#request-route").value.trim(), notes = $("#request-notes").value.trim(), subject = lang === "en" ? "Flight / ATC request" : "Заявка на полёт / ATC", body = lang === "en" ? `Request: ${type}
+      const type = $("#request-type").selectedOptions[0].textContent, network = $("#request-network").value, date = $("#request-date").value, time = $("#request-time").value, timezone = $("#request-timezone").value.trim(), callsign = $("#request-callsign").value.trim(), route = $("#request-route").value.trim(), notes = $("#request-notes").value.trim(), subject = lang !== "ru" ? lang === "it" ? "Richiesta di volo / ATC" : "Flight / ATC request" : "Заявка на полёт / ATC", body = lang !== "ru" ? lang === "it" ? `Richiesta: ${type}
+Rete: ${network}
+Data e ora: ${date} ${time} (${timezone})
+Nome utente: ${callsign}
+Rotta / aeroporto: ${route}
+Dettagli: ${notes}` : `Request: ${type}
 Network: ${network}
 Date and time: ${date} ${time} (${timezone})
 Username: ${callsign}
@@ -10531,24 +10589,24 @@ Details: ${notes}` : `Заявка: ${type}
     function galleryText() {
       if (!gallery.length) return;
       const f = gallery[galleryIndex];
-      $("#gallery-title").textContent = f.title[lang];
-      $("#gallery-caption").textContent = f.caption[lang];
-      $(".lightbox-caption").hidden = !f.title[lang] && !f.caption[lang];
+      $("#gallery-title").textContent = f.title[lang === "it" ? "en" : lang];
+      $("#gallery-caption").textContent = f.caption[lang === "it" ? "en" : lang];
+      $(".lightbox-caption").hidden = !f.title[lang === "it" ? "en" : lang] && !f.caption[lang === "it" ? "en" : lang];
       const dialog = $("#gallery-dialog");
-      if (f.title[lang]) {
+      if (f.title[lang === "it" ? "en" : lang]) {
         dialog.setAttribute("aria-labelledby", "gallery-title");
         dialog.removeAttribute("aria-label");
       } else {
         dialog.removeAttribute("aria-labelledby");
-        dialog.setAttribute("aria-label", f.alt[lang]);
+        dialog.setAttribute("aria-label", f.alt[lang === "it" ? "en" : lang]);
       }
-      $("#gallery-image").alt = f.alt[lang];
+      $("#gallery-image").alt = f.alt[lang === "it" ? "en" : lang];
       $("#gallery-counter").textContent = galleryIndex + 1 + " / " + gallery.length;
       $$("[data-gallery]").forEach((b) => {
         const f2 = gallery[+b.dataset.gallery];
-        b.querySelector("img").alt = f2.alt[lang];
-        b.querySelector("span").textContent = f2.title[lang];
-        b.querySelector("span").hidden = !f2.title[lang];
+        b.querySelector("img").alt = f2.alt[lang === "it" ? "en" : lang];
+        b.querySelector("span").textContent = f2.title[lang === "it" ? "en" : lang];
+        b.querySelector("span").hidden = !f2.title[lang === "it" ? "en" : lang];
       });
     }
     function openGallery(i, opener) {
@@ -10631,7 +10689,7 @@ Details: ${notes}` : `Заявка: ${type}
       $("#radar-own").textContent = "AFL246 / HDG " + hdg + "° / " + alt + " FT / " + Math.round(airspeed) + " KT / E " + ownEast.toFixed(2) + " NM / N " + ownNorth.toFixed(2) + " NM";
       radar.el.setAttribute(
         "aria-label",
-        (lang === "en" ? "Your simulated aircraft: " : "Твой самолёт в симуляции: ") + hdg + "° / " + alt + " FT / " + Math.round(airspeed) + " KT"
+        (lang !== "ru" ? lang === "it" ? "Il tuo aereo simulato: " : "Your simulated aircraft: " : "Твой самолёт в симуляции: ") + hdg + "° / " + alt + " FT / " + Math.round(airspeed) + " KT"
       );
     }
     function selectRadarTarget(label) {
@@ -10658,7 +10716,7 @@ Details: ${notes}` : `Заявка: ${type}
     }
     function gameText() {
       safetyText();
-      const en = lang === "en", active = gameState === "active", command = flightCommands[gameStep], paused = gamePaused || !motion;
+      const en = lang !== "ru", active = gameState === "active", command = flightCommands[gameStep], paused = gamePaused || !motion;
       const checks = flightCommandChecks(command, {
         heading,
         altitude,
@@ -10666,12 +10724,12 @@ Details: ${notes}` : `Заявка: ${type}
         bank,
         pitch
       });
-      const reasonText = failureReason === "ground" ? en ? "GROUND IMPACT" : "УДАР О ЗЕМЛЮ" : failureReason === "collision" ? en ? "COLLISION" : "СТОЛКНОВЕНИЕ" : en ? "TIME IS UP" : "ВРЕМЯ ВЫШЛО";
-      const statusText = gameState === "won" ? en ? "ALL COMMANDS COMPLETED" : "ВСЕ КОМАНДЫ ВЫПОЛНЕНЫ" : gameState === "failed" ? reasonText : active ? paused ? en ? "PAUSED" : "ПАУЗА" : (en ? "COMMAND " : "КОМАНДА ") + (gameStep + 1) + " / 3" : en ? "FREE FLIGHT" : "СВОБОДНЫЙ ПОЛЁТ";
+      const reasonText = failureReason === "ground" ? en ? lang === "it" ? "IMPATTO AL SUOLO" : "GROUND IMPACT" : "УДАР О ЗЕМЛЮ" : failureReason === "collision" ? en ? lang === "it" ? "COLLISIONE" : "COLLISION" : "СТОЛКНОВЕНИЕ" : en ? lang === "it" ? "TEMPO SCADUTO" : "TIME IS UP" : "ВРЕМЯ ВЫШЛО";
+      const statusText = gameState === "won" ? en ? lang === "it" ? "TUTTI I COMANDI COMPLETATI" : "ALL COMMANDS COMPLETED" : "ВСЕ КОМАНДЫ ВЫПОЛНЕНЫ" : gameState === "failed" ? reasonText : active ? paused ? en ? lang === "it" ? "IN PAUSA" : "PAUSED" : "ПАУЗА" : (en ? lang === "it" ? "COMANDO " : "COMMAND " : "КОМАНДА ") + (gameStep + 1) + " / 3" : en ? lang === "it" ? "VOLO LIBERO" : "FREE FLIGHT" : "СВОБОДНЫЙ ПОЛЁТ";
       if ($("#game-status").textContent !== statusText) $("#game-status").textContent = statusText;
-      $("#game-start").textContent = active ? en ? "RESTART" : "НАЧАТЬ ЗАНОВО" : en ? "START CHALLENGE" : "НАЧАТЬ ЗАДАНИЕ";
+      $("#game-start").textContent = active ? en ? lang === "it" ? "RIAVVIA" : "RESTART" : "НАЧАТЬ ЗАНОВО" : en ? lang === "it" ? "INIZIA LA SFIDA" : "START CHALLENGE" : "НАЧАТЬ ЗАДАНИЕ";
       $("#game-pause").disabled = !active;
-      $("#game-pause").textContent = gamePaused ? en ? "RESUME" : "ПРОДОЛЖИТЬ" : en ? "PAUSE" : "ПАУЗА";
+      $("#game-pause").textContent = gamePaused ? en ? lang === "it" ? "RIPRENDI" : "RESUME" : "ПРОДОЛЖИТЬ" : en ? lang === "it" ? "PAUSA" : "PAUSE" : "ПАУЗА";
       $("#game-pause").setAttribute("aria-pressed", String(gamePaused));
       $("#game-targets").hidden = !active;
       for (const [key, value, unit] of [
@@ -10682,16 +10740,16 @@ Details: ${notes}` : `Заявка: ${type}
         const el = $("#game-" + key);
         el.querySelector("strong").textContent = value;
         el.dataset.met = String(checks[key]);
-        el.querySelector("small").textContent = checks[key] ? en ? "ON TARGET" : "В ДОПУСКЕ" : en ? "ADJUST" : "СКОРРЕКТИРУЙ";
+        el.querySelector("small").textContent = checks[key] ? en ? lang === "it" ? "IN TOLLERANZA" : "ON TARGET" : "В ДОПУСКЕ" : en ? lang === "it" ? "CORREGGI" : "ADJUST" : "СКОРРЕКТИРУЙ";
       }
       $("#game-hold").value = gameHold;
-      $("#game-hold-label").textContent = (en ? "STABLE HOLD " : "УДЕРЖАНИЕ ") + gameHold.toFixed(1) + " / 5 " + (en ? "s" : "с");
+      $("#game-hold-label").textContent = (en ? lang === "it" ? "MANTENIMENTO " : "STABLE HOLD " : "УДЕРЖАНИЕ ") + gameHold.toFixed(1) + " / 5 " + (en ? "s" : "с");
       $("#game-time").textContent = Math.floor(gameElapsed) + " " + (en ? "SIM s" : "СИМ. С");
       const score = flightScore();
       $("#game-score").textContent = gameState === "won" ? score + " / 1000" : "—";
       const stored = Number(read("dk-flight-challenge-best-v2"));
       $("#game-best").textContent = Number.isFinite(stored) && stored > 0 ? stored + " / 1000" : "—";
-      $("#game-hint").textContent = !motion ? en ? "Turn Motion on to fly the challenge." : "Включи Motion, чтобы выполнить задание." : gameState === "won" ? en ? "Good work. Try again to improve your score." : "Задание выполнено. Попробуй ещё раз и улучши результат." : gameState === "failed" ? failureReason === "ground" ? en ? "The aircraft reached the ground. Reset or start a new challenge." : "Самолёт достиг земли. Нажми «Сброс» или начни новое задание." : failureReason === "collision" ? en ? "Your aircraft collided with traffic. Reset or start a new challenge." : "Твой самолёт столкнулся с трафиком. Нажми «Сброс» или начни новое задание." : en ? "The command was not completed within 120 seconds. Try again." : "Команда не выполнена за 120 секунд. Попробуй ещё раз." : active ? en ? "Match all three targets, level the wings and pitch, then hold for 5 simulation seconds." : "Выставь курс, высоту и скорость. Выровняй крен и тангаж, удерживай параметры 5 секунд симуляции." : en ? "Three ATC commands. Controls below move your cyan aircraft on the radar." : "Три команды диспетчера. Управление ниже двигает твой голубой самолёт на радаре.";
+      $("#game-hint").textContent = !motion ? en ? lang === "it" ? "Attiva Motion per iniziare la sfida." : "Turn Motion on to fly the challenge." : "Включи Motion, чтобы выполнить задание." : gameState === "won" ? en ? lang === "it" ? "Ben fatto. Riprova per migliorare il punteggio." : "Good work. Try again to improve your score." : "Задание выполнено. Попробуй ещё раз и улучши результат." : gameState === "failed" ? failureReason === "ground" ? en ? lang === "it" ? "L’aereo ha raggiunto il suolo. Reimposta o inizia una nuova sfida." : "The aircraft reached the ground. Reset or start a new challenge." : "Самолёт достиг земли. Нажми «Сброс» или начни новое задание." : failureReason === "collision" ? en ? lang === "it" ? "Il tuo aereo è entrato in collisione. Reimposta o inizia una nuova sfida." : "Your aircraft collided with traffic. Reset or start a new challenge." : "Твой самолёт столкнулся с трафиком. Нажми «Сброс» или начни новое задание." : en ? lang === "it" ? "Il comando non è stato completato entro 120 secondi. Riprova." : "The command was not completed within 120 seconds. Try again." : "Команда не выполнена за 120 секунд. Попробуй ещё раз." : active ? en ? lang === "it" ? "Raggiungi i tre obiettivi, livella ali e beccheggio e mantieni per 5 secondi di simulazione." : "Match all three targets, level the wings and pitch, then hold for 5 simulation seconds." : "Выставь курс, высоту и скорость. Выровняй крен и тангаж, удерживай параметры 5 секунд симуляции." : en ? lang === "it" ? "Tre comandi ATC. I controlli sotto muovono il tuo aereo azzurro sul radar." : "Three ATC commands. Controls below move your cyan aircraft on the radar." : "Три команды диспетчера. Управление ниже двигает твой голубой самолёт на радаре.";
     }
     function updateFlightGame(dt) {
       if (gameState !== "active") return;
@@ -10821,7 +10879,7 @@ Details: ${notes}` : `Заявка: ${type}
       consoleLine("> " + text, "echo");
       const parts = text.toLowerCase().split(/\s+/), cmd = parts.shift();
       let reply = "", error = false;
-      const say = (ru, en) => lang === "en" ? en : ru;
+      const say = (ru, en) => lang !== "ru" ? en : ru;
       const go = (id) => $(id).scrollIntoView({ behavior: motion ? "smooth" : "auto", block: "center" });
       if (cmd === "clear" && !parts.length) {
         commandOutput.innerHTML = "";
@@ -10859,7 +10917,7 @@ Details: ${notes}` : `Заявка: ${type}
           );
         } else {
           selectFlight(i);
-          reply = flights[i][lang] + " / " + flights[i].duration;
+          reply = flights[i][lang === "it" ? "en" : lang] + " / " + flights[i].duration;
         }
       } else if (cmd === "wireframe" && !parts.length) {
         $$("[data-view]")[wire ? 0 : 1].click();
