@@ -415,6 +415,21 @@ try {
     $('#save-draft').checked = true;
   }
 } catch (_) {}
+const dateInput = $('#form').elements.date;
+const datePicker = $('#date-picker');
+function syncDatePicker() {
+  if (dateInput) datePicker.value = parseDate(dateInput.value) || '';
+}
+function selectCalendarDate() {
+  if (!dateInput) return;
+  dateInput.value = displayDate(datePicker.value);
+  saveDraft();
+}
+syncDatePicker();
+dateInput?.addEventListener('input', syncDatePicker);
+dateInput?.addEventListener('change', syncDatePicker);
+datePicker.addEventListener('input', selectCalendarDate);
+datePicker.addEventListener('change', selectCalendarDate);
 function saveDraft() {
   try {
     if (!$('#save-draft').checked) {
