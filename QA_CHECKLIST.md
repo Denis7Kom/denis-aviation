@@ -5,15 +5,47 @@
 Run `npm ci` and `npm run check` before publishing. The checks cover:
 
 - The committed browser bundle matching the source modules.
-- Formatting of authored JavaScript, CSS, tests and documentation.
+- Formatting of the paths configured in the `format:check` script.
 - Geometry, moving parts, glazing, lights, depth occlusion and wireframe caching.
 - Flight challenge rules, traffic conflicts and simulation reset behaviour.
 - Preservation of the original application statements, renderer and reference data.
 - Byte-for-byte preservation of HTML; formatter-normalised preservation of CSS and gallery data.
 - Local resource paths, gallery metadata, file signatures and deferred script order.
+- Mocked request form, translations, status display and browser-alert behaviour.
+- Telegram Worker cursor, retry and lock logic with mocked external services.
 
 These checks do not replace browser tests or validate the factual contents of documents.
 External destinations and remote font availability are outside the local resource check.
+
+## Request and notification checks
+
+The Node.js tests use mocks. They do **not** execute Firestore Security Rules or prove
+that a production Firebase, browser or Telegram connection works. The browser alert was
+inspected with test data on 30 October 2026; live delivery with the administrator's
+account was not confirmed by that check.
+
+Before claiming access rules are verified, compare the rules deployed in Firebase with
+`firestore.rules` and use the Firestore emulator or a rules simulator with isolated test
+documents and authenticated test identities. Exercise direct reads and writes, including:
+
+- Owner A can read and cancel A's request from `new`, `review` or `confirmed`.
+- User B cannot read A's document or change A's status to `cancelled`, even with A's
+  document ID. Hiding A's request in the interface is not evidence of this denial.
+- An owner cannot cancel from `declined` or `completed`, change other fields while
+  cancelling, or delete the document. Anonymous access is rejected.
+- The administrator can change only the status to an allowed value, but cannot restore
+  a document whose existing status is `cancelled`. Deletion is denied.
+
+For a live browser test, sign in as the administrator, leave the request page open,
+enable notifications and create an authorised test request. Check the count, the last
+request preview, the browser notification and the click-through. Check denied permission,
+reconnection and sign-out. A browser can truncate notification text and suspend background
+tabs. Never include real visitor data in screenshots or shared logs.
+
+Telegram delivery requires its own live test: inspect the current scheduled Worker logs,
+then confirm receipt of a new test request in the intended private chat. A successful
+deploy or a mocked test alone is not proof of delivery. See the
+[Telegram setup guide](telegram-notifier/README.md).
 
 ## Leading-edge revision check - 26 October 2026
 
