@@ -78,6 +78,21 @@ function parseDate(value) {
   const iso = `${year}-${month}-${day}`;
   return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === iso ? iso : null;
 }
+function formatVisitorUpdate(data) {
+  const value = (field) => String(field || '—');
+  const status = (statuses[data.status] || [data.status, data.status])[language === 'en' ? 1 : 0];
+  const type = data.type === 'atc'
+    ? text('Диспетчерский контроль', 'ATC control')
+    : text('Совместный полёт', 'Fly together');
+  return [
+    `${text('Статус', 'Status')}: ${status}`,
+    `${text('Тип', 'Type')}: ${type}`,
+    `${text('Сеть', 'Network')}: ${value(data.network)}`,
+    `${text('Дата и время', 'Date and time')}: ${displayDate(data.date)} ${value(data.time)} (${value(data.timezone)})`,
+    `${text('Позывной', 'Callsign')}: ${value(data.callsign)}`,
+    `${text('Маршрут или аэропорт', 'Route or airport')}: ${value(data.route)}`,
+  ].join('\n');
+}
 function renderVisitorAlerts() {
   const button = $('#enable-visitor-alerts');
   const info = $('#visitor-alert-status');
@@ -94,9 +109,7 @@ function renderVisitorAlerts() {
     button.disabled = false;
     button.textContent = text('Включить уведомления браузера', 'Enable browser notifications');
   }
-  info.textContent = visitorUpdates.map(({ callsign, status }) =>
-    `${callsign}: ${(statuses[status] || [status, status])[language === 'en' ? 1 : 0]}`
-  ).join('\n');
+  info.textContent = visitorUpdates.map(formatVisitorUpdate).join('\n\n');
 }
 function announceVisitorChanges(snapshot) {
   if (!user || isAdmin(user) || snapshot.metadata?.fromCache) return;
@@ -113,13 +126,16 @@ function announceVisitorChanges(snapshot) {
     const data = item.data();
     if (!Object.hasOwn(statuses, data.status)) continue;
     if (Object.hasOwn(visitorKnownStatuses, item.id) && visitorKnownStatuses[item.id] !== data.status) {
-      const update = { callsign: String(data.callsign || '—'), status: data.status };
+      const update = {
+        status: data.status, type: data.type, network: data.network, date: data.date,
+        time: data.time, timezone: data.timezone, callsign: data.callsign, route: data.route,
+      };
       visitorUpdates.push(update);
       if (visitorUpdates.length > 10) visitorUpdates.shift();
       if (browserAlertsSupported() && Notification.permission === 'granted') {
         try {
           const alert = new Notification(text('Статус заявки изменён', 'Request status changed'), {
-            body: `${update.callsign}: ${(statuses[update.status])[language === 'en' ? 1 : 0]}`,
+            body: formatVisitorUpdate(update),
             icon: 'favicon.svg',
           });
           alert.onclick = () => { alert.close(); openRequestFromAlert(item.id); };

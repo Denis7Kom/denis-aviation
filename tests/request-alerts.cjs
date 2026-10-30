@@ -200,10 +200,44 @@ function snapshot(docs, fromCache = false) {
   assert.equal(alerts.length, 4, 'Cached status changes do not notify');
   snapshot([request('visitor', 'review', true)]);
   assert.equal(alerts.length, 4, 'Pending writes do not notify');
-  snapshot([request('visitor', 'review')]);
+  snapshot([
+    request('visitor', 'review', false, {
+      contact: 'PRIVATE_CONTACT',
+      notes: 'PRIVATE_NOTES',
+      type: 'atc',
+    }),
+  ]);
   assert.equal(alerts.length, 5);
-  assert.match(alerts[4].options.body, /Рассматривается/);
-  assert.match(elements.get('#visitor-alert-status').textContent, /Рассматривается/);
+  for (const value of [
+    'Рассматривается',
+    'Диспетчерский контроль',
+    'VATSIM',
+    '01-11-2026',
+    '12:00',
+    'UTC',
+    'TEST',
+    'LIRN',
+  ]) {
+    assert(alerts[4].options.body.includes(value), `Status notification contains ${value}`);
+    assert(
+      elements.get('#visitor-alert-status').textContent.includes(value),
+      `Page update contains ${value}`,
+    );
+  }
+  for (const secret of ['PRIVATE_CONTACT', 'PRIVATE_NOTES']) {
+    assert(
+      !alerts[4].options.body.includes(secret),
+      'Status notification excludes contact and notes',
+    );
+    assert(
+      !elements.get('#visitor-alert-status').textContent.includes(secret),
+      'Page update excludes contact and notes',
+    );
+  }
+  vm.runInContext("language = 'en'; renderVisitorAlerts();", context);
+  assert.match(elements.get('#visitor-alert-status').textContent, /In review/);
+  assert.match(elements.get('#visitor-alert-status').textContent, /ATC control/);
+  vm.runInContext("language = 'ru'; renderVisitorAlerts();", context);
   alerts[4].onclick();
   assert(
     elements.get('#list').children.find((card) => card.dataset.requestId === 'visitor').focused,
