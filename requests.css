@@ -318,6 +318,26 @@ label {
   gap: 8px;
   min-width: 0;
 }
+.time-field {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.time-field legend {
+  padding: 0;
+  color: #c2d3e2;
+  font-size: 12px;
+}
+.time-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.time-controls label { gap: 4px; }
+.time-controls label span { color: #9cafc3; font-size: 10px; }
+.time-controls select { padding-inline: 9px 24px; background-position: right 8px center; }
 .date-control {
   position: relative;
   min-width: 0;

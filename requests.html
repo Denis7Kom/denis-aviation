@@ -13,7 +13,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="requests.css?v=16" />
+    <link rel="stylesheet" href="requests.css?v=17" />
   </head>
   <body>
     <div class="page-shell">
@@ -145,10 +145,18 @@
                   </div>
                   <input id="date-picker" type="date" aria-label="Выбрать дату в календаре" aria-hidden="true" tabindex="-1" />
                 </div>
-                <label
-                  ><span data-ru="Время" data-en="Time">Время</span
-                  ><input type="time" name="time" required
-                /></label>
+                <fieldset class="time-field">
+                  <legend data-ru="Время · 24 часа" data-en="Time · 24-hour">Время · 24 часа</legend>
+                  <div class="time-controls">
+                    <label><span data-ru="Часы" data-en="Hours">Часы</span>
+                      <select id="time-hours" required><option value="" data-ru="ЧЧ" data-en="HH">ЧЧ</option></select>
+                    </label>
+                    <label><span data-ru="Минуты" data-en="Minutes">Минуты</span>
+                      <select id="time-minutes" required><option value="" data-ru="ММ" data-en="MM">ММ</option></select>
+                    </label>
+                  </div>
+                  <input type="hidden" name="time" />
+                </fieldset>
                 <label
                   ><span data-ru="Часовой пояс" data-en="Time zone">Часовой пояс</span
                   ><select name="timezone" id="timezone" required>
@@ -309,6 +317,6 @@
         >
       </footer>
     </div>
-    <script type="module" src="requests.js?v=14"></script>
+    <script type="module" src="requests.js?v=15"></script>
   </body>
 </html>
