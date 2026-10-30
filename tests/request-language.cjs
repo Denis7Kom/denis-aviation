@@ -51,6 +51,8 @@ function boot(values, blocked = false) {
     ['#visitor-alert-status', element()],
     ['#date-picker', element()],
     ['#open-date-picker', element()],
+    ['#time-hours', element()],
+    ['#time-minutes', element()],
   ]);
   const document = {
     title: '',

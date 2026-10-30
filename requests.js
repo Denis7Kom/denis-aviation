@@ -460,6 +460,27 @@ try {
     $('#save-draft').checked = true;
   }
 } catch (_) {}
+const timeHours = $('#time-hours');
+const timeMinutes = $('#time-minutes');
+const timeInput = $('#form').elements.time;
+for (const [select, count] of [[timeHours, 24], [timeMinutes, 60]]) {
+  for (let number = 0; number < count; number++) {
+    const option = document.createElement('option');
+    option.value = String(number).padStart(2, '0');
+    option.textContent = option.value;
+    select.append(option);
+  }
+}
+if (timeInput && /^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(timeInput.value)) {
+  [timeHours.value, timeMinutes.value] = timeInput.value.split(':');
+}
+function syncTime() {
+  if (!timeInput) return;
+  timeInput.value = timeHours.value && timeMinutes.value ? `${timeHours.value}:${timeMinutes.value}` : '';
+  saveDraft();
+}
+timeHours.addEventListener('change', syncTime);
+timeMinutes.addEventListener('change', syncTime);
 const dateInput = $('#form').elements.date;
 const datePicker = $('#date-picker');
 $('#open-date-picker').addEventListener('click', () => {
@@ -714,6 +735,10 @@ $('#form').addEventListener('submit', async (event) => {
   const form = event.currentTarget;
   if (!authReady || phase || !form.reportValidity()) return;
   const data = Object.fromEntries(new FormData(form).entries());
+  if (!/^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(data.time || '')) {
+    notice('Выбери часы и минуты.', 'Choose hours and minutes.');
+    return;
+  }
   const parsedDate = parseDate(data.date);
   if (!parsedDate) {
     notice('Укажи существующую дату в формате ДД-ММ-ГГГГ.', 'Enter a valid date in DD-MM-YYYY format.');
