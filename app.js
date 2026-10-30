@@ -3029,10 +3029,45 @@
         }[a[3]] || a[3];
       return a[lang === "ru" ? 2 : 3];
     }
+    const italianAirportNames = {
+      UUEE: "Aeroporto internazionale di Mosca-Šeremet’evo",
+      UUDD: "Aeroporto internazionale di Mosca-Domodedovo",
+      UUWW: "Aeroporto internazionale di Mosca-Vnukovo",
+      LIRF: "Aeroporto di Roma-Fiumicino Leonardo da Vinci",
+      LIRN: "Aeroporto internazionale di Napoli-Capodichino",
+      KLAX: "Aeroporto internazionale di Los Angeles",
+      KSFO: "Aeroporto internazionale di San Francisco",
+      KORD: "Aeroporto internazionale di Chicago O’Hare",
+      KATL: "Aeroporto internazionale di Atlanta Hartsfield-Jackson",
+      KDCA: "Aeroporto nazionale Ronald Reagan di Washington",
+      KEWR: "Aeroporto internazionale di Newark Liberty",
+      ULLI: "Aeroporto internazionale di San Pietroburgo-Pulkovo",
+      LIPZ: "Aeroporto di Venezia Marco Polo",
+      LIMJ: "Aeroporto di Genova Cristoforo Colombo",
+      LEMD: "Aeroporto Adolfo Suárez di Madrid-Barajas",
+      UWKD: "Aeroporto internazionale di Kazan",
+      PHNL: "Aeroporto internazionale Daniel K. Inouye",
+      YSSY: "Aeroporto di Sydney Kingsford Smith",
+      LMML: "Aeroporto internazionale di Malta",
+      LOWI: "Aeroporto di Innsbruck",
+      LEBL: "Aeroporto Josep Tarradellas di Barcellona-El Prat",
+      YSCB: "Aeroporto di Canberra",
+      LICC: "Aeroporto di Catania-Fontanarossa",
+      LEPA: "Aeroporto di Palma di Maiorca",
+      LXGB: "Aeroporto internazionale di Gibilterra",
+      MMMX: "Aeroporto internazionale Benito Juárez di Città del Messico",
+      KMIA: "Aeroporto internazionale di Miami",
+      MMUN: "Aeroporto internazionale di Cancún",
+      KDEN: "Aeroporto internazionale di Denver",
+      KIAH: "Aeroporto intercontinentale George Bush di Houston",
+      CYVR: "Aeroporto internazionale di Vancouver",
+      PANC: "Aeroporto internazionale Ted Stevens di Anchorage",
+      RJTT: "Aeroporto internazionale di Tokyo-Haneda",
+      VHHH: "Aeroporto internazionale di Hong Kong",
+      WSSS: "Aeroporto di Singapore-Changi"
+    };
     function airportName(a) {
-      if (lang === "it")
-        return a[5].replace("International Airport", "Aeroporto internazionale").replace("Intercontinental Airport", "Aeroporto intercontinentale").replace("National Airport", "Aeroporto nazionale").replace("Airport", "Aeroporto");
-      return a[lang === "ru" ? 4 : 5];
+      return lang === "it" ? italianAirportNames[a[0]] || a[5] : a[lang === "ru" ? 4 : 5];
     }
     function airportText() {
       const a = airports[airportIndex], en = lang !== "ru", role = airportRole(a);
@@ -10598,13 +10633,16 @@ Details: ${notes}` : `Заявка: ${type}
         dialog.removeAttribute("aria-label");
       } else {
         dialog.removeAttribute("aria-labelledby");
-        dialog.setAttribute("aria-label", f.alt[lang === "it" ? "en" : lang]);
+        dialog.setAttribute(
+          "aria-label",
+          lang === "it" ? f.alt.it || (f.alt.en === "Tanker aircraft and two fighters in Infinite Flight" ? "Aereo cisterna e due caccia in Infinite Flight" : f.alt.en) : f.alt[lang]
+        );
       }
-      $("#gallery-image").alt = f.alt[lang === "it" ? "en" : lang];
+      $("#gallery-image").alt = lang === "it" ? f.alt.it || (f.alt.en === "Tanker aircraft and two fighters in Infinite Flight" ? "Aereo cisterna e due caccia in Infinite Flight" : f.alt.en) : f.alt[lang];
       $("#gallery-counter").textContent = galleryIndex + 1 + " / " + gallery.length;
       $$("[data-gallery]").forEach((b) => {
         const f2 = gallery[+b.dataset.gallery];
-        b.querySelector("img").alt = f2.alt[lang === "it" ? "en" : lang];
+        b.querySelector("img").alt = lang === "it" ? f2.alt.it || (f2.alt.en === "Tanker aircraft and two fighters in Infinite Flight" ? "Aereo cisterna e due caccia in Infinite Flight" : f2.alt.en) : f2.alt[lang];
         b.querySelector("span").textContent = f2.title[lang === "it" ? "en" : lang];
         b.querySelector("span").hidden = !f2.title[lang === "it" ? "en" : lang];
       });
@@ -10879,7 +10917,15 @@ Details: ${notes}` : `Заявка: ${type}
       consoleLine("> " + text, "echo");
       const parts = text.toLowerCase().split(/\s+/), cmd = parts.shift();
       let reply = "", error = false;
-      const say = (ru, en) => lang !== "ru" ? en : ru;
+      const consoleItalian = {
+        "Console cleared.": "Console pulita.",
+        "Aircraft not found. Type help.": "Aeromobile non trovato. Digita help.",
+        "hangar opened": "hangar aperto",
+        "Flight not in logbook. Type flights.": "Volo non presente nel diario. Digita flights.",
+        "AFL246 is linked to radar. Bank changes heading; pitch changes altitude.": "AFL246 è collegato al radar. Il rollio cambia la prua; il beccheggio cambia la quota.",
+        "Unknown command or arguments. Type help.": "Comando o parametri sconosciuti. Digita help."
+      };
+      const say = (ru, en) => lang === "it" ? consoleItalian[en] || en : lang === "en" ? en : ru;
       const go = (id) => $(id).scrollIntoView({ behavior: motion ? "smooth" : "auto", block: "center" });
       if (cmd === "clear" && !parts.length) {
         commandOutput.innerHTML = "";
