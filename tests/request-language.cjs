@@ -25,8 +25,9 @@ function boot(values, blocked = false) {
     },
   });
   const ru = element({ lang: 'ru' }),
-    en = element({ lang: 'en' });
-  const translated = element({ ru: 'Заявка', en: 'Request' });
+    en = element({ lang: 'en' }),
+    it = element({ lang: 'it' });
+  const translated = element({ ru: 'Заявка', en: 'Request', it: 'Richiesta' });
   const named = new Map([
     ['#form', { ...element(), elements: { timezone: element() } }],
     ['#list-title', element()],
@@ -58,7 +59,7 @@ function boot(values, blocked = false) {
     createElement: () => element(),
     querySelector: (selector) => named.get(selector),
     querySelectorAll: (selector) =>
-      selector === '[data-lang]' ? [ru, en] : selector === '[data-ru]' ? [translated] : [],
+      selector === '[data-lang]' ? [ru, en, it] : selector === '[data-ru]' ? [translated] : [],
   };
   const localStorage = {
     getItem: (key) => {
@@ -73,7 +74,7 @@ function boot(values, blocked = false) {
   const context = vm.createContext({ document, localStorage, Intl });
   const source = fs.readFileSync('requests.js', 'utf8').split('async function start()')[0];
   vm.runInContext(source, context);
-  return { document, storage, ru, en, translated, context, named };
+  return { document, storage, ru, en, it, translated, context, named };
 }
 
 const test = boot({ 'dk-aviation-lang': 'en', 'requests-language': 'ru' });
@@ -103,6 +104,11 @@ assert(
 );
 assert.equal(test.named.get('#notice').textContent, 'Сохранено');
 assert.equal(test.storage.get('dk-aviation-lang'), 'ru');
+test.it.listeners.click();
+assert.equal(test.document.documentElement.lang, 'it');
+assert.equal(test.translated.textContent, 'Richiesta');
+assert.equal(test.storage.get('dk-aviation-lang'), 'it');
+assert.equal(boot({ 'dk-aviation-lang': 'it' }).document.documentElement.lang, 'it');
 const old = boot({ 'requests-language': 'en' });
 assert.equal(old.document.documentElement.lang, 'en');
 const restricted = boot({}, true);

@@ -13,7 +13,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="requests.css?v=18" />
+    <link rel="stylesheet" href="requests.css?v=19" />
   </head>
   <body>
     <div class="page-shell">
@@ -23,12 +23,13 @@
           <span><strong>DENIS KOMAROV</strong><small>VIRTUAL AVIATION</small></span>
         </a>
         <div class="header-actions">
-          <a class="back-link" href="./#booking" data-ru="← На сайт" data-en="← Back to site"
+          <a class="back-link" href="./#booking" data-ru="← На сайт" data-en="← Back to site" data-it="← Torna al sito"
             >← На сайт</a
           >
           <div class="languages" role="group" aria-label="Язык / Language">
             <button type="button" data-lang="ru" aria-pressed="true">RU</button>
             <button type="button" data-lang="en" aria-pressed="false">EN</button>
+            <button type="button" data-lang="it" aria-pressed="false">IT</button>
           </div>
         </div>
       </header>
@@ -39,13 +40,13 @@
               <span class="signal" aria-hidden="true"></span> FLIGHT REQUESTS
               <span class="eyebrow-divider">/</span> DENISKOM
             </p>
-            <h1 id="page-title" data-ru="Заявки на полёт" data-en="Flight requests">
+            <h1 id="page-title" data-ru="Заявки на полёт" data-en="Flight requests" data-it="Richieste di volo">
               Заявки на полёт
             </h1>
             <p
               class="hero-description"
               data-ru="Отправь заявку на совместный полёт или диспетчерский контроль и следи за её статусом."
-              data-en="Send a request for a shared flight or ATC control and follow its status."
+              data-en="Send a request for a shared flight or ATC control and follow its status." data-it="Invia una richiesta per un volo insieme o per il controllo ATC e seguine lo stato."
             >
               Отправь заявку на совместный полёт или диспетчерский контроль и следи за её статусом.
             </p>
@@ -57,22 +58,22 @@
             <p
               id="auth-hint"
               data-ru="Заполни форму ниже. Google понадобится при отправке и для просмотра статуса."
-              data-en="Fill out the form below. Google sign-in is needed to send it and check its status."
+              data-en="Fill out the form below. Google sign-in is needed to send it and check its status." data-it="Compila il modulo. Per inviare la richiesta e controllarne lo stato devi accedere con Google."
             >
               Заполни форму ниже. Google понадобится при отправке и для просмотра статуса.
             </p>
             <div id="account-info" class="account-info" hidden>
-              <span data-ru="ВЫ ВОШЛИ" data-en="SIGNED IN">ВЫ ВОШЛИ</span>
+              <span data-ru="ВЫ ВОШЛИ" data-en="SIGNED IN" data-it="ACCESSO EFFETTUATO">ВЫ ВОШЛИ</span>
               <strong id="identity"></strong>
             </div>
             <div class="auth">
               <button id="login" type="button" disabled>
-                <span data-ru="Войти через Google" data-en="Sign in with Google"
+                <span data-ru="Войти через Google" data-en="Sign in with Google" data-it="Accedi con Google"
                   >Войти через Google</span
                 ><span class="button-arrow" aria-hidden="true">↗</span>
               </button>
               <button id="logout" type="button" hidden>
-                <span data-ru="Выйти" data-en="Sign out">Выйти</span
+                <span data-ru="Выйти" data-en="Sign out" data-it="Esci">Выйти</span
                 ><span class="button-arrow" aria-hidden="true">↗</span>
               </button>
             </div>
@@ -84,20 +85,20 @@
               <div class="card-top">
                 <span>01 / REQUEST</span><span class="corner-mark" aria-hidden="true">+</span>
               </div>
-              <h2 id="form-title" data-ru="Новая заявка" data-en="New request">Новая заявка</h2>
+              <h2 id="form-title" data-ru="Новая заявка" data-en="New request" data-it="Nuova richiesta">Новая заявка</h2>
               <p
                 class="card-intro"
                 data-ru="Укажи удобное время и детали предстоящего полёта."
-                data-en="Choose a time and share the details of your upcoming flight."
+                data-en="Choose a time and share the details of your upcoming flight." data-it="Scegli un orario e indica i dettagli del tuo volo."
               >
                 Укажи удобное время и детали предстоящего полёта.
               </p>
               <section id="confirmation" class="confirmation" hidden aria-live="polite">
                 <div class="confirmation-mark" aria-hidden="true">✓</div>
-                <h3 data-ru="Заявка отправлена" data-en="Request sent">Заявка отправлена</h3>
+                <h3 data-ru="Заявка отправлена" data-en="Request sent" data-it="Richiesta inviata">Заявка отправлена</h3>
                 <p
                   data-ru="Статус: Новая. Время будет согласовано после подтверждения."
-                  data-en="Status: New. The time is agreed once confirmed."
+                  data-en="Status: New. The time is agreed once confirmed." data-it="Stato: nuova. L’orario sarà concordato dopo la conferma."
                 >
                   Статус: Новая. Время будет согласовано после подтверждения.
                 </p>
@@ -107,93 +108,93 @@
                     class="confirmation-link"
                     href="#list-panel"
                     data-ru="Посмотреть мои заявки ↓"
-                    data-en="View my requests ↓"
+                    data-en="View my requests ↓" data-it="Le mie richieste ↓"
                     >Посмотреть мои заявки ↓</a
-                  ><button type="button" id="new-form" data-ru="Новая заявка" data-en="New request">
+                  ><button type="button" id="new-form" data-ru="Новая заявка" data-en="New request" data-it="Nuova richiesta">
                     Новая заявка
                   </button>
                 </div>
               </section>
               <form id="form" method="post" action="#new-request">
                 <label
-                  ><span data-ru="Тип" data-en="Type">Тип</span
+                  ><span data-ru="Тип" data-en="Type" data-it="Tipo">Тип</span
                   ><select name="type">
-                    <option value="flight" data-ru="Совместный полёт" data-en="Fly together">
+                    <option value="flight" data-ru="Совместный полёт" data-en="Fly together" data-it="Volo insieme">
                       Совместный полёт
                     </option>
-                    <option value="atc" data-ru="Диспетчерский контроль" data-en="ATC control">
+                    <option value="atc" data-ru="Диспетчерский контроль" data-en="ATC control" data-it="Controllo ATC">
                       Диспетчерский контроль
                     </option>
                   </select></label
                 >
                 <label
-                  ><span data-ru="Сеть" data-en="Network">Сеть</span
+                  ><span data-ru="Сеть" data-en="Network" data-it="Rete">Сеть</span
                   ><select name="network">
                     <option>Infinite Flight</option>
                     <option>VATSIM</option>
                     <option>IVAO</option>
-                    <option value="Other" data-ru="Другая" data-en="Other">Другая</option>
+                    <option value="Other" data-ru="Другая" data-en="Other" data-it="Altro">Другая</option>
                   </select></label
                 >
                 <div class="date-field">
-                  <label for="request-date" data-ru="Дата" data-en="Date">Дата</label>
+                  <label for="request-date" data-ru="Дата" data-en="Date" data-it="Data">Дата</label>
                   <input id="request-date" type="date" name="date" required />
                 </div>
                 <fieldset class="time-field">
-                  <legend class="visually-hidden" data-ru="Время" data-en="Time">Время</legend>
+                  <legend class="visually-hidden" data-ru="Время" data-en="Time" data-it="Ora">Время</legend>
                   <div class="time-controls">
-                    <label><span data-ru="Часы" data-en="Hours">Часы</span>
-                      <select id="time-hours" required><option value="" data-ru="ЧЧ" data-en="HH">ЧЧ</option></select>
+                    <label><span data-ru="Часы" data-en="Hours" data-it="Ore">Часы</span>
+                      <select id="time-hours" required><option value="" data-ru="ЧЧ" data-en="HH" data-it="OO">ЧЧ</option></select>
                     </label>
-                    <label><span data-ru="Минуты" data-en="Minutes">Минуты</span>
-                      <select id="time-minutes" required><option value="" data-ru="ММ" data-en="MM">ММ</option></select>
+                    <label><span data-ru="Минуты" data-en="Minutes" data-it="Minuti">Минуты</span>
+                      <select id="time-minutes" required><option value="" data-ru="ММ" data-en="MM" data-it="MM">ММ</option></select>
                     </label>
                   </div>
                   <input type="hidden" name="time" />
                 </fieldset>
                 <label
-                  ><span data-ru="Часовой пояс" data-en="Time zone">Часовой пояс</span
+                  ><span data-ru="Часовой пояс" data-en="Time zone" data-it="Fuso orario">Часовой пояс</span
                   ><select name="timezone" id="timezone" required>
                     <option value="UTC">UTC</option></select
                   ><small
                     data-ru="Определён автоматически. Смещение указано на сегодняшний день и может меняться."
-                    data-en="Detected automatically. Offsets are current and may change with daylight saving time."
+                    data-en="Detected automatically. Offsets are current and may change with daylight saving time." data-it="Rilevato automaticamente. La differenza oraria è quella attuale e può cambiare con l’ora legale."
                     >Определён автоматически. Смещение указано на сегодняшний день и может
                     меняться.</small
                   ></label
                 >
                 <label
-                  ><span data-ru="Ник / позывной" data-en="Username / callsign">Ник / позывной</span
+                  ><span data-ru="Ник / позывной" data-en="Username / callsign" data-it="Nome utente / nominativo">Ник / позывной</span
                   ><input name="callsign" maxlength="80" autocomplete="nickname" required
                 /></label>
                 <label class="form-wide"
-                  ><span data-ru="Маршрут или аэропорт" data-en="Route or airport"
+                  ><span data-ru="Маршрут или аэропорт" data-en="Route or airport" data-it="Rotta o aeroporto"
                     >Маршрут или аэропорт</span
                   ><input name="route" maxlength="120" placeholder="UUEE → LIRN" required
                 /></label>
                 <label class="form-wide"
                   ><span
                     data-ru="Контакт для ответа (Telegram или email)"
-                    data-en="Contact for reply (Telegram or email)"
+                    data-en="Contact for reply (Telegram or email)" data-it="Contatto per la risposta (Telegram o email)"
                     >Контакт для ответа (Telegram или email)</span
                   ><input name="contact" maxlength="120" placeholder="@username / email" required
                 /></label>
                 <details class="form-wide more-details">
                   <summary
                     data-ru="Добавить детали (необязательно)"
-                    data-en="Add details (optional)"
+                    data-en="Add details (optional)" data-it="Aggiungi dettagli (facoltativo)"
                   >
                     Добавить детали (необязательно)
                   </summary>
                   <label
-                    ><span data-ru="Детали" data-en="Details">Детали</span
+                    ><span data-ru="Детали" data-en="Details" data-it="Dettagli">Детали</span
                     ><textarea name="notes" maxlength="1000" rows="3"></textarea>
                   </label>
                 </details>
                 <label class="form-wide draft-choice"
                   ><input type="checkbox" id="save-draft" /><span
                     data-ru="Сохранять черновик на этом устройстве, включая контакт"
-                    data-en="Save a draft on this device, including contact details"
+                    data-en="Save a draft on this device, including contact details" data-it="Salva una bozza su questo dispositivo, inclusi i contatti"
                     >Сохранять черновик на этом устройстве, включая контакт</span
                   ></label
                 >
@@ -206,7 +207,7 @@
                   class="form-wide form-auth-hint"
                   id="form-auth-hint"
                   data-ru="После нажатия откроется вход через Google, затем заявка будет отправлена."
-                  data-en="After you click, sign in with Google and your request will be sent."
+                  data-en="After you click, sign in with Google and your request will be sent." data-it="Dopo il clic, accedi con Google per inviare la richiesta."
                 >
                   После нажатия откроется вход через Google, затем заявка будет отправлена.
                 </p>
@@ -220,14 +221,14 @@
               <p
                 class="card-intro"
                 data-ru="Статус обновляется на этой странице. Время считается согласованным после подтверждения."
-                data-en="Status updates on this page. The time is agreed only after confirmation."
+                data-en="Status updates on this page. The time is agreed only after confirmation." data-it="Gli aggiornamenti dello stato sono su questa pagina. L’orario viene concordato dopo la conferma."
               >
                 Статус обновляется на этой странице. Время считается согласованным после
                 подтверждения.
               </p>
               <div id="visitor-tools" class="admin-alert" hidden>
-                <div class="admin-alert-heading"><span aria-hidden="true">●</span><strong data-ru="Изменения статуса" data-en="Status updates">Изменения статуса</strong></div>
-                <p class="admin-alert-help" data-ru="Оставь страницу открытой для уведомлений браузера. Изменения за время отсутствия появятся при следующем входе на этом устройстве." data-en="Keep this page open for browser notifications. Changes while away appear when you return on this device.">Оставь страницу открытой для уведомлений браузера. Изменения за время отсутствия появятся при следующем входе на этом устройстве.</p>
+                <div class="admin-alert-heading"><span aria-hidden="true">●</span><strong data-ru="Изменения статуса" data-en="Status updates" data-it="Aggiornamenti di stato">Изменения статуса</strong></div>
+                <p class="admin-alert-help" data-ru="Оставь страницу открытой для уведомлений браузера. Изменения за время отсутствия появятся при следующем входе на этом устройстве." data-en="Keep this page open for browser notifications. Changes while away appear when you return on this device." data-it="Lascia aperta la pagina per ricevere le notifiche del browser. Le modifiche avvenute in tua assenza appariranno al prossimo accesso da questo dispositivo.">Оставь страницу открытой для уведомлений браузера. Изменения за время отсутствия появятся при следующем входе на этом устройстве.</p>
                 <p id="visitor-alert-status" class="admin-alert-details" role="status" aria-live="polite"></p>
                 <div class="admin-alert-actions"><button id="enable-visitor-alerts" type="button"></button></div>
               </div>
@@ -235,65 +236,65 @@
                 <div class="admin-alert" aria-labelledby="admin-alert-title">
                   <div class="admin-alert-heading">
                     <span aria-hidden="true">●</span>
-                    <strong id="admin-alert-title" data-ru="Оповещения о заявках" data-en="Request alerts">Оповещения о заявках</strong>
+                    <strong id="admin-alert-title" data-ru="Оповещения о заявках" data-en="Request alerts" data-it="Avvisi sulle richieste">Оповещения о заявках</strong>
                   </div>
                   <p id="admin-alert-count" role="status" aria-live="polite"></p>
                   <p id="admin-cancellation-alert" class="admin-alert-preview" role="status" aria-live="polite" hidden></p>
                   <div id="admin-alert-preview" class="admin-alert-preview" hidden>
-                    <strong data-ru="Последняя новая заявка" data-en="Latest new request">Последняя новая заявка</strong>
+                    <strong data-ru="Последняя новая заявка" data-en="Latest new request" data-it="Ultima nuova richiesta">Последняя новая заявка</strong>
                     <p id="admin-alert-details"></p>
                   </div>
-                  <p class="admin-alert-help" data-ru="Оповещения работают, пока эта страница открыта и вы вошли как администратор." data-en="Alerts work while this page is open and you are signed in as the administrator.">Оповещения работают, пока эта страница открыта и вы вошли как администратор.</p>
+                  <p class="admin-alert-help" data-ru="Оповещения работают, пока эта страница открыта и вы вошли как администратор." data-en="Alerts work while this page is open and you are signed in as the administrator." data-it="Gli avvisi funzionano quando la pagina è aperta e hai effettuato l’accesso come amministratore.">Оповещения работают, пока эта страница открыта и вы вошли как администратор.</p>
                   <div class="admin-alert-actions">
-                    <button id="show-new-requests" type="button" data-ru="Показать новые" data-en="Show new requests">Показать новые</button>
+                    <button id="show-new-requests" type="button" data-ru="Показать новые" data-en="Show new requests" data-it="Mostra le nuove richieste">Показать новые</button>
                     <button id="enable-browser-alerts" type="button"></button>
                   </div>
                   <p id="browser-alert-status" class="admin-alert-help" aria-live="polite"></p>
                 </div>
                 <div class="status-counts" aria-label="Статистика заявок / Request counts">
                   <div>
-                    <span data-ru="Новые" data-en="New">Новые</span
+                    <span data-ru="Новые" data-en="New" data-it="Nuove">Новые</span
                     ><strong id="count-new">0</strong>
                   </div>
                   <div>
-                    <span data-ru="На рассмотрении" data-en="In review">На рассмотрении</span
+                    <span data-ru="На рассмотрении" data-en="In review" data-it="In esame">На рассмотрении</span
                     ><strong id="count-review">0</strong>
                   </div>
                   <div>
-                    <span data-ru="Подтверждённые" data-en="Confirmed">Подтверждённые</span
+                    <span data-ru="Подтверждённые" data-en="Confirmed" data-it="Confermate">Подтверждённые</span
                     ><strong id="count-confirmed">0</strong>
                   </div>
                 </div>
                 <label class="search-label"
-                  ><span data-ru="Поиск по заявкам" data-en="Search requests">Поиск по заявкам</span
+                  ><span data-ru="Поиск по заявкам" data-en="Search requests" data-it="Cerca richieste">Поиск по заявкам</span
                   ><input
                     id="request-search"
                     type="search"
                     autocomplete="off"
                     data-placeholder-ru="Позывной, аэропорт или контакт"
-                    data-placeholder-en="Callsign, airport or contact"
+                    data-placeholder-en="Callsign, airport or contact" data-placeholder-it="Nominativo, aeroporto o contatto"
                     placeholder="Позывной, аэропорт или контакт"
                 /></label>
               </div>
               <label id="filter-label" class="filter-label" hidden
-                ><span data-ru="Фильтр по статусу" data-en="Filter by status"
+                ><span data-ru="Фильтр по статусу" data-en="Filter by status" data-it="Filtra per stato"
                   >Фильтр по статусу</span
                 ><select id="status-filter">
-                  <option value="all" data-ru="Все заявки" data-en="All requests">
+                  <option value="all" data-ru="Все заявки" data-en="All requests" data-it="Tutte le richieste">
                     Все заявки
                   </option>
-                  <option value="new" data-ru="Новые" data-en="New">Новые</option>
-                  <option value="review" data-ru="На рассмотрении" data-en="In review">
+                  <option value="new" data-ru="Новые" data-en="New" data-it="Nuove">Новые</option>
+                  <option value="review" data-ru="На рассмотрении" data-en="In review" data-it="In esame">
                     На рассмотрении
                   </option>
-                  <option value="confirmed" data-ru="Подтверждённые" data-en="Confirmed">
+                  <option value="confirmed" data-ru="Подтверждённые" data-en="Confirmed" data-it="Confermate">
                     Подтверждённые
                   </option>
-                  <option value="declined" data-ru="Отклонённые" data-en="Declined">
+                  <option value="declined" data-ru="Отклонённые" data-en="Declined" data-it="Rifiutate">
                     Отклонённые
                   </option>
-                  <option value="cancelled" data-ru="Отменённые" data-en="Cancelled">Отменённые</option>
-                  <option value="completed" data-ru="Завершённые" data-en="Completed">
+                  <option value="cancelled" data-ru="Отменённые" data-en="Cancelled" data-it="Annullate">Отменённые</option>
+                  <option value="completed" data-ru="Завершённые" data-en="Completed" data-it="Completate">
                     Завершённые
                   </option>
                 </select></label
@@ -306,11 +307,11 @@
       </main>
       <footer class="wrap page-footer">
         <span>DENIS KOMAROV / VIRTUAL AVIATION</span
-        ><a href="./#booking" data-ru="ВЕРНУТЬСЯ НА САЙТ ↗" data-en="BACK TO WEBSITE ↗"
+        ><a href="./#booking" data-ru="ВЕРНУТЬСЯ НА САЙТ ↗" data-en="BACK TO WEBSITE ↗" data-it="TORNA AL SITO ↗"
           >ВЕРНУТЬСЯ НА САЙТ ↗</a
         >
       </footer>
     </div>
-    <script type="module" src="requests.js?v=17"></script>
+    <script type="module" src="requests.js?v=18"></script>
   </body>
 </html>

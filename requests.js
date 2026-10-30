@@ -7,10 +7,8 @@ const config = {
 const $ = (s) => document.querySelector(s);
 function readLanguage() {
   try {
-    return (localStorage.getItem('dk-aviation-lang') ||
-      localStorage.getItem('requests-language')) === 'en'
-      ? 'en'
-      : 'ru';
+    const saved = localStorage.getItem('dk-aviation-lang') || localStorage.getItem('requests-language');
+    return ['ru', 'en', 'it'].includes(saved) ? saved : 'ru';
   } catch (_) {
     return 'ru';
   }
@@ -43,7 +41,49 @@ let db,
   updateDoc,
   doc,
   runTransaction;
-const text = (ru, en) => (language === 'en' ? en : ru);
+const italian = {
+  'Flight requests — Denis Aviation': 'Richieste di volo — Denis Aviation',
+  'ATC control': 'Controllo ATC', 'Fly together': 'Volo insieme',
+  'Account email': 'Email dell’account', 'All requests': 'Tutte le richieste',
+  'My requests': 'Le mie richieste', 'Status': 'Stato', 'Date and time': 'Data e ora',
+  'Route or airport': 'Rotta o aeroporto', 'Contact': 'Contatto', 'Details': 'Dettagli',
+  'Network': 'Rete', 'Type': 'Tipo', 'Username / callsign': 'Nome utente / nominativo',
+  'unavailable': 'non disponibile', 'New request on the site': 'Nuova richiesta sul sito',
+  'Request cancelled': 'Richiesta annullata', 'Request cancelled.': 'Richiesta annullata.',
+  'Request status changed': 'Stato della richiesta modificato',
+  'Cancel request': 'Annulla richiesta', 'Cancel this request?': 'Annullare questa richiesta?',
+  'Request is no longer cancellable': 'La richiesta non può più essere annullata',
+  'Checking requests...': 'Verifica delle richieste...', 'Connecting...': 'Connessione...',
+  'Choose a valid date.': 'Scegli una data valida.', 'Choose hours and minutes.': 'Scegli ore e minuti.',
+  'Fill in the required fields.': 'Compila i campi obbligatori.',
+  'No requests yet.': 'Nessuna richiesta.',
+  'No requests match the selected filters.': 'Nessuna richiesta corrisponde ai filtri selezionati.',
+  'Status saved.': 'Stato salvato.', 'Send request': 'Invia richiesta',
+  'Sending request...': 'Invio della richiesta...', 'Service unavailable': 'Servizio non disponibile',
+  'Sign in with Google and send': 'Accedi con Google e invia',
+  'Signing in with Google...': 'Accesso con Google...',
+  'Request saved. Its status will appear in the list.': 'Richiesta salvata. Lo stato apparirà nell’elenco.',
+  'Request was not sent. Check your connection and try again.': 'Richiesta non inviata. Controlla la connessione e riprova.',
+  'Could not sign in. Check your connection and allow pop-ups, then try again.': 'Accesso non riuscito. Controlla la connessione, consenti i popup e riprova.',
+  'Could not sign out. Please try again.': 'Impossibile uscire. Riprova.',
+  'Could not load the request service. Check your internet connection.': 'Impossibile caricare il servizio. Controlla la connessione.',
+  'Could not load requests.': 'Impossibile caricare le richieste.',
+  'Could not load requests. Check your connection and Firestore rules.': 'Impossibile caricare le richieste. Controlla la connessione e le regole Firestore.',
+  'Could not save a draft on this device.': 'Impossibile salvare una bozza su questo dispositivo.',
+  'Could not change status. Check your connection and database rules.': 'Impossibile cambiare lo stato. Controlla la connessione e le regole del database.',
+  'Could not cancel the request. Its status may have changed. Refresh the page and try again.': 'Impossibile annullare la richiesta. Lo stato potrebbe essere cambiato. Aggiorna la pagina e riprova.',
+  'The selected time has already passed in the specified time zone. Check the date and time.': 'L’orario scelto è già passato nel fuso orario indicato. Controlla data e ora.',
+  'Enter an IANA time zone, such as Europe/Rome or UTC.': 'Inserisci un fuso orario IANA, per esempio Europe/Rome o UTC.',
+  'The account changed. Check your sign-in and send the request again.': 'L’account è cambiato. Controlla l’accesso e invia di nuovo la richiesta.',
+  'Sign-in was cancelled. Your details are still in the form; please try again.': 'Accesso annullato. I dati sono ancora nel modulo; riprova.',
+  'Allow notifications for this site in your browser settings.': 'Consenti le notifiche per questo sito nelle impostazioni del browser.',
+  'Browser notifications blocked': 'Notifiche del browser bloccate',
+  'Browser notifications enabled': 'Notifiche del browser attivate',
+  'Browser notifications unavailable': 'Notifiche del browser non disponibili',
+  'Could not enable browser notifications.': 'Impossibile attivare le notifiche del browser.',
+  'Enable browser notifications': 'Attiva le notifiche del browser',
+};
+const text = (ru, en) => language === 'it' ? (italian[en] || en) : language === 'en' ? en : ru;
 const notice = (ru, en, location = 'form', kind = '') => {
   if (location === 'list') {
     lastListNotice = [ru, en];
@@ -61,12 +101,12 @@ const isAdmin = (u) =>
   u.emailVerified &&
   u.providerData.some((p) => p.providerId === 'google.com');
 const statuses = {
-  new: ['Новая', 'New'],
-  review: ['Рассматривается', 'In review'],
-  confirmed: ['Подтверждена', 'Confirmed'],
-  declined: ['Отклонена', 'Declined'],
-  completed: ['Завершена', 'Completed'],
-  cancelled: ['Отменена', 'Cancelled'],
+  new: ['Новая', 'New', 'Nuova'],
+  review: ['Рассматривается', 'In review', 'In esame'],
+  confirmed: ['Подтверждена', 'Confirmed', 'Confermata'],
+  declined: ['Отклонена', 'Declined', 'Rifiutata'],
+  completed: ['Завершена', 'Completed', 'Completata'],
+  cancelled: ['Отменена', 'Cancelled', 'Annullata'],
 };
 function displayDate(value) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));
@@ -82,7 +122,7 @@ function parseDate(value) {
 }
 function formatVisitorUpdate(data) {
   const value = (field) => String(field || '—');
-  const status = (statuses[data.status] || [data.status, data.status])[language === 'en' ? 1 : 0];
+  const status = (statuses[data.status] || [data.status, data.status, data.status])[language === 'it' ? 2 : language === 'en' ? 1 : 0];
   const type = data.type === 'atc'
     ? text('Диспетчерский контроль', 'ATC control')
     : text('Совместный полёт', 'Fly together');
@@ -280,16 +320,16 @@ function announceNewRequests(snapshot) {
 function translate() {
   document.documentElement.lang = language;
   document.querySelectorAll('[data-ru]').forEach((el) => {
-    el.textContent = el.dataset[language];
+    el.textContent = el.dataset[language] || el.dataset.en || el.dataset.ru;
   });
   document.querySelectorAll('[data-placeholder-ru]').forEach((el) => {
-    el.placeholder = el.dataset[language === 'en' ? 'placeholderEn' : 'placeholderRu'];
+    el.placeholder = el.dataset[language === 'it' ? 'placeholderIt' : language === 'en' ? 'placeholderEn' : 'placeholderRu'];
   });
   document.querySelectorAll('[data-lang]').forEach((button) => {
     button.setAttribute('aria-pressed', String(button.dataset.lang === language));
   });
   document.title =
-    language === 'en' ? 'Flight requests — Denis Aviation' : 'Заявки на полёт — Denis Aviation';
+    language === 'it' ? 'Richieste di volo — Denis Aviation' : language === 'en' ? 'Flight requests — Denis Aviation' : 'Заявки на полёт — Denis Aviation';
   if (lastNotice) $('#notice').textContent = text(...lastNotice);
   if (lastListNotice) $('#list-notice').textContent = text(...lastListNotice);
   $('#list-title').textContent = isAdmin(user)
@@ -327,7 +367,7 @@ function renderControls() {
 document.querySelectorAll('[data-lang]').forEach((button) => {
   button.addEventListener('click', () => {
     if (button.dataset.lang === language) return;
-    language = button.dataset.lang === 'en' ? 'en' : 'ru';
+    language = ['ru', 'en', 'it'].includes(button.dataset.lang) ? button.dataset.lang : 'ru';
     try {
       localStorage.setItem('dk-aviation-lang', language);
     } catch (_) {}
@@ -388,7 +428,7 @@ try {
 } catch (_) {}
 function timezoneLabel(zone) {
   const name =
-    zoneNames[zone]?.[language === 'en' ? 1 : 0] || zone.split('/').pop().replaceAll('_', ' ');
+    zoneNames[zone]?.[language === 'ru' ? 0 : 1] || zone.split('/').pop().replaceAll('_', ' ');
   let offset = '';
   try {
     const parts = new Intl.DateTimeFormat('en', {
@@ -628,7 +668,7 @@ function renderList(snapshot) {
         if (value === 'cancelled' && d.status !== 'cancelled') continue;
         const option = document.createElement('option');
         option.value = value;
-        option.textContent = labels[language === 'en' ? 1 : 0];
+        option.textContent = labels[language === 'it' ? 2 : language === 'en' ? 1 : 0];
         select.append(option);
       }
       select.value = d.status;
@@ -657,7 +697,7 @@ function renderList(snapshot) {
     } else {
       const status = document.createElement('p');
       status.className = 'request-status';
-      status.textContent = `${text('Статус', 'Status')}: ${(statuses[d.status] || [d.status, d.status])[language === 'en' ? 1 : 0]}`;
+      status.textContent = `${text('Статус', 'Status')}: ${(statuses[d.status] || [d.status, d.status, d.status])[language === 'it' ? 2 : language === 'en' ? 1 : 0]}`;
       card.append(status);
     }
     if (user && d.owner === user.uid && ['new', 'review', 'confirmed'].includes(d.status)) {
