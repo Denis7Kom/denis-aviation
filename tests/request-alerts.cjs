@@ -19,6 +19,9 @@ class Element {
   addEventListener(name, fn) {
     this.listeners[name] = fn;
   }
+  setAttribute(name, value) {
+    this[name] = value;
+  }
   scrollIntoView() {
     this.scrolled = true;
   }
@@ -274,20 +277,28 @@ function snapshot(docs, fromCache = false) {
   assert.match(elements.get('#visitor-alert-status').textContent, /In review/);
   assert.match(elements.get('#visitor-alert-status').textContent, /ATC control/);
   vm.runInContext("language = 'ru'; renderVisitorAlerts();", context);
+  snapshot([request('visitor', 'confirmed')]);
+  assert.match(elements.get('#visitor-alert-status').textContent, /Подтверждена/);
+  assert.doesNotMatch(
+    elements.get('#visitor-alert-status').textContent,
+    /Рассматривается/,
+    'Only the latest status is shown',
+  );
+  assert.equal(alerts.length, 6, 'Each status change still sends an individual notification');
   alerts[4].onclick();
   assert(
     elements.get('#list').children.find((card) => card.dataset.requestId === 'visitor').focused,
   );
   vm.runInContext('visitorKnownStatuses = null; visitorUpdates = []; subscribe();', context);
-  snapshot([request('visitor', 'confirmed')]);
-  assert.equal(alerts.length, 6, 'A status changed while away is detected on return');
-  assert.match(alerts[5].options.body, /Подтверждена/);
+  snapshot([request('visitor', 'completed')]);
+  assert.equal(alerts.length, 7, 'A status changed while away is detected on return');
+  assert.match(alerts[6].options.body, /Завершена/);
   vm.runInContext(
     "user = {uid:'other',email:'other@example.com',emailVerified:true,providerData:[{providerId:'google.com'}]}; visitorKnownStatuses = null; visitorUpdates = []; subscribe();",
     context,
   );
   snapshot([request('visitor', 'declined')]);
-  assert.equal(alerts.length, 6, 'A different account does not inherit the previous baseline');
+  assert.equal(alerts.length, 7, 'A different account does not inherit the previous baseline');
   console.log(
     'PASS: administrator alerts, cached snapshots, status updates, permissions and visitor isolation',
   );

@@ -50,6 +50,7 @@ function boot(values, blocked = false) {
     ['#enable-visitor-alerts', element()],
     ['#visitor-alert-status', element()],
     ['#date-picker', element()],
+    ['#open-date-picker', element()],
   ]);
   const document = {
     title: '',
