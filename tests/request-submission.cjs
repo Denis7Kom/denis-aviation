@@ -251,10 +251,11 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   assert.equal(app.getSignInCalls(), 0, 'Invalid times cannot be submitted');
   assert.match(app.get('#notice').textContent, /часы и минуты/);
   app.form.fields.time = '18:30';
-  app.form.fields.contact = '  ';
+  app.form.fields.callsign = '  ';
   await app.submit();
   assert.equal(app.getSignInCalls(), 0, 'Whitespace-only required fields are rejected');
-  app.form.fields.contact = ' @test ';
+  app.form.fields.callsign = ' TEST01 ';
+  app.form.fields.contact = '  ';
 
   app.form.fields.date = '2099-02-31';
   await app.submit();
@@ -303,6 +304,7 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
     'Store the sending account email',
   );
   assert.equal(app.getWrites()[0].callsign, 'TEST01');
+  assert.equal(app.getWrites()[0].contact, '', 'An empty contact is accepted and trimmed');
   assert.equal(app.getWrites()[0].notes, 'optional');
   assert.equal(app.getWrites()[0].status, 'new');
   await app.submit();

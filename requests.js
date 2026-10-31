@@ -660,7 +660,7 @@ function renderList(snapshot) {
     const title = document.createElement('strong');
     title.textContent = `${d.type === 'flight' ? text('Совместный полёт', 'Fly together') : 'ATC'} · ${d.network}`;
     const details = document.createElement('p');
-    details.textContent = `${displayDate(d.date)} ${d.time} (${d.timezone})\n${d.callsign} · ${d.route}\n${text('Контакт', 'Contact')}: ${d.contact}${d.notes ? '\n' + d.notes : ''}`;
+    details.textContent = `${displayDate(d.date)} ${d.time} (${d.timezone})\n${d.callsign} · ${d.route}\n${text('Контакт', 'Contact')}: ${d.contact || '—'}${d.notes ? '\n' + d.notes : ''}`;
     if (isAdmin(user)) {
       details.textContent += `\n${text('Почта аккаунта', 'Account email')}: ${d.ownerEmail || text('нет данных', 'unavailable')}`;
     }
@@ -816,7 +816,7 @@ $('#form').addEventListener('submit', async (event) => {
   data.date = parsedDate;
   for (const key of ['timezone', 'callsign', 'route', 'contact', 'notes'])
     data[key] = data[key].trim();
-  if (!data.timezone || !data.callsign || !data.route || !data.contact) {
+  if (!data.timezone || !data.callsign || !data.route) {
     notice('Заполни обязательные поля.', 'Fill in the required fields.');
     return;
   }

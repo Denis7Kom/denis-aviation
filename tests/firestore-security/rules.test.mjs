@@ -89,6 +89,27 @@ try {
     setDoc(path(alice, 'valid'), { ...request('alice'), createdAt: serverTimestamp() }),
   );
   await assertSucceeds(
+    setDoc(path(alice, 'without-contact'), {
+      ...request('alice'),
+      contact: '',
+      createdAt: serverTimestamp(),
+    }),
+  );
+  await assertFails(
+    setDoc(path(alice, 'invalid-contact-type'), {
+      ...request('alice'),
+      contact: 123,
+      createdAt: serverTimestamp(),
+    }),
+  );
+  await assertFails(
+    setDoc(path(alice, 'contact-too-long'), {
+      ...request('alice'),
+      contact: 'a'.repeat(121),
+      createdAt: serverTimestamp(),
+    }),
+  );
+  await assertSucceeds(
     setDoc(path(alice, 'valid-boundary'), {
       ...request('alice'),
       date: '2030-12-31',
