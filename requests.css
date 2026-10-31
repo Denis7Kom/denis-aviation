@@ -910,12 +910,13 @@ textarea:focus-visible {
 .admin-comment-panel .admin-comment-editor { display: grid; gap: 8px; }
 .admin-comment-panel button { margin-top: 12px; }
 
+.entry .request-status-control { margin-bottom: 16px; }
 .entry button.comment-toggle {
   display: inline-flex;
   align-items: center;
   width: auto;
   min-height: 34px;
-  margin-top: 12px;
+  margin-top: 0;
   padding: 7px 11px;
   border: 1px solid #41627d;
   border-radius: 5px;
