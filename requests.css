@@ -905,3 +905,7 @@ textarea:focus-visible {
 .admin-comment { white-space: pre-wrap; overflow-wrap: anywhere; }
 .admin-comment-editor textarea { width: 100%; min-height: 76px; resize: vertical; }
 .project-version { display: block; width: 100%; text-align: right; color: #91a8be; font: 10px var(--mono); }
+
+.admin-comment-panel { margin-top: 12px; }
+.admin-comment-panel .admin-comment-editor { display: grid; gap: 8px; }
+.admin-comment-panel button { margin-top: 12px; }

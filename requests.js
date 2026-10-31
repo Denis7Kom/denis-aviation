@@ -42,6 +42,8 @@ let db,
   doc,
   runTransaction;
 const italian = {
+  'Add comment': 'Aggiungi commento',
+  'Edit comment': 'Modifica commento',
   'Administrator comment': 'Commento dell’amministratore',
   'Save comment': 'Salva commento',
   'Comment saved.': 'Commento salvato.',
@@ -663,7 +665,7 @@ function renderList(snapshot) {
       details.textContent += `\n${text('Почта аккаунта', 'Account email')}: ${d.ownerEmail || text('нет данных', 'unavailable')}`;
     }
     card.append(title, details);
-    if (!isAdmin(user) && typeof d.adminComment === 'string' && d.adminComment.trim()) {
+    if (typeof d.adminComment === 'string' && d.adminComment.trim()) {
       const comment = document.createElement('p');
       comment.className = 'admin-comment';
       comment.textContent = `${text('Комментарий администратора', 'Administrator comment')}: ${d.adminComment}`;
@@ -705,6 +707,19 @@ function renderList(snapshot) {
       });
       label.append(span, select);
       card.append(label);
+      const commentToggle = document.createElement('button');
+      const commentPanel = document.createElement('div');
+      commentToggle.type = 'button';
+      commentToggle.className = 'comment-toggle';
+      commentToggle.textContent = d.adminComment ? text('Изменить комментарий', 'Edit comment') : text('Добавить комментарий', 'Add comment');
+      commentToggle.setAttribute('aria-expanded', 'false');
+      commentPanel.className = 'admin-comment-panel';
+      commentPanel.hidden = true;
+      commentToggle.addEventListener('click', () => {
+        commentPanel.hidden = !commentPanel.hidden;
+        commentToggle.setAttribute('aria-expanded', String(!commentPanel.hidden));
+        if (!commentPanel.hidden) commentInput.focus();
+      });
       const commentLabel = document.createElement('label');
       const commentTitle = document.createElement('span');
       const commentInput = document.createElement('textarea');
@@ -728,7 +743,8 @@ function renderList(snapshot) {
         }
       });
       commentLabel.append(commentTitle, commentInput);
-      card.append(commentLabel, saveComment);
+      commentPanel.append(commentLabel, saveComment);
+      card.append(commentToggle, commentPanel);
 
     } else {
       const status = document.createElement('p');
