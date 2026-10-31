@@ -676,6 +676,7 @@ function renderList(snapshot) {
       const label = document.createElement('label'),
         span = document.createElement('span'),
         select = document.createElement('select');
+      label.className = 'request-status-control';
       span.textContent = text('Статус', 'Status');
       for (const [value, labels] of Object.entries(statuses)) {
         if (value === 'cancelled' && d.status !== 'cancelled') continue;
