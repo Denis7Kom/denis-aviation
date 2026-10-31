@@ -907,7 +907,19 @@ textarea:focus-visible {
   white-space: pre-line;
 }
 
-.admin-comment { white-space: pre-wrap; overflow-wrap: anywhere; }
+.entry p.admin-comment {
+  margin: 16px 0;
+  padding: 12px 14px;
+  border: 1px solid #31536f;
+  border-left: 3px solid #78bff0;
+  border-radius: 4px;
+  background: #112a3d;
+  color: #e2f1fb;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 .admin-comment-editor textarea { width: 100%; min-height: 76px; resize: vertical; }
 .project-version { display: block; width: 100%; text-align: right; color: #91a8be; font: 10px var(--mono); }
 
