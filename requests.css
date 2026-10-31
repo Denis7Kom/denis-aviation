@@ -886,10 +886,15 @@ textarea:focus-visible {
 }
 .entry button.cancel-request {
   display: block;
+  width: auto;
+  min-height: 34px;
   margin-top: 12px;
+  padding: 7px 11px;
   border-color: #a66e77;
+  border-radius: 5px;
   background: transparent;
   color: #ffb7b7;
+  font-size: 10px;
 }
 .entry button.cancel-request:hover { background: #3b1c27; }
 
