@@ -909,3 +909,22 @@ textarea:focus-visible {
 .admin-comment-panel { margin-top: 12px; }
 .admin-comment-panel .admin-comment-editor { display: grid; gap: 8px; }
 .admin-comment-panel button { margin-top: 12px; }
+
+.entry button.comment-toggle {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  min-height: 34px;
+  margin-top: 12px;
+  padding: 7px 11px;
+  border: 1px solid #41627d;
+  border-radius: 5px;
+  background: transparent;
+  color: #bdd8ed;
+  font-size: 10px;
+}
+.entry button.comment-toggle:hover {
+  background: #173047;
+  border-color: #7caed0;
+  color: #fff;
+}
