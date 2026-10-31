@@ -177,6 +177,18 @@ try {
   await assertFails(getDoc(path(notVerified, 'alice-new')));
   await assertFails(getDoc(path(wrongProvider, 'alice-new')));
 
+  await assertFails(updateDoc(path(alice, 'alice-new'), { adminComment: 'forged' }));
+  await assertFails(updateDoc(path(bob, 'alice-new'), { adminComment: 'forged' }));
+  await assertFails(updateDoc(path(notVerified, 'alice-new'), { adminComment: 'forged' }));
+  await assertFails(updateDoc(path(admin, 'alice-new'), { adminComment: 'x'.repeat(501) }));
+  await assertFails(updateDoc(path(admin, 'alice-new'), { adminComment: 42 }));
+  await assertFails(
+    updateDoc(path(admin, 'alice-new'), { adminComment: 'hello', status: 'confirmed' }),
+  );
+  await assertSucceeds(updateDoc(path(admin, 'alice-new'), { adminComment: 'hello' }));
+  assert.equal((await getDoc(path(alice, 'alice-new'))).data().adminComment, 'hello');
+  await assertSucceeds(updateDoc(path(admin, 'alice-cancelled'), { adminComment: 'closed' }));
+  await assertSucceeds(updateDoc(path(admin, 'alice-new'), { adminComment: '' }));
   await assertFails(updateDoc(path(bob, 'alice-new'), { status: 'cancelled' }));
   await assertFails(updateDoc(path(guest, 'alice-new'), { status: 'cancelled' }));
   await assertFails(updateDoc(path(alice, 'alice-new'), { route: 'altered' }));
