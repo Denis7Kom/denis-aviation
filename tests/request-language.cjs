@@ -107,6 +107,17 @@ assert.equal(test.storage.get('dk-aviation-lang'), 'ru');
 test.it.listeners.click();
 assert.equal(test.document.documentElement.lang, 'it');
 assert.equal(test.translated.textContent, 'Richiesta');
+assert(
+  timezone.children.some(
+    (option) => option.value === 'Europe/Rome' && option.textContent.startsWith('Roma ·'),
+  ),
+);
+assert(
+  timezone.children.some(
+    (option) => option.value === 'Europe/Moscow' && option.textContent.startsWith('Mosca ·'),
+  ),
+);
+assert.equal(timezone.value, selectedZone, 'Switching to Italian preserves the selected zone');
 assert.equal(test.storage.get('dk-aviation-lang'), 'it');
 assert.equal(boot({ 'dk-aviation-lang': 'it' }).document.documentElement.lang, 'it');
 const old = boot({ 'requests-language': 'en' });

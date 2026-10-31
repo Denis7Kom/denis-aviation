@@ -53,7 +53,7 @@ const italian = {
   'Account email': 'Email dell’account', 'All requests': 'Tutte le richieste',
   'My requests': 'Le mie richieste', 'Status': 'Stato', 'Date and time': 'Data e ora',
   'Route or airport': 'Rotta o aeroporto', 'Contact': 'Contatto', 'Details': 'Dettagli',
-  'Network': 'Rete', 'Type': 'Tipo', 'Username / callsign': 'Nome utente / nominativo',
+  'Network': 'Rete', 'Type': 'Tipo', 'Callsign': 'Nominativo', 'Username / callsign': 'Nome utente / nominativo',
   'unavailable': 'non disponibile', 'New request on the site': 'Nuova richiesta sul sito',
   'Request cancelled': 'Richiesta annullata', 'Request cancelled.': 'Richiesta annullata.',
   'Request status changed': 'Stato della richiesta modificato',
@@ -406,24 +406,24 @@ const commonZones = [
 ];
 const zoneNames = {
   UTC: ['UTC', 'UTC'],
-  'Europe/Moscow': ['Москва', 'Moscow'],
-  'Europe/Rome': ['Рим', 'Rome'],
+  'Europe/Moscow': ['Москва', 'Moscow', 'Mosca'],
+  'Europe/Rome': ['Рим', 'Rome', 'Roma'],
   'Europe/Madrid': ['Мадрид', 'Madrid'],
-  'Europe/London': ['Лондон', 'London'],
-  'Europe/Paris': ['Париж', 'Paris'],
+  'Europe/London': ['Лондон', 'London', 'Londra'],
+  'Europe/Paris': ['Париж', 'Paris', 'Parigi'],
   'Europe/Malta': ['Мальта', 'Malta'],
-  'Europe/Vienna': ['Вена', 'Vienna'],
+  'Europe/Vienna': ['Вена', 'Vienna', 'Vienna'],
   'America/New_York': ['Нью-Йорк', 'New York'],
   'America/Chicago': ['Чикаго', 'Chicago'],
   'America/Denver': ['Денвер', 'Denver'],
   'America/Los_Angeles': ['Лос-Анджелес', 'Los Angeles'],
   'America/Anchorage': ['Анкоридж', 'Anchorage'],
   'Pacific/Honolulu': ['Гонолулу', 'Honolulu'],
-  'America/Mexico_City': ['Мехико', 'Mexico City'],
+  'America/Mexico_City': ['Мехико', 'Mexico City', 'Città del Messico'],
   'America/Cancun': ['Канкун', 'Cancun'],
-  'Asia/Tokyo': ['Токио', 'Tokyo'],
+  'Asia/Tokyo': ['Токио', 'Tokyo', 'Tokyo'],
   'Asia/Hong_Kong': ['Гонконг', 'Hong Kong'],
-  'Asia/Singapore': ['Сингапур', 'Singapore'],
+  'Asia/Singapore': ['Сингапур', 'Singapore', 'Singapore'],
   'Australia/Sydney': ['Сидней', 'Sydney'],
   'Australia/Canberra': ['Канберра', 'Canberra'],
 };
@@ -433,8 +433,10 @@ try {
   availableZones = Intl.supportedValuesOf ? Intl.supportedValuesOf('timeZone') : [];
 } catch (_) {}
 function timezoneLabel(zone) {
+  const names = zoneNames[zone];
   const name =
-    zoneNames[zone]?.[language === 'ru' ? 0 : 1] || zone.split('/').pop().replaceAll('_', ' ');
+    (language === 'it' ? names?.[2] || names?.[1] : names?.[language === 'ru' ? 0 : 1]) ||
+    zone.split('/').pop().replaceAll('_', ' ');
   let offset = '';
   try {
     const parts = new Intl.DateTimeFormat('en', {
