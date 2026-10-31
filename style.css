@@ -5253,6 +5253,7 @@ body.motion-off .radar-switch:after {
 }
 nav a[href='requests.html#new-request'] {
   color: #b3dcfa;
+  isolation: isolate;
 }
 nav a[href='requests.html#new-request']::before {
   position: absolute;
@@ -5261,6 +5262,34 @@ nav a[href='requests.html#new-request']::before {
   border: 1px solid #8bcaff80;
   border-radius: 999px;
   pointer-events: none;
+}
+nav a[href='requests.html#new-request']::after {
+  inset: -5px -9px;
+  z-index: -1;
+  width: auto;
+  height: auto;
+  border-radius: 999px;
+  background: repeating-linear-gradient(
+    135deg,
+    #80c7f733 0,
+    #80c7f733 3px,
+    transparent 3px,
+    transparent 10px
+  );
+  opacity: 0;
+  transform: none;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+nav a[href='requests.html#new-request']:hover::after,
+nav a[href='requests.html#new-request']:focus-visible::after {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  nav a[href='requests.html#new-request']::after {
+    transition: none;
+  }
 }
 
 .contact .request-card .booking-link {
