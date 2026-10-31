@@ -59,7 +59,7 @@ const context = vm.createContext({
   },
   fakeUpdate: async (_doc, payload) => {
     if (updateFails) throw Error('offline');
-    updates.push(payload.status);
+    updates.push(payload);
   },
 });
 const source = fs.readFileSync('requests.js', 'utf8').split('async function start()')[0];
@@ -81,6 +81,7 @@ const fakeDoc = (status) => ({
     route: 'LIRN',
     contact: status === 'review' ? '@Controller' : 'test',
     ownerEmail: 'pilot@example.invalid',
+    adminComment: 'Flight approved',
     notes: '',
     status,
   }),
@@ -102,15 +103,19 @@ const render = () =>
     ['new', 'review', 'confirmed', 'declined', 'completed'],
   );
   assert(
-    cards.every(
-      (c) =>
-        c.children[2].className === 'request-status' &&
-        c.children[2].textContent.includes('Статус'),
+    cards.every((c) =>
+      c.children.some(
+        (child) => child.className === 'request-status' && child.textContent.includes('Статус'),
+      ),
     ),
   );
   assert(
     cards.every((c) => !c.children[1].textContent.includes('pilot@example.invalid')),
     'Visitor does not see account email in the card',
+  );
+  assert(
+    cards.every((c) => c.children.some((child) => child.textContent.includes('Flight approved'))),
+    'Owner sees administrator comment',
   );
   vm.runInContext(
     `user = {uid:'admin',email:'deniska7best@gmail.com',emailVerified:true,providerData:[{providerId:'google.com'}]}; subscribe();`,
@@ -160,10 +165,16 @@ const render = () =>
   elements.get('#status-filter').listeners.change();
   render();
   cards = elements.get('#list').children;
+  const editor = cards[0].children[3].children[1];
+  const saveComment = cards[0].children[4];
+  assert.equal(editor.value, 'Flight approved');
+  editor.value = 'Updated message';
+  await saveComment.listeners.click();
+  assert.equal(updates[0].adminComment, 'Updated message');
   const select = cards[0].children[2].children[1];
   select.value = 'confirmed';
   await select.listeners.change();
-  assert.equal(updates[0], 'confirmed');
+  assert.equal(updates[1].status, 'confirmed');
   assert.equal(cards[0].dataset.status, 'confirmed');
   updateFails = true;
   select.value = 'declined';

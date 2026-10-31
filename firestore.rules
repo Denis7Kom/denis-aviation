@@ -30,6 +30,10 @@ service cloud.firestore {
             && resource.data.status in ['new','review','confirmed']
             && request.resource.data.status == 'cancelled')
         );
+      allow update: if admin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['adminComment'])
+        && request.resource.data.adminComment is string
+        && request.resource.data.adminComment.size() <= 500;
       allow delete: if false;
     }
   }

@@ -901,3 +901,7 @@ textarea:focus-visible {
 #admin-cancellation-alert {
   white-space: pre-line;
 }
+
+.admin-comment { white-space: pre-wrap; overflow-wrap: anywhere; }
+.admin-comment-editor textarea { width: 100%; min-height: 76px; resize: vertical; }
+.project-version { display: block; width: 100%; text-align: right; color: #91a8be; font: 10px var(--mono); }

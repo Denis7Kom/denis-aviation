@@ -42,6 +42,10 @@ let db,
   doc,
   runTransaction;
 const italian = {
+  'Administrator comment': 'Commento dell’amministratore',
+  'Save comment': 'Salva commento',
+  'Comment saved.': 'Commento salvato.',
+  'Could not save comment. Check your connection and try again.': 'Impossibile salvare il commento. Controlla la connessione e riprova.',
   'Flight requests — Denis Aviation': 'Richieste di volo — Denis Aviation',
   'ATC control': 'Controllo ATC', 'Fly together': 'Volo insieme',
   'Account email': 'Email dell’account', 'All requests': 'Tutte le richieste',
@@ -659,6 +663,13 @@ function renderList(snapshot) {
       details.textContent += `\n${text('Почта аккаунта', 'Account email')}: ${d.ownerEmail || text('нет данных', 'unavailable')}`;
     }
     card.append(title, details);
+    if (!isAdmin(user) && typeof d.adminComment === 'string' && d.adminComment.trim()) {
+      const comment = document.createElement('p');
+      comment.className = 'admin-comment';
+      comment.textContent = `${text('Комментарий администратора', 'Administrator comment')}: ${d.adminComment}`;
+      card.append(comment);
+    }
+
     if (isAdmin(user)) {
       const label = document.createElement('label'),
         span = document.createElement('span'),
@@ -694,6 +705,31 @@ function renderList(snapshot) {
       });
       label.append(span, select);
       card.append(label);
+      const commentLabel = document.createElement('label');
+      const commentTitle = document.createElement('span');
+      const commentInput = document.createElement('textarea');
+      const saveComment = document.createElement('button');
+      commentLabel.className = 'admin-comment-editor';
+      commentTitle.textContent = text('Комментарий администратора', 'Administrator comment');
+      commentInput.value = typeof d.adminComment === 'string' ? d.adminComment : '';
+      commentInput.maxLength = 500;
+      commentInput.rows = 3;
+      saveComment.type = 'button';
+      saveComment.textContent = text('Сохранить комментарий', 'Save comment');
+      saveComment.addEventListener('click', async () => {
+        saveComment.disabled = true;
+        try {
+          await updateDoc(doc(db, 'flightRequests', item.id), { adminComment: commentInput.value.trim() });
+          notice('Комментарий сохранён.', 'Comment saved.', 'list', 'success');
+        } catch (_) {
+          notice('Не удалось сохранить комментарий. Проверь соединение и попробуй снова.', 'Could not save comment. Check your connection and try again.', 'list');
+        } finally {
+          saveComment.disabled = false;
+        }
+      });
+      commentLabel.append(commentTitle, commentInput);
+      card.append(commentLabel, saveComment);
+
     } else {
       const status = document.createElement('p');
       status.className = 'request-status';
