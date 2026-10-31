@@ -897,6 +897,12 @@ textarea:focus-visible {
   font-size: 10px;
 }
 .entry button.cancel-request:hover { background: #3b1c27; }
+.entry p.request-status:has(+ button.cancel-request) {
+  display: flex;
+  width: fit-content;
+  margin-bottom: 0;
+}
+.entry p.request-status + button.cancel-request { margin-top: 8px; }
 
 #visitor-alert-status {
   white-space: pre-line;
