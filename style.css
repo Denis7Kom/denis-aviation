@@ -5259,8 +5259,15 @@ nav a[href='requests.html#new-request']::before {
   position: absolute;
   content: '';
   inset: -6px -10px;
+  z-index: -1;
   border: 1px solid #8bcaff80;
   border-radius: 999px;
+  background: linear-gradient(110deg, transparent 42%, #b9e8ff40 50%, transparent 58%);
+  background-size: 250% 100%;
+  background-position: 130% 0;
+  transition:
+    background-position 0.7s ease,
+    border-color 0.3s ease;
   pointer-events: none;
 }
 nav a[href='requests.html#new-request']::after {
@@ -5277,19 +5284,37 @@ nav a[href='requests.html#new-request']::after {
     transparent 10px
   );
   opacity: 0;
+  clip-path: inset(0 100% 0 0 round 999px);
   transform: none;
-  transition: opacity 0.35s ease;
+  transition:
+    clip-path 0.45s ease,
+    opacity 0.25s ease;
   pointer-events: none;
 }
 nav a[href='requests.html#new-request']:hover::after,
-nav a[href='requests.html#new-request']:focus-visible::after {
+nav a[href='requests.html#new-request']:focus-visible::after,
+nav a[href='requests.html#new-request']:active::after {
   opacity: 1;
+  clip-path: inset(0 round 999px);
   transform: none;
 }
+nav a[href='requests.html#new-request']:hover::before,
+nav a[href='requests.html#new-request']:focus-visible::before,
+nav a[href='requests.html#new-request']:active::before {
+  border-color: #b4e2ff;
+  background-position: -30% 0;
+}
 @media (prefers-reduced-motion: reduce) {
+  nav a[href='requests.html#new-request']::before,
   nav a[href='requests.html#new-request']::after {
     transition: none;
   }
+  nav a[href='requests.html#new-request']::before {
+    background: none;
+  }
+}
+.motion-off nav a[href='requests.html#new-request']::before {
+  background: none;
 }
 
 .contact .request-card .booking-link {
