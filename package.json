@@ -1,6 +1,6 @@
 {
   "name": "denis-aviation",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Static aviation portfolio with procedural aircraft, flight-network visualisation and a local flight simulation.",
   "scripts": {
     "build": "node scripts/build.mjs",
