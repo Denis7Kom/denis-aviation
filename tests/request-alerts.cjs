@@ -276,6 +276,9 @@ function snapshot(docs, fromCache = false) {
   vm.runInContext("language = 'en'; renderVisitorAlerts();", context);
   assert.match(elements.get('#visitor-alert-status').textContent, /In review/);
   assert.match(elements.get('#visitor-alert-status').textContent, /ATC control/);
+  vm.runInContext("language = 'it'; renderVisitorAlerts();", context);
+  assert.match(elements.get('#visitor-alert-status').textContent, /Nominativo: TEST/);
+  assert.doesNotMatch(elements.get('#visitor-alert-status').textContent, /Callsign:/);
   vm.runInContext("language = 'ru'; renderVisitorAlerts();", context);
   snapshot([request('visitor', 'confirmed')]);
   assert.match(elements.get('#visitor-alert-status').textContent, /Подтверждена/);
