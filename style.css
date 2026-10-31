@@ -5269,3 +5269,11 @@ nav a[href='requests.html#new-request']::before {
     padding: 14px 22px;
   }
 }
+
+@media (min-width: 951px) {
+  .header-inner > nav {
+    flex: 1 1 auto;
+    justify-content: space-evenly;
+    margin-left: 0;
+  }
+}
