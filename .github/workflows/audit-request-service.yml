@@ -1,0 +1,17 @@
+name: Inspect request service dependency audit
+on:
+  push:
+    paths:
+      - .github/workflows/audit-request-service.yml
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --prefix functions --ignore-scripts --package-lock=false
+      - run: npm audit --prefix functions --omit=dev --json || true
