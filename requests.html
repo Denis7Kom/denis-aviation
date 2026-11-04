@@ -13,7 +13,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="requests.css?v=28" />
+    <link rel="stylesheet" href="requests.css?v=29" />
   </head>
   <body>
     <div class="page-shell">
@@ -174,9 +174,9 @@
                 /></label>
                 <label class="form-wide"
                   ><span
-                    data-ru="Контакт для ответа (Telegram или email, необязательно)"
-                    data-en="Contact for reply (Telegram or email, optional)" data-it="Contatto per la risposta (Telegram o email, facoltativo)"
-                    >Контакт для ответа (Telegram или email, необязательно)</span
+                    data-ru="Контакт для ответа (telegram, vkontakte, instagram, facebook, email - необязательно)"
+                    data-en="Contact for reply (telegram, vkontakte, instagram, facebook, email - optional)" data-it="Contatto per la risposta (telegram, vkontakte, instagram, facebook, email - facoltativo)"
+                    >Контакт для ответа (telegram, vkontakte, instagram, facebook, email - необязательно)</span
                   ><input name="contact" maxlength="120" placeholder="@username / email"
                 /></label>
                 <details class="form-wide more-details">
@@ -188,7 +188,7 @@
                   </summary>
                   <label
                     ><span data-ru="Детали" data-en="Details" data-it="Dettagli">Детали</span
-                    ><textarea name="notes" maxlength="1000" rows="3"></textarea>
+                    ><textarea id="request-notes" name="notes" maxlength="500" rows="4" aria-describedby="notes-counter"></textarea><small class="character-count" id="notes-counter" aria-live="off">0 / 500</small>
                   </label>
                 </details>
                 <label class="form-wide draft-choice"
@@ -198,6 +198,7 @@
                     >Сохранять черновик на этом устройстве, включая контакт</span
                   ></label
                 >
+                <div id="daily-usage" class="form-wide daily-usage" role="progressbar" aria-label="Отправлено сегодня" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0" hidden><span></span><span></span><span></span><span></span><span></span></div>
                 <button class="form-wide" id="send" type="submit" disabled>
                   <span id="send-label">Подключение...</span
                   ><span class="button-arrow" aria-hidden="true">↗</span>
@@ -310,9 +311,9 @@
         ><a href="./#booking" data-ru="ВЕРНУТЬСЯ НА САЙТ ↗" data-en="BACK TO WEBSITE ↗" data-it="TORNA AL SITO ↗"
           >ВЕРНУТЬСЯ НА САЙТ ↗</a
         >
-        <small class="project-version">ver. 1.1.4</small>
+        <small class="project-version">ver. 1.1.5</small>
       </footer>
     </div>
-    <script type="module" src="requests.js?v=23"></script>
+    <script type="module" src="requests.js?v=24"></script>
   </body>
 </html>

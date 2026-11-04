@@ -18,6 +18,8 @@ import {
   Timestamp,
   updateDoc,
   where,
+  runTransaction,
+  writeBatch,
 } from 'firebase/firestore';
 
 const projectId = 'demo-denis-aviation-rules';
@@ -71,8 +73,26 @@ const request = (owner, status = 'new') => ({
   contact: 'test@example.invalid',
   notes: '',
   status,
+  expiresAt: Timestamp.fromMillis(Date.now() + 365 * 86400000),
   createdAt: Timestamp.fromDate(new Date('2026-01-01T00:00:00Z')),
 });
+
+async function create(ref, data) {
+  const db = ref.firestore;
+  const quota = doc(db, 'requestQuotas', data.owner);
+  return runTransaction(db, async (tx) => {
+    const previous = await tx.get(quota);
+    const old = previous.exists() ? previous.data() : null;
+    const sameDay =
+      old?.updatedAt?.toDate().toISOString().slice(0, 10) === new Date().toISOString().slice(0, 10);
+    tx.set(quota, {
+      count: sameDay ? old.count + 1 : 1,
+      updatedAt: serverTimestamp(),
+      requestId: ref.id,
+    });
+    tx.set(ref, data);
+  });
+}
 
 try {
   await environment.clearFirestore();
@@ -86,31 +106,31 @@ try {
   });
 
   await assertSucceeds(
-    setDoc(path(alice, 'valid'), { ...request('alice'), createdAt: serverTimestamp() }),
+    create(path(alice, 'valid'), { ...request('alice'), createdAt: serverTimestamp() }),
   );
   await assertSucceeds(
-    setDoc(path(alice, 'without-contact'), {
+    create(path(alice, 'without-contact'), {
       ...request('alice'),
       contact: '',
       createdAt: serverTimestamp(),
     }),
   );
   await assertFails(
-    setDoc(path(alice, 'invalid-contact-type'), {
+    create(path(alice, 'invalid-contact-type'), {
       ...request('alice'),
       contact: 123,
       createdAt: serverTimestamp(),
     }),
   );
   await assertFails(
-    setDoc(path(alice, 'contact-too-long'), {
+    create(path(alice, 'contact-too-long'), {
       ...request('alice'),
       contact: 'a'.repeat(121),
       createdAt: serverTimestamp(),
     }),
   );
   await assertSucceeds(
-    setDoc(path(alice, 'valid-boundary'), {
+    create(path(alice, 'valid-boundary'), {
       ...request('alice'),
       date: '2030-12-31',
       time: '23:59',
@@ -118,14 +138,14 @@ try {
     }),
   );
   await assertFails(
-    setDoc(path(guest, 'anonymous'), { ...request('alice'), createdAt: serverTimestamp() }),
+    create(path(guest, 'anonymous'), { ...request('alice'), createdAt: serverTimestamp() }),
   );
   await assertFails(
-    setDoc(path(bob, 'forged-owner'), { ...request('alice'), createdAt: serverTimestamp() }),
+    create(path(bob, 'forged-owner'), { ...request('alice'), createdAt: serverTimestamp() }),
   );
-  await assertFails(setDoc(path(alice, 'forged-time'), request('alice')));
+  await assertFails(create(path(alice, 'forged-time'), request('alice')));
   await assertFails(
-    setDoc(path(alice, 'forged-email'), {
+    create(path(alice, 'forged-email'), {
       ...request('alice'),
       ownerEmail: 'bob@example.invalid',
       createdAt: serverTimestamp(),
@@ -133,45 +153,45 @@ try {
   );
   const { ownerEmail: ignoredEmail, ...missingEmail } = request('alice');
   await assertFails(
-    setDoc(path(alice, 'missing-email'), { ...missingEmail, createdAt: serverTimestamp() }),
+    create(path(alice, 'missing-email'), { ...missingEmail, createdAt: serverTimestamp() }),
   );
   await assertFails(
-    setDoc(path(noEmail, 'no-email-create'), {
+    create(path(noEmail, 'no-email-create'), {
       ...request('no-email'),
       createdAt: serverTimestamp(),
     }),
   );
   await assertFails(
-    setDoc(path(notVerified, 'unverified-email'), {
+    create(path(notVerified, 'unverified-email'), {
       ...request('not-verified'),
       ownerEmail: 'deniska7best@gmail.com',
       createdAt: serverTimestamp(),
     }),
   );
   await assertFails(
-    setDoc(path(alice, 'extra-field'), {
+    create(path(alice, 'extra-field'), {
       ...request('alice'),
       createdAt: serverTimestamp(),
       role: 'admin',
     }),
   );
   await assertFails(
-    setDoc(path(alice, 'wrong-status'), {
+    create(path(alice, 'wrong-status'), {
       ...request('alice', 'confirmed'),
       createdAt: serverTimestamp(),
     }),
   );
   await assertFails(
-    setDoc(path(alice, 'wrong-type'), {
+    create(path(alice, 'wrong-type'), {
       ...request('alice'),
       type: 'other',
       createdAt: serverTimestamp(),
     }),
   );
   await assertFails(
-    setDoc(path(alice, 'long-notes'), {
+    create(path(alice, 'long-notes'), {
       ...request('alice'),
-      notes: 'a'.repeat(1001),
+      notes: 'a'.repeat(501),
       createdAt: serverTimestamp(),
     }),
   );
@@ -182,7 +202,7 @@ try {
     ['invalid-minute', '2030-12-01', '12:60'],
   ]) {
     await assertFails(
-      setDoc(path(alice, id), { ...request('alice'), date, time, createdAt: serverTimestamp() }),
+      create(path(alice, id), { ...request('alice'), date, time, createdAt: serverTimestamp() }),
     );
   }
 
@@ -236,6 +256,111 @@ try {
   await assertSucceeds(updateDoc(path(admin, 'bob-new'), { status: 'confirmed' }));
   await assertFails(deleteDoc(path(admin, 'bob-new')));
   await assertFails(getDoc(doc(alice, 'other', 'private')));
+
+  // Atomic quota enforcement, including bypass attempts and a new UTC day.
+  const limited = environment
+    .authenticatedContext('limited', google('limited@example.invalid'))
+    .firestore();
+  for (let i = 0; i < 5; i++) {
+    await assertSucceeds(
+      create(path(limited, `daily-${i}`), { ...request('limited'), createdAt: serverTimestamp() }),
+    );
+  }
+  await assertFails(
+    create(path(limited, 'daily-six'), { ...request('limited'), createdAt: serverTimestamp() }),
+  );
+  await assertFails(
+    setDoc(path(limited, 'without-quota'), { ...request('limited'), createdAt: serverTimestamp() }),
+  );
+  await assertFails(
+    updateDoc(doc(limited, 'requestQuotas', 'limited'), { count: 0, updatedAt: serverTimestamp() }),
+  );
+  await assertFails(deleteDoc(doc(limited, 'requestQuotas', 'limited')));
+  await assertFails(getDoc(doc(bob, 'requestQuotas', 'limited')));
+  await assertFails(
+    setDoc(doc(bob, 'requestQuotas', 'limited'), {
+      count: 1,
+      updatedAt: serverTimestamp(),
+      requestId: 'fake',
+    }),
+  );
+  await environment.withSecurityRulesDisabled(async (context) => {
+    await updateDoc(doc(context.firestore(), 'requestQuotas', 'limited'), {
+      updatedAt: Timestamp.fromMillis(Date.now() - 86400000),
+    });
+  });
+  await assertSucceeds(
+    create(path(limited, 'next-day'), { ...request('limited'), createdAt: serverTimestamp() }),
+  );
+  const batch = writeBatch(limited);
+  batch.set(path(limited, 'batch-one'), { ...request('limited'), createdAt: serverTimestamp() });
+  batch.set(path(limited, 'batch-two'), { ...request('limited'), createdAt: serverTimestamp() });
+  batch.set(doc(limited, 'requestQuotas', 'limited'), {
+    count: 2,
+    updatedAt: serverTimestamp(),
+    requestId: 'batch-one',
+  });
+  await assertFails(batch.commit());
+  await assertFails(
+    create(path(limited, 'long-expiry'), {
+      ...request('limited'),
+      createdAt: serverTimestamp(),
+      expiresAt: Timestamp.fromMillis(Date.now() + 366 * 86400000),
+    }),
+  );
+  // Chat author, participant, timestamp, expiry and immutable message checks.
+  const parent = (await getDoc(path(alice, 'valid'))).data();
+  const message = {
+    authorUid: 'alice',
+    authorRole: 'client',
+    body: '<img src=x onerror=alert(1)>',
+    createdAt: serverTimestamp(),
+    expiresAt: parent.expiresAt,
+  };
+  const msg = (db, id, parentId = 'valid') => doc(db, 'flightRequests', parentId, 'messages', id);
+  await assertSucceeds(setDoc(msg(alice, 'client'), message));
+  await assertSucceeds(
+    setDoc(msg(admin, 'admin'), { ...message, authorUid: 'admin', authorRole: 'admin' }),
+  );
+  await assertSucceeds(getDocs(collection(alice, 'flightRequests', 'valid', 'messages')));
+  await assertSucceeds(getDoc(msg(admin, 'client')));
+  await assertFails(getDoc(msg(bob, 'client')));
+  await assertFails(getDoc(msg(guest, 'client')));
+  await assertFails(setDoc(msg(bob, 'foreign'), { ...message, authorUid: 'bob' }));
+  await assertFails(setDoc(msg(alice, 'forged-role'), { ...message, authorRole: 'admin' }));
+  await assertFails(setDoc(msg(alice, 'forged-author'), { ...message, authorUid: 'bob' }));
+  await assertFails(
+    setDoc(msg(notVerified, 'admin'), {
+      ...message,
+      authorUid: 'not-verified',
+      authorRole: 'admin',
+    }),
+  );
+  for (const [id, extra] of [
+    ['empty', { body: '' }],
+    ['long', { body: 'a'.repeat(1001) }],
+    ['expiry', { expiresAt: Timestamp.now() }],
+    ['time', { createdAt: Timestamp.fromMillis(1) }],
+    ['extra', { secret: true }],
+  ]) {
+    await assertFails(setDoc(msg(alice, id), { ...message, ...extra }));
+  }
+  await assertFails(updateDoc(msg(alice, 'client'), { body: 'edited' }));
+  await assertFails(deleteDoc(msg(admin, 'client')));
+  await assertFails(
+    setDoc(msg(admin, 'orphan', 'missing'), {
+      ...message,
+      authorUid: 'admin',
+      authorRole: 'admin',
+    }),
+  );
+  await environment.withSecurityRulesDisabled(async (context) => {
+    await setDoc(path(context.firestore(), 'expired'), {
+      ...request('alice'),
+      createdAt: Timestamp.fromMillis(Date.now() - 366 * 86400000),
+    });
+  });
+  await assertFails(setDoc(msg(alice, 'expired-message', 'expired'), message));
   console.log(
     'PASS: Firestore ownership, cancellation, admin identity, validation and denied operations',
   );

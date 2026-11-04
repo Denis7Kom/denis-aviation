@@ -113,8 +113,8 @@ function boot(failImports = false, search = '', storage = new Map()) {
     collection: () => 'requests',
     query: (...args) => args,
     where: (...args) => args,
-    onSnapshot: (_query, _options, callback) => {
-      callback({ empty: true, docs: [] });
+    onSnapshot: (_query, options, callback) => {
+      (callback || options)({ empty: true, docs: [], exists: () => false });
       return () => {};
     },
     addDoc: (_collection, data) => {
@@ -126,7 +126,22 @@ function boot(failImports = false, search = '', storage = new Map()) {
     },
     serverTimestamp: () => 'server-time',
     updateDoc: () => {},
-    doc: () => {},
+    doc: (...args) => ({ id: args.length === 1 ? 'new-request' : args.at(-1) }),
+    Timestamp: { fromMillis: (milliseconds) => ({ toMillis: () => milliseconds }) },
+    runTransaction: async (_db, handler) => {
+      const pending = [];
+      await handler({
+        get: async () => ({ exists: () => false }),
+        set: (ref, data) => {
+          if (ref.id === 'new-request') pending.push(data);
+        },
+      });
+      writes.push(...pending);
+      return new Promise((resolve, reject) => {
+        resolveWrite = resolve;
+        rejectWrite = reject;
+      });
+    },
   };
   const context = vm.createContext({
     document,

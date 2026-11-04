@@ -5359,3 +5359,32 @@ nav a[href='requests.html#new-request']:active::before {
     margin-left: 0;
   }
 }
+
+.request-status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: #748190;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.request-status-dot[data-status='new'] {
+  background: #a9dcff;
+}
+.request-status-dot[data-status='review'] {
+  background: #ffe39b;
+}
+.request-status-dot[data-status='confirmed'] {
+  background: #a5edc0;
+}
+.request-status-dot[data-status='declined'] {
+  background: #ffb7b7;
+}
+.request-status-dot[data-status='completed'] {
+  background: #d6c6ff;
+}
+.request-status-dot[data-status='cancelled'] {
+  background: #c5cbd3;
+}
