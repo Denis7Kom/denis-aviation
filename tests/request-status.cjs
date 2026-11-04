@@ -67,7 +67,7 @@ const source = fs.readFileSync('requests.js', 'utf8').split('async function star
 vm.runInContext(source, context);
 vm.runInContext(
   `db = {}; collection = fakeCollection; where = fakeWhere; query = fakeQuery;
-  doc = fakeDoc; updateDoc = fakeUpdate; onSnapshot = fakeOnSnapshot; orderBy = () => 'message-order'; limitToLast = (...args) => args;`,
+  doc = fakeDoc; updateDoc = fakeUpdate; onSnapshot = fakeOnSnapshot; orderBy = () => 'message-order'; limitToLast = (...args) => args; limit = (...args) => args;`,
   context,
 );
 const fakeDoc = (status) => ({

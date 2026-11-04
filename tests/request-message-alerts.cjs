@@ -73,7 +73,7 @@ const context = vm.createContext({
 });
 vm.runInContext(fs.readFileSync('requests.js', 'utf8').split('async function start()')[0], context);
 vm.runInContext(
-  `db={};collection=fakeCollection;query=fakeQuery;orderBy=fakeOrder;limitToLast=fakeOrder;onSnapshot=fakeSubscribe;user={uid:'alice'};openRequestFromAlert=fakeOpen;`,
+  `db={};collection=fakeCollection;query=fakeQuery;orderBy=fakeOrder;limitToLast=fakeOrder;limit=fakeOrder;where=fakeOrder;onSnapshot=fakeSubscribe;user={uid:'alice'};openRequestFromAlert=fakeOpen;`,
   context,
 );
 const requests = {
