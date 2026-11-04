@@ -13,5 +13,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install --prefix functions --ignore-scripts --package-lock=false
+      - run: npm install --prefix functions --ignore-scripts
       - run: npm audit --prefix functions --omit=dev --json || true
