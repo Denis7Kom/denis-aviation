@@ -94,7 +94,7 @@ context.card = new Element();
 vm.runInContext('attachChat(card, requests.docs[0])', context);
 assert.equal(
   context.card.children[0].children[3].children[1].children[0].children[1].maxLength,
-  50,
+  150,
 );
 const snapshot = (id, author = 'admin', metadata = {}, docMetadata = {}) => ({
   metadata,

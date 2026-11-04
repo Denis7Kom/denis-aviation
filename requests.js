@@ -685,7 +685,7 @@ function attachChat(card, item) {
   const title = document.createElement('span');
   title.textContent = text('Сообщение', 'Message');
   const input = document.createElement('textarea');
-  input.maxLength = 50;
+  input.maxLength = 150;
   input.rows = 1;
   input.required = true;
   input.value = state.draft;
@@ -702,7 +702,7 @@ function attachChat(card, item) {
   feedback.className = 'chat-feedback';
   feedback.setAttribute('role', 'status');
   function updateComposer() {
-    counter.textContent = `${input.value.length} / 50`;
+    counter.textContent = `${input.value.length} / 150`;
     send.disabled = state.sending || !input.value.trim();
   }
   input.addEventListener('input', () => { state.draft = input.value; updateComposer(); });
@@ -763,7 +763,7 @@ function attachChat(card, item) {
   composer.addEventListener('submit', async (event) => {
     event.preventDefault();
     const body = input.value.trim();
-    if (state.sending || !body || body.length > 50 || !user) return;
+    if (state.sending || !body || body.length > 150 || !user) return;
     const account = user;
     state.sending = true;
     input.disabled = true;
