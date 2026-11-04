@@ -5382,33 +5382,70 @@ nav a[href='#flying']:is(:hover, :focus-visible, :active)::after {
   }
 }
 
-.request-status-dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-left: 0;
-  border-radius: 50%;
-  background: #748190;
-  transform: translateY(-0.04em);
-  flex-shrink: 0;
+nav a[href='requests.html#new-request'] {
+  --request-border: #8bcaff80;
 }
-.request-status-dot[data-status='new'] {
-  background: #a9dcff;
+nav a[href='requests.html#new-request'][data-status='new'] {
+  --request-border: #a9dcff;
 }
-.request-status-dot[data-status='review'] {
-  background: #ffe39b;
+nav a[href='requests.html#new-request'][data-status='review'] {
+  --request-border: #ffe39b;
 }
-.request-status-dot[data-status='confirmed'] {
-  background: #a5edc0;
+nav a[href='requests.html#new-request'][data-status='confirmed'] {
+  --request-border: #a5edc0;
 }
-.request-status-dot[data-status='declined'] {
-  background: #ffb7b7;
+nav a[href='requests.html#new-request'][data-status='declined'] {
+  --request-border: #ffb7b7;
 }
-.request-status-dot[data-status='completed'] {
-  background: #d6c6ff;
+nav a[href='requests.html#new-request'][data-status='completed'] {
+  --request-border: #d6c6ff;
 }
-.request-status-dot[data-status='cancelled'] {
-  background: #c5cbd3;
+nav a[href='requests.html#new-request'][data-status='cancelled'] {
+  --request-border: #c5cbd3;
+}
+nav a[href='requests.html#new-request']::before,
+nav a[href='requests.html#new-request']:is(:hover, :focus-visible, :active)::before {
+  border-color: var(--request-border);
+}
+.request-status-tooltip {
+  position: absolute;
+  top: calc(100% + 16px);
+  left: 50%;
+  transform: translate(-50%, -3px);
+  width: max-content;
+  max-width: min(260px, calc(100vw - 48px));
+  padding: 9px 12px;
+  border: 1px solid #42617d;
+  border-radius: 8px;
+  background: #0c1928;
+  box-shadow: 0 8px 24px #0006;
+  color: #dceafb;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: normal;
+  text-align: center;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    visibility 0.18s;
+  z-index: 10;
+}
+#request-status-link:is(:hover, :focus-visible):not([data-tooltip-dismissed='true'])
+  .request-status-tooltip {
+  visibility: visible;
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .request-status-tooltip {
+    transition: none;
+  }
+}
+.motion-off .request-status-tooltip {
+  transition: none;
 }
 
 .booking-email .request-form textarea {

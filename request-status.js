@@ -15,18 +15,31 @@ const labels = {
   cancelled: ['Отменена', 'Cancelled', 'Annullata'],
   unavailable: ['Статус недоступен', 'Status unavailable', 'Stato non disponibile'],
 };
-const dot = document.querySelector('#request-status-dot');
+const statusLink = document.querySelector('#request-status-link');
+const tooltip = document.querySelector('#request-status-tooltip');
 let current = 'none';
 function renderStatus(status) {
   current = Object.hasOwn(labels, status) ? status : 'unavailable';
-  dot.dataset.status = current;
+  statusLink.dataset.status = current;
   const lang = document.documentElement.lang;
   const label = labels[current][lang === 'it' ? 2 : lang === 'en' ? 1 : 0];
-  dot.setAttribute('aria-label', label);
-  dot.title = label;
+  const index = lang === 'it' ? 2 : lang === 'en' ? 1 : 0;
+  const prefix = ['Последняя заявка', 'Latest request', 'Ultima richiesta'][index];
+  const linkLabel = ['Заявки', 'Requests', 'Richieste'][index];
+  const description = current === 'none'
+    ? ['Заявок пока нет', 'No requests yet', 'Nessuna richiesta per ora'][index]
+    : current === 'unavailable' ? label : `${prefix}: ${label}`;
+  statusLink.setAttribute('aria-label', `${linkLabel}. ${description}`);
+  tooltip.textContent = description;
 }
-if (dot) {
+if (statusLink && tooltip) {
   renderStatus('none');
+  statusLink.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') statusLink.dataset.tooltipDismissed = 'true';
+  });
+  for (const event of ['mouseleave', 'blur']) {
+    statusLink.addEventListener(event, () => { delete statusLink.dataset.tooltipDismissed; });
+  }
   new MutationObserver(() => renderStatus(current)).observe(document.documentElement, {
     attributes: true, attributeFilter: ['lang'],
   });
