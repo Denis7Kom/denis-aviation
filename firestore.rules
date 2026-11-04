@@ -73,7 +73,7 @@ service cloud.firestore {
           && request.resource.data.keys().hasAll(['authorUid','authorRole','body','createdAt'])
           && request.resource.data.authorUid == request.auth.uid
           && request.resource.data.authorRole == (admin() ? 'admin' : 'client')
-          && textField(request.resource.data.body, 1000)
+          && textField(request.resource.data.body, 50)
           && request.resource.data.createdAt == request.time;
         allow update, delete: if false;
       }

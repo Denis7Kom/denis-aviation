@@ -82,7 +82,7 @@ context.item = {
 context.card = new Element();
 vm.runInContext('attachChat(card,item)', context);
 const [shell] = context.card.children;
-const [toggle, panel] = shell.children;
+const [, , toggle, panel] = shell.children;
 const [history, composer] = panel.children;
 const [label, actions, feedback] = composer.children;
 const [, input] = label.children;
@@ -125,7 +125,8 @@ const [, send] = actions.children;
   assert.equal(input.value, 'Не потерять');
   assert.match(feedback.textContent, /Не удалось/);
   assert.equal(send.disabled, false);
-  input.value = 'a'.repeat(1001);
+  fail = false;
+  input.value = 'a'.repeat(51);
   await composer.listeners.submit({ preventDefault() {} });
   assert.equal(writes.length, 1);
   toggle.listeners.click();
@@ -134,7 +135,7 @@ const [, send] = actions.children;
   context.nextCard = new Element();
   vm.runInContext('attachChat(nextCard,item)', context);
   assert.equal(
-    context.nextCard.children[0].children[1].children[1].children[0].children[1].value,
+    context.nextCard.children[0].children[3].children[1].children[0].children[1].value,
     'Не потерять',
     'Draft survives card rerender',
   );
