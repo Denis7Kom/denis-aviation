@@ -309,17 +309,22 @@ try {
   };
   const msg = (db, id, parentId = 'valid') => doc(db, 'flightRequests', parentId, 'messages', id);
   await assertSucceeds(setDoc(msg(alice, 'client'), message));
-  await assertSucceeds(setDoc(msg(alice, 'boundary'), { ...message, body: 'a'.repeat(50) }));
+  await assertSucceeds(setDoc(msg(alice, 'boundary'), { ...message, body: 'a'.repeat(150) }));
   await assertFails(
     setDoc(msg(admin, 'long-admin'), {
       ...message,
       authorUid: 'admin',
       authorRole: 'admin',
-      body: 'a'.repeat(51),
+      body: 'a'.repeat(151),
     }),
   );
   await assertSucceeds(
-    setDoc(msg(admin, 'admin'), { ...message, authorUid: 'admin', authorRole: 'admin' }),
+    setDoc(msg(admin, 'admin'), {
+      ...message,
+      authorUid: 'admin',
+      authorRole: 'admin',
+      body: 'a'.repeat(150),
+    }),
   );
   await assertSucceeds(getDocs(collection(alice, 'flightRequests', 'valid', 'messages')));
   await assertSucceeds(getDoc(msg(admin, 'client')));
@@ -337,7 +342,7 @@ try {
   );
   for (const [id, extra] of [
     ['empty', { body: '' }],
-    ['long', { body: 'a'.repeat(51) }],
+    ['long', { body: 'a'.repeat(151) }],
     ['expiry', { expiresAt: Timestamp.now() }],
     ['time', { createdAt: Timestamp.fromMillis(1) }],
     ['extra', { secret: true }],
