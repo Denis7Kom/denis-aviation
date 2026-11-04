@@ -33,8 +33,8 @@ service cloud.firestore {
     }
     match /flightRequests/{id} {
       allow create: if signedIn()
-        && request.resource.data.keys().hasOnly(['owner','ownerEmail','type','network','date','time','timezone','callsign','route','contact','notes','status','createdAt','expiresAt'])
-        && request.resource.data.keys().hasAll(['owner','ownerEmail','type','network','date','time','timezone','callsign','route','contact','notes','status','createdAt','expiresAt'])
+        && request.resource.data.keys().hasOnly(['owner','ownerEmail','type','network','date','time','timezone','callsign','route','contact','notes','status','createdAt'])
+        && request.resource.data.keys().hasAll(['owner','ownerEmail','type','network','date','time','timezone','callsign','route','contact','notes','status','createdAt'])
         && request.resource.data.owner == request.auth.uid
         && request.auth.token.email_verified == true
         && textField(request.auth.token.email, 320)
@@ -48,9 +48,6 @@ service cloud.firestore {
         && request.resource.data.contact is string && request.resource.data.contact.size() <= 120
         && request.resource.data.notes is string && request.resource.data.notes.size() <= 500
         && request.resource.data.status == 'new' && request.resource.data.createdAt == request.time
-        && request.resource.data.expiresAt is timestamp
-        && request.resource.data.expiresAt >= request.time + duration.value(365, 'd') - duration.value(5, 'm')
-        && request.resource.data.expiresAt <= request.time + duration.value(365, 'd') + duration.value(5, 'm')
         && validQuota(id);
       allow read: if signedIn() && (admin() || resource.data.owner == request.auth.uid);
       allow update: if signedIn()
@@ -69,18 +66,15 @@ service cloud.firestore {
       allow delete: if false;
       match /messages/{messageId} {
         function parent() { return get(requestPath(id)).data; }
-        function participant() { return signedIn() && (admin() || parent().owner == request.auth.uid); }
+        function participant() { return signedIn() && exists(requestPath(id)) && (admin() || parent().owner == request.auth.uid); }
         allow read: if participant();
         allow create: if participant()
-          && parent().createdAt + duration.value(365, 'd') > request.time
-          && request.resource.data.keys().hasOnly(['authorUid','authorRole','body','createdAt','expiresAt'])
-          && request.resource.data.keys().hasAll(['authorUid','authorRole','body','createdAt','expiresAt'])
+          && request.resource.data.keys().hasOnly(['authorUid','authorRole','body','createdAt'])
+          && request.resource.data.keys().hasAll(['authorUid','authorRole','body','createdAt'])
           && request.resource.data.authorUid == request.auth.uid
           && request.resource.data.authorRole == (admin() ? 'admin' : 'client')
           && textField(request.resource.data.body, 1000)
-          && request.resource.data.createdAt == request.time
-          && request.resource.data.expiresAt == (parent().keys().hasAny(['expiresAt'])
-            ? parent().expiresAt : parent().createdAt + duration.value(365, 'd'));
+          && request.resource.data.createdAt == request.time;
         allow update, delete: if false;
       }
     }

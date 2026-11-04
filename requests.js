@@ -489,7 +489,6 @@ if (typeof window !== 'undefined') {
   if (requestedType === 'flight' || requestedType === 'atc')
     $('#form').elements.type.value = requestedType;
 }
-const RETENTION_MS = 365 * 24 * 60 * 60 * 1000;
 let quotaData = null;
 const chatStates = new Map();
 const chatSubscriptions = new Map();
@@ -547,7 +546,6 @@ async function createRequest(account, data) {
     transaction.set(requestRef, {
       ...data, owner: account.uid, ownerEmail: account.email,
       status: 'new', createdAt: serverTimestamp(),
-      expiresAt: Timestamp.fromMillis(Date.now() + RETENTION_MS),
     });
   });
 }
@@ -563,9 +561,6 @@ function closeChatSubscriptions() {
   chatSubscriptions.clear();
 }
 function attachChat(card, item) {
-  const request = item.data();
-  const created = request.createdAt?.toMillis?.();
-  if (Number.isFinite(created) && created + RETENTION_MS <= Date.now()) return;
   const state = chatStates.get(item.id) || { open: false, draft: '', sending: false };
   chatStates.set(item.id, state);
   const shell = document.createElement('section');
@@ -665,10 +660,9 @@ function attachChat(card, item) {
     updateComposer();
     feedback.textContent = '';
     try {
-      const expires = request.expiresAt?.toMillis?.() || request.createdAt.toMillis() + RETENTION_MS;
       await addDoc(collection(db, 'flightRequests', item.id, 'messages'), {
         authorUid: account.uid, authorRole: isAdmin(account) ? 'admin' : 'client', body,
-        createdAt: serverTimestamp(), expiresAt: Timestamp.fromMillis(expires),
+        createdAt: serverTimestamp(),
       });
       state.draft = '';
       input.value = '';

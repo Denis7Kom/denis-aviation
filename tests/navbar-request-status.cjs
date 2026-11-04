@@ -67,9 +67,13 @@ root.lang = 'it';
 languageChanged();
 assert.equal(dot['aria-label'], 'Confermata');
 received({ docs: [item('expired', 'review', Date.now() - 366 * 86400000)] });
-assert.equal(dot.dataset.status, 'none');
+assert.equal(
+  dot.dataset.status,
+  'review',
+  'Old requests remain available without automatic retention',
+);
 authChanged(null);
 assert.equal(stopped, 1);
 oldCallback({ docs: [item('private', 'declined', Date.now())] });
 assert.equal(dot.dataset.status, 'none', 'Stale account snapshot cannot restore private status');
-console.log('PASS: navbar newest status, translation, expiry and account isolation');
+console.log('PASS: navbar newest status, translation, old requests and account isolation');

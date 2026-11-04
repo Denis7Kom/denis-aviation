@@ -53,7 +53,7 @@ if (dot) {
           const documents = snapshot.docs.filter((item) => {
             const data = item.data();
             const created = data.createdAt?.toMillis?.();
-            return Number.isFinite(created) && created + 365 * 86400000 > Date.now();
+            return Number.isFinite(created);
           }).sort((a, b) => {
             const left = a.data().createdAt, right = b.data().createdAt;
             return right.seconds - left.seconds || right.nanoseconds - left.nanoseconds || b.id.localeCompare(a.id);

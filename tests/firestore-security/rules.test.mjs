@@ -73,7 +73,6 @@ const request = (owner, status = 'new') => ({
   contact: 'test@example.invalid',
   notes: '',
   status,
-  expiresAt: Timestamp.fromMillis(Date.now() + 365 * 86400000),
   createdAt: Timestamp.fromDate(new Date('2026-01-01T00:00:00Z')),
 });
 
@@ -301,21 +300,12 @@ try {
     requestId: 'batch-one',
   });
   await assertFails(batch.commit());
-  await assertFails(
-    create(path(limited, 'long-expiry'), {
-      ...request('limited'),
-      createdAt: serverTimestamp(),
-      expiresAt: Timestamp.fromMillis(Date.now() + 366 * 86400000),
-    }),
-  );
-  // Chat author, participant, timestamp, expiry and immutable message checks.
-  const parent = (await getDoc(path(alice, 'valid'))).data();
+  // Chat author, participant, timestamp and immutable message checks.
   const message = {
     authorUid: 'alice',
     authorRole: 'client',
     body: '<img src=x onerror=alert(1)>',
     createdAt: serverTimestamp(),
-    expiresAt: parent.expiresAt,
   };
   const msg = (db, id, parentId = 'valid') => doc(db, 'flightRequests', parentId, 'messages', id);
   await assertSucceeds(setDoc(msg(alice, 'client'), message));
@@ -360,7 +350,7 @@ try {
       createdAt: Timestamp.fromMillis(Date.now() - 366 * 86400000),
     });
   });
-  await assertFails(setDoc(msg(alice, 'expired-message', 'expired'), message));
+  await assertSucceeds(setDoc(msg(alice, 'old-message', 'expired'), message));
   console.log(
     'PASS: Firestore ownership, cancellation, admin identity, validation and denied operations',
   );

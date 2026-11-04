@@ -86,7 +86,6 @@ read or cancel another user's request, but does not inspect deployed Firebase ru
 
 ```sh
 npm ci --prefix tests/firestore-security --ignore-scripts
-npm ci --prefix maintenance --ignore-scripts
 curl -fLsS https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v1.19.8.jar -o /tmp/firestore-emulator-v1.19.8.jar
 FIRESTORE_EMULATOR_JAR=/tmp/firestore-emulator-v1.19.8.jar npm run test:firestore-rules
 ```

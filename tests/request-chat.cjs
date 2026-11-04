@@ -77,7 +77,6 @@ context.item = {
   id: 'request-id',
   data: () => ({
     createdAt: { toMillis: () => created },
-    expiresAt: { toMillis: () => created + 365 * 86400000 },
   }),
 };
 context.card = new Element();
