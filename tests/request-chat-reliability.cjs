@@ -75,10 +75,7 @@ const context = vm.createContext({
   fakeStamp: () => 'server-time',
   fakeTimestamp: { fromMillis: (ms) => ({ toMillis: () => ms }) },
 });
-vm.runInContext(
-  fs.readFileSync('requests.js', 'utf8').split('async function start()')[0],
-  context,
-);
+vm.runInContext(fs.readFileSync('requests.js', 'utf8').split('async function start()')[0], context);
 vm.runInContext(
   `user={uid:'alice',email:'alice@example.invalid'};db={};collection=fakeCollection;query=fakeQuery;orderBy=fakeOrder;limitToLast=fakeOrder;limit=fakeOrder;where=fakeOrder;onSnapshot=fakeSnapshot;addDoc=fakeAdd;serverTimestamp=fakeStamp;Timestamp=fakeTimestamp;`,
   context,
@@ -109,10 +106,7 @@ const [, send] = actions.children;
   input.listeners.input();
   const sending = composer.listeners.submit({ preventDefault() {} });
   context.nextCard = new Element();
-  vm.runInContext(
-    'closeChatSubscriptions();chatViews.clear();attachChat(nextCard,item)',
-    context,
-  );
+  vm.runInContext('closeChatSubscriptions();chatViews.clear();attachChat(nextCard,item)', context);
   const currentComposer = context.nextCard.children[0].children[1].children[1];
   const currentInput = currentComposer.children[0].children[1];
   assert.equal(currentInput.disabled, true);
@@ -132,10 +126,7 @@ const [, send] = actions.children;
   currentInput.listeners.input();
   const failed = currentComposer.listeners.submit({ preventDefault() {} });
   context.thirdCard = new Element();
-  vm.runInContext(
-    'closeChatSubscriptions();chatViews.clear();attachChat(thirdCard,item)',
-    context,
-  );
+  vm.runInContext('closeChatSubscriptions();chatViews.clear();attachChat(thirdCard,item)', context);
   reject(Error('offline'));
   await failed;
   const thirdComposer = context.thirdCard.children[0].children[1].children[1];

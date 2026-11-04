@@ -85,8 +85,7 @@ async function create(ref, data) {
     const previous = await tx.get(quota);
     const old = previous.exists() ? previous.data() : null;
     const sameDay =
-      old?.updatedAt?.toDate().toISOString().slice(0, 10) ===
-      new Date().toISOString().slice(0, 10);
+      old?.updatedAt?.toDate().toISOString().slice(0, 10) === new Date().toISOString().slice(0, 10);
     tx.set(quota, {
       count: sameDay ? old.count + 1 : 1,
       updatedAt: serverTimestamp(),
@@ -351,8 +350,7 @@ try {
     body: '<img src=x onerror=alert(1)>',
     createdAt: serverTimestamp(),
   };
-  const msg = (db, id, parentId = 'valid') =>
-    doc(db, 'flightRequests', parentId, 'messages', id);
+  const msg = (db, id, parentId = 'valid') => doc(db, 'flightRequests', parentId, 'messages', id);
   await assertSucceeds(setDoc(msg(alice, 'client'), message));
   await assertSucceeds(setDoc(msg(alice, 'boundary'), { ...message, body: 'a'.repeat(150) }));
   await assertFails(

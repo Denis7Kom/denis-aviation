@@ -179,11 +179,7 @@ function snapshot(docs, fromCache = false) {
     request('batch-a', 'new', false, { callsign: 'FIRST' }),
     request('batch-b', 'new', false, { callsign: 'SECOND' }),
   ]);
-  assert.equal(
-    alerts.length,
-    4,
-    'Each simultaneously arriving request gets its own notification',
-  );
+  assert.equal(alerts.length, 4, 'Each simultaneously arriving request gets its own notification');
   assert.match(alerts[2].options.body, /FIRST/);
   assert.match(alerts[3].options.body, /SECOND/);
   const cancellation = request('old', 'cancelled', false, {
@@ -205,9 +201,7 @@ function snapshot(docs, fromCache = false) {
   assert.match(elements.get('#admin-cancellation-alert').textContent, /CANCEL-1/);
   assert.equal(elements.get('#admin-cancellation-alert').hidden, false);
   alerts[4].onclick();
-  assert(
-    elements.get('#list').children.find((card) => card.dataset.requestId === 'old').focused,
-  );
+  assert(elements.get('#list').children.find((card) => card.dataset.requestId === 'old').focused);
   snapshot([cancellation, request('older')]);
   assert.equal(alerts.length, 5, 'Unchanged cancellation is not repeated');
   NotificationMock.permission = 'denied';
@@ -241,11 +235,7 @@ function snapshot(docs, fromCache = false) {
   assert.equal(elements.get('#admin-alert-preview').hidden, true);
   NotificationMock.permission = 'default';
   await elements.get('#enable-visitor-alerts').listeners.click();
-  assert.equal(
-    NotificationMock.permission,
-    'granted',
-    'Visitor explicitly enables notifications',
-  );
+  assert.equal(NotificationMock.permission, 'granted', 'Visitor explicitly enables notifications');
   snapshot([request('visitor', 'review')], true);
   assert.equal(alerts.length, 4, 'Cached status changes do not notify');
   snapshot([request('visitor', 'review', true)]);

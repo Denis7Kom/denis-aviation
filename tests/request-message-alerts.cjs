@@ -77,10 +77,7 @@ const context = vm.createContext({
   },
   fakeOpen: (id) => opened.push(id),
 });
-vm.runInContext(
-  fs.readFileSync('requests.js', 'utf8').split('async function start()')[0],
-  context,
-);
+vm.runInContext(fs.readFileSync('requests.js', 'utf8').split('async function start()')[0], context);
 vm.runInContext(
   `db={};collection=fakeCollection;query=fakeQuery;orderBy=fakeOrder;limitToLast=fakeOrder;limit=fakeOrder;where=fakeOrder;onSnapshot=fakeSubscribe;user={uid:'alice'};openRequestFromAlert=fakeOpen;`,
   context,
@@ -200,10 +197,7 @@ assert.equal(
   false,
   'Read state reloads from device storage',
 );
-vm.runInContext(
-  "clearMessageWatchers();user={uid:'bob'};syncMessageWatchers(requests)",
-  context,
-);
+vm.runInContext("clearMessageWatchers();user={uid:'bob'};syncMessageWatchers(requests)", context);
 subscriptions[4].cb(snapshot('while-away'));
 assert.equal(
   vm.runInContext("messageAlerts.has('one')", context),

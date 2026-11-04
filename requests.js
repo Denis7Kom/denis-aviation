@@ -1349,11 +1349,12 @@ $('#new-form').addEventListener('click', () => {
   notice('', '');
 });
 $('#status-filter').addEventListener('change', () => {
-  if (isAdmin(user)) {
+  if (!isAdmin(user)) return;
+  if (serviceConfig.secureApi === true) {
     requestDirectId = null;
     resetRequestPage();
     subscribe();
-  }
+  } else if (lastSnapshot) renderList(lastSnapshot);
 });
 $('#request-search').addEventListener('input', () => {
   if (isAdmin(user) && lastSnapshot) renderList(lastSnapshot);

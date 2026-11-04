@@ -2,10 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const context = vm.createContext({ Intl, Date });
-vm.runInContext(
-  fs.readFileSync('functions/domain.mjs', 'utf8').replaceAll('export ', ''),
-  context,
-);
+vm.runInContext(fs.readFileSync('functions/domain.mjs', 'utf8').replaceAll('export ', ''), context);
 const instant = (date, time, zone, now = '2026-01-01T00:00:00Z') =>
   context.scheduledInstant(date, time, zone, Date.parse(now));
 assert.equal(instant('2030-07-01', '12:00', 'Europe/Rome'), Date.parse('2030-07-01T10:00:00Z'));

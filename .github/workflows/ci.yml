@@ -40,3 +40,17 @@ jobs:
         run: npm run test:firestore-rules
         env:
           FIRESTORE_EMULATOR_JAR: ${{ runner.temp }}/firestore-emulator.jar
+
+  request-service:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --prefix functions --ignore-scripts --package-lock=false
+      - run: node --check functions/configure-service.mjs
+      - name: Validate deployed module exports
+        run: node --input-type=module -e "await import('./functions/index.mjs')"
+        env:
+          GCLOUD_PROJECT: demo-denis-aviation-rules

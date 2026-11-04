@@ -50,11 +50,22 @@ const caches = {
   },
 };
 const deleted = [];
-const pushed = [], opened = [];
+const pushed = [],
+  opened = [];
 const self = {
   location: { origin: 'https://example.com' },
-  registration: { scope: 'https://example.com/denis-aviation/', async showNotification(title,options) { pushed.push({title,options}); } },
-  clients: { async claim() {}, async openWindow(url) { opened.push(url); } },
+  registration: {
+    scope: 'https://example.com/denis-aviation/',
+    async showNotification(title, options) {
+      pushed.push({ title, options });
+    },
+  },
+  clients: {
+    async claim() {},
+    async openWindow(url) {
+      opened.push(url);
+    },
+  },
   addEventListener(type, fn) {
     handlers[type] = fn;
   },
@@ -133,15 +144,37 @@ vm.runInNewContext(readFileSync('sw.js', 'utf8'), {
     await handle({ ...navigation, url: resolve('./assets/Denis-Komarov-Flight-Experience.pdf') }),
     undefined,
   );
-  handlers.push({data:{json:()=>({data:{kind:'message',requestId:'safe-id',language:'en',body:'PRIVATE_MESSAGE'}})},waitUntil(promise){task=promise;}});
+  handlers.push({
+    data: {
+      json: () => ({
+        data: { kind: 'message', requestId: 'safe-id', language: 'en', body: 'PRIVATE_MESSAGE' },
+      }),
+    },
+    waitUntil(promise) {
+      task = promise;
+    },
+  });
   await task;
-  assert.equal(pushed.length,1);
-  assert(!JSON.stringify(pushed[0]).includes('PRIVATE_MESSAGE'),'Push does not expose the reply body');
-  handlers.notificationclick({notification:{data:{requestId:'safe-id'},close(){}},waitUntil(promise){task=promise;}});
+  assert.equal(pushed.length, 1);
+  assert(
+    !JSON.stringify(pushed[0]).includes('PRIVATE_MESSAGE'),
+    'Push does not expose the reply body',
+  );
+  handlers.notificationclick({
+    notification: { data: { requestId: 'safe-id' }, close() {} },
+    waitUntil(promise) {
+      task = promise;
+    },
+  });
   await task;
-  assert.equal(opened[0],'https://example.com/denis-aviation/requests.html?request=safe-id');
-  handlers.push({data:{json:()=>({data:{kind:'unknown'}})},waitUntil(){throw Error('Unknown payload should be ignored');}});
-  assert.equal(pushed.length,1);
+  assert.equal(opened[0], 'https://example.com/denis-aviation/requests.html?request=safe-id');
+  handlers.push({
+    data: { json: () => ({ data: { kind: 'unknown' } }) },
+    waitUntil() {
+      throw Error('Unknown payload should be ignored');
+    },
+  });
+  assert.equal(pushed.length, 1);
   console.log('PASS: PWA manifest, icons, cache lifecycle, online and offline requests');
 })().catch((error) => {
   console.error(error);

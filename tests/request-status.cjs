@@ -67,7 +67,8 @@ const source = fs.readFileSync('requests.js', 'utf8').split('async function star
 vm.runInContext(source, context);
 vm.runInContext(
   `db = {}; collection = fakeCollection; where = fakeWhere; query = fakeQuery;
-  doc = fakeDoc; updateDoc = fakeUpdate; onSnapshot = fakeOnSnapshot; orderBy = () => 'message-order'; limitToLast = (...args) => args; limit = (...args) => args;`,
+  doc = fakeDoc; updateDoc = fakeUpdate; onSnapshot = fakeOnSnapshot; getCountFromServer = async () => ({data: () => ({count: 1})});
+  orderBy = (_field, direction) => direction === 'desc' ? 'request-order' : 'message-order'; limitToLast = (...args) => args; limit = (...args) => args;`,
   context,
 );
 const fakeDoc = (status) => ({
@@ -98,6 +99,7 @@ const render = () =>
     context,
   );
   render();
+  await new Promise((resolve) => setImmediate(resolve));
   let cards = elements.get('#list').children;
   assert.deepEqual(
     cards.map((c) => c.dataset.status),
@@ -129,6 +131,7 @@ const render = () =>
     context,
   );
   render();
+  await new Promise((resolve) => setImmediate(resolve));
   assert(
     elements
       .get('#list')
@@ -164,6 +167,7 @@ const render = () =>
   elements.get('#status-filter').value = 'confirmed';
   elements.get('#status-filter').listeners.change();
   render();
+  await new Promise((resolve) => setImmediate(resolve));
   assert.deepEqual(
     elements.get('#list').children.map((card) => card.dataset.status),
     ['confirmed'],
@@ -171,6 +175,7 @@ const render = () =>
   elements.get('#status-filter').value = 'all';
   elements.get('#status-filter').listeners.change();
   render();
+  await new Promise((resolve) => setImmediate(resolve));
   cards = elements.get('#list').children;
   const comments = cards[0].children.find((child) => child.className === 'request-chat');
   assert(
