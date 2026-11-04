@@ -15,6 +15,7 @@ function readLanguage() {
 }
 let language = readLanguage(),
   user = null,
+  quotaUnsubscribe = null,
   unsubscribe = null,
   lastNotice = null,
   lastListNotice = null,
@@ -40,8 +41,25 @@ let db,
   serverTimestamp,
   updateDoc,
   doc,
-  runTransaction;
+  runTransaction,
+  orderBy,
+  limitToLast,
+  Timestamp;
 const italian = {
+  'Conversation': 'Conversazione',
+  'Close conversation': 'Chiudi conversazione',
+  'Message': 'Messaggio',
+  'Send': 'Invia',
+  'You': 'Tu',
+  'Administrator': 'Amministratore',
+  'Client': 'Cliente',
+  'No messages yet.': 'Nessun messaggio.',
+  'Loading messages…': 'Caricamento messaggi…',
+  'Could not load messages. Try reopening the conversation.': 'Impossibile caricare i messaggi. Riapri la conversazione.',
+  'Could not send the message. Try again.': 'Impossibile inviare il messaggio. Riprova.',
+  'Daily activity': 'Attività giornaliera',
+  'Sending is temporarily unavailable. Try tomorrow.': 'Invio temporaneamente non disponibile. Riprova domani.',
+  'Details must be no longer than 500 characters.': 'I dettagli non possono superare 500 caratteri.',
   'Add comment': 'Aggiungi commento',
   'Edit comment': 'Modifica commento',
   'Administrator comment': 'Commento dell’amministratore',
@@ -346,6 +364,8 @@ function translate() {
   renderTimezoneOptions();
   renderAdminAlerts();
   renderVisitorAlerts();
+  renderQuota();
+  if (lastSnapshot) renderList(lastSnapshot);
 }
 function renderConfirmation() {
   if (!lastSubmitted) return;
@@ -378,7 +398,6 @@ document.querySelectorAll('[data-lang]').forEach((button) => {
       localStorage.setItem('dk-aviation-lang', language);
     } catch (_) {}
     translate();
-    if (user && lastSnapshot) renderList(lastSnapshot);
   });
 });
 const commonZones = [
@@ -470,6 +489,194 @@ if (typeof window !== 'undefined') {
   if (requestedType === 'flight' || requestedType === 'atc')
     $('#form').elements.type.value = requestedType;
 }
+let quotaData = null;
+const chatStates = new Map();
+const chatSubscriptions = new Map();
+function utcDay(milliseconds) {
+  return new Date(milliseconds).toISOString().slice(0, 10);
+}
+function quotaCount(data, now = Date.now()) {
+  const stamp = data?.updatedAt?.toMillis?.();
+  return Number.isFinite(stamp) && utcDay(stamp) === utcDay(now)
+    ? Math.min(5, Math.max(0, Number(data.count) || 0)) : 0;
+}
+function renderQuota() {
+  const bar = $('#daily-usage');
+  if (!bar) return;
+  const count = quotaCount(quotaData);
+  bar.hidden = !user;
+  bar.setAttribute('aria-label', text('Активность за день', 'Daily activity'));
+  bar.setAttribute('aria-valuenow', String(count));
+  for (const [index, segment] of Array.from(bar.children || []).entries()) {
+    segment.dataset.filled = String(index < count);
+  }
+}
+function subscribeQuota() {
+  const uid = user.uid;
+  quotaUnsubscribe = onSnapshot(doc(db, 'requestQuotas', uid), (snapshot) => {
+    if (user?.uid !== uid) return;
+    quotaData = snapshot.exists() ? snapshot.data() : null;
+    renderQuota();
+  }, () => { if (user?.uid === uid) { quotaData = null; renderQuota(); } });
+}
+if (typeof window !== 'undefined' && typeof window.setTimeout === 'function') {
+  const refreshDay = () => {
+    renderQuota();
+    const now = new Date();
+    const midnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
+    window.setTimeout(refreshDay, midnight - now.getTime() + 100);
+  };
+  refreshDay();
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) renderQuota(); });
+}
+async function createRequest(account, data) {
+  const requestRef = doc(collection(db, 'flightRequests'));
+  const quotaRef = doc(db, 'requestQuotas', account.uid);
+  await runTransaction(db, async (transaction) => {
+    const snapshot = await transaction.get(quotaRef);
+    const count = snapshot.exists() ? quotaCount(snapshot.data()) : 0;
+    if (count >= 5) {
+      const error = new Error('Daily activity exhausted');
+      error.code = 'daily-limit';
+      throw error;
+    }
+    transaction.set(quotaRef, {
+      count: count + 1, updatedAt: serverTimestamp(), requestId: requestRef.id,
+    });
+    transaction.set(requestRef, {
+      ...data, owner: account.uid, ownerEmail: account.email,
+      status: 'new', createdAt: serverTimestamp(),
+    });
+  });
+}
+function updateNotesCounter() {
+  const input = $('#form').elements.notes;
+  if (!input) return;
+  const length = (input.value || '').length;
+  $('#notes-counter').textContent = `${length} / 500`;
+  $('#notes-counter').dataset.full = String(length >= 500);
+}
+function closeChatSubscriptions() {
+  for (const unsubscribeChat of chatSubscriptions.values()) unsubscribeChat();
+  chatSubscriptions.clear();
+}
+function attachChat(card, item) {
+  const state = chatStates.get(item.id) || { open: false, draft: '', sending: false };
+  chatStates.set(item.id, state);
+  const shell = document.createElement('section');
+  shell.className = 'request-chat';
+  const toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.className = 'chat-toggle';
+  toggle.textContent = state.open ? text('Закрыть обсуждение', 'Close conversation') : text('Обсуждение', 'Conversation');
+  const panel = document.createElement('div');
+  panel.className = 'chat-panel';
+  panel.hidden = !state.open;
+  panel.id = `chat-${item.id}`;
+  toggle.setAttribute('aria-controls', panel.id);
+  toggle.setAttribute('aria-expanded', String(state.open));
+  const history = document.createElement('div');
+  history.className = 'chat-history';
+  history.setAttribute('role', 'log');
+  history.setAttribute('aria-label', text('Обсуждение', 'Conversation'));
+  history.setAttribute('aria-live', 'polite');
+  const composer = document.createElement('form');
+  composer.className = 'chat-composer';
+  const label = document.createElement('label');
+  const title = document.createElement('span');
+  title.textContent = text('Сообщение', 'Message');
+  const input = document.createElement('textarea');
+  input.maxLength = 1000;
+  input.rows = 2;
+  input.required = true;
+  input.value = state.draft;
+  input.disabled = state.sending;
+  label.append(title, input);
+  const actions = document.createElement('div');
+  actions.className = 'chat-actions';
+  const counter = document.createElement('small');
+  const send = document.createElement('button');
+  send.type = 'submit';
+  send.className = 'chat-send';
+  send.textContent = text('Отправить', 'Send');
+  const feedback = document.createElement('p');
+  feedback.className = 'chat-feedback';
+  feedback.setAttribute('role', 'status');
+  function updateComposer() {
+    counter.textContent = `${Array.from(input.value).length} / 1000`;
+    send.disabled = state.sending || !input.value.trim();
+  }
+  input.addEventListener('input', () => { state.draft = input.value; updateComposer(); });
+  updateComposer();
+  actions.append(counter, send);
+  composer.append(label, actions, feedback);
+  panel.append(history, composer);
+  shell.append(toggle, panel);
+  card.append(shell);
+  function loadMessages() {
+    if (!state.open || chatSubscriptions.has(item.id)) return;
+    history.textContent = text('Загружаем сообщения…', 'Loading messages…');
+    const uid = user.uid;
+    const messages = query(collection(db, 'flightRequests', item.id, 'messages'), orderBy('createdAt'), limitToLast(50));
+    const stop = onSnapshot(messages, (snapshot) => {
+      if (user?.uid !== uid) return;
+      history.replaceChildren();
+      if (snapshot.empty) history.textContent = text('Сообщений пока нет.', 'No messages yet.');
+      for (const message of snapshot.docs) {
+        const data = message.data();
+        const bubble = document.createElement('div');
+        bubble.className = 'chat-message';
+        bubble.dataset.own = String(data.authorUid === uid);
+        const meta = document.createElement('span');
+        meta.className = 'chat-meta';
+        const author = data.authorRole === 'admin' ? text('Администратор', 'Administrator') : text('Клиент', 'Client');
+        const date = data.createdAt?.toDate?.();
+        const stamp = date ? new Intl.DateTimeFormat(language, {dateStyle:'short',timeStyle:'short'}).format(date) : '…';
+        meta.textContent = `${author} · ${stamp}`;
+        const body = document.createElement('p');
+        body.textContent = data.body;
+        bubble.append(meta, body);
+        history.append(bubble);
+      }
+      history.scrollTop = history.scrollHeight;
+    }, () => { history.textContent = text('Не удалось загрузить сообщения. Откройте обсуждение заново.', 'Could not load messages. Try reopening the conversation.'); });
+    chatSubscriptions.set(item.id, stop);
+  }
+  toggle.addEventListener('click', () => {
+    state.open = !state.open;
+    panel.hidden = !state.open;
+    toggle.setAttribute('aria-expanded', String(state.open));
+    toggle.textContent = state.open ? text('Закрыть обсуждение', 'Close conversation') : text('Обсуждение', 'Conversation');
+    if (state.open) { loadMessages(); input.focus?.(); }
+    else { chatSubscriptions.get(item.id)?.(); chatSubscriptions.delete(item.id); }
+  });
+  composer.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const body = input.value.trim();
+    if (state.sending || !body || Array.from(body).length > 1000 || !user) return;
+    const account = user;
+    state.sending = true;
+    input.disabled = true;
+    updateComposer();
+    feedback.textContent = '';
+    try {
+      await addDoc(collection(db, 'flightRequests', item.id, 'messages'), {
+        authorUid: account.uid, authorRole: isAdmin(account) ? 'admin' : 'client', body,
+        createdAt: serverTimestamp(),
+      });
+      state.draft = '';
+      input.value = '';
+    } catch (_) {
+      feedback.textContent = text('Не удалось отправить сообщение. Попробуйте ещё раз.', 'Could not send the message. Try again.');
+    } finally {
+      state.sending = false;
+      input.disabled = false;
+      updateComposer();
+    }
+  });
+  if (state.open) loadMessages();
+}
+
 // Drafts are stored only after the visitor explicitly opts in.
 const draftKey = 'dk-flight-request-draft-v1';
 const draftFields = [
@@ -526,6 +733,7 @@ function syncTime() {
 timeHours.addEventListener('change', syncTime);
 timeMinutes.addEventListener('change', syncTime);
 function saveDraft() {
+  updateNotesCounter();
   try {
     if (!$('#save-draft').checked) {
       localStorage.removeItem(draftKey);
@@ -543,6 +751,7 @@ function saveDraft() {
     );
   }
 }
+updateNotesCounter();
 $('#form').addEventListener('input', saveDraft);
 $('#form').addEventListener('change', saveDraft);
 $('#new-form').addEventListener('click', () => {
@@ -613,6 +822,7 @@ function subscribe() {
   );
 }
 function renderList(snapshot) {
+  closeChatSubscriptions();
   const list = $('#list');
   list.replaceChildren();
   const counts = { new: 0, review: 0, confirmed: 0 };
@@ -782,6 +992,7 @@ function renderList(snapshot) {
       });
       card.append(button);
     }
+    attachChat(card, item);
     list.append(card);
   }
 }
@@ -850,6 +1061,10 @@ $('#form').addEventListener('submit', async (event) => {
     );
     return;
   }
+  if (data.notes.length > 500) {
+    notice('Детали должны содержать не более 500 символов.', 'Details must be no longer than 500 characters.');
+    return;
+  }
   phase = user ? 'sending' : 'signing-in';
   renderControls();
   notice('', '');
@@ -864,13 +1079,7 @@ $('#form').addEventListener('submit', async (event) => {
     }
     phase = 'sending';
     renderControls();
-    await addDoc(collection(db, 'flightRequests'), {
-      ...data,
-      owner: submittingUser.uid,
-      ownerEmail: submittingUser.email,
-      status: 'new',
-      createdAt: serverTimestamp(),
-    });
+    await createRequest(submittingUser, data);
     lastSubmitted = data;
     renderConfirmation();
     $('#confirmation').hidden = false;
@@ -880,6 +1089,7 @@ $('#form').addEventListener('submit', async (event) => {
     } catch (_) {}
     $('#save-draft').checked = false;
     form.reset();
+    updateNotesCounter();
     form.elements.timezone.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
     notice(
       'Заявка сохранена. Её статус появится в списке.',
@@ -893,6 +1103,8 @@ $('#form').addEventListener('submit', async (event) => {
         'Аккаунт изменился. Проверь вход и отправь заявку ещё раз.',
         'The account changed. Check your sign-in and send the request again.',
       );
+    } else if (error?.code === 'daily-limit') {
+      notice('Отправка временно недоступна. Попробуйте завтра.', 'Sending is temporarily unavailable. Try tomorrow.');
     } else if (phase === 'signing-in') signInError(error);
     else
       notice(
@@ -915,7 +1127,7 @@ async function start() {
     const app = appSdk.initializeApp(config);
     auth = authSdk.getAuth(app);
     db = fs.getFirestore(app);
-    ({ collection, query, where, onSnapshot, addDoc, serverTimestamp, updateDoc, doc, runTransaction } = fs);
+    ({ collection, query, where, onSnapshot, addDoc, serverTimestamp, updateDoc, doc, runTransaction, orderBy, limitToLast, Timestamp } = fs);
     $('#login').addEventListener('click', async () => {
       if (!authReady || phase) return;
       phase = 'signing-in';
@@ -939,6 +1151,11 @@ async function start() {
       }
     });
     authSdk.onAuthStateChanged(auth, (u) => {
+      closeChatSubscriptions();
+      chatStates.clear();
+      if (quotaUnsubscribe) quotaUnsubscribe();
+      quotaUnsubscribe = null;
+      quotaData = null;
       user = u;
       authReady = true;
       if (unsubscribe) unsubscribe();
@@ -966,7 +1183,7 @@ async function start() {
       $('#account-info').hidden = !u;
       $('#auth-hint').hidden = !!u;
       translate();
-      if (u) subscribe();
+      if (u) { subscribe(); subscribeQuota(); }
     });
   } catch (_) {
     serviceFailed = true;

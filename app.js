@@ -10512,25 +10512,32 @@
     });
     const requestForm = $("#flight-request");
     $("#request-timezone").value = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+    const emailNotes = $("#request-notes");
+    emailNotes.addEventListener("input", () => {
+      $("#email-notes-counter").textContent = `${emailNotes.value.length} / 500`;
+    });
     requestForm.addEventListener("submit", (event) => {
       event.preventDefault();
       if (!requestForm.reportValidity()) return;
-      const type = $("#request-type").selectedOptions[0].textContent, network = $("#request-network").value, date = $("#request-date").value, time = $("#request-time").value, timezone = $("#request-timezone").value.trim(), callsign = $("#request-callsign").value.trim(), route = $("#request-route").value.trim(), notes = $("#request-notes").value.trim(), subject = lang !== "ru" ? lang === "it" ? "Richiesta di volo / ATC" : "Flight / ATC request" : "Заявка на полёт / ATC", body = lang !== "ru" ? lang === "it" ? `Richiesta: ${type}
+      const type = $("#request-type").selectedOptions[0].textContent, network = $("#request-network").value, date = $("#request-date").value.split("-").reverse().join("."), time = $("#request-time").value, timezone = $("#request-timezone").value.trim(), callsign = $("#request-callsign").value.trim(), route = $("#request-route").value.trim(), contact = $("#request-contact").value.trim(), notes = $("#request-notes").value.trim(), subject = lang !== "ru" ? lang === "it" ? "Richiesta di volo / ATC" : "Flight / ATC request" : "Заявка на полёт / ATC", body = lang !== "ru" ? lang === "it" ? `Richiesta: ${type}
 Rete: ${network}
 Data e ora: ${date} ${time} (${timezone})
-Nome utente: ${callsign}
-Rotta / aeroporto: ${route}
+Nominativo o nickname: ${callsign}
+Rotta / aeroporto: ${route}${contact ? `
+Contatto: ${contact}` : ""}
 Dettagli: ${notes}` : `Request: ${type}
 Network: ${network}
 Date and time: ${date} ${time} (${timezone})
-Username: ${callsign}
-Route / airport: ${route}
+Callsign or nickname: ${callsign}
+Route / airport: ${route}${contact ? `
+Contact: ${contact}` : ""}
 Details: ${notes}` : `Заявка: ${type}
 Сеть: ${network}
 Дата и время: ${date} ${time} (${timezone})
-Ник: ${callsign}
-Маршрут / аэропорт: ${route}
-Подробности: ${notes}`;
+Позывной или никнейм: ${callsign}
+Маршрут / аэропорт: ${route}${contact ? `
+Контакт: ${contact}` : ""}
+Детали: ${notes}`;
       window.location.href = "mailto:deniska7best@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
     });
     function hudReadouts() {
