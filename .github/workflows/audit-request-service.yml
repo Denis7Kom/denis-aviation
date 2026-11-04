@@ -14,7 +14,6 @@ jobs:
         with:
           node-version: 22
       - run: npm install --prefix functions --ignore-scripts
-      - run: npm audit fix --prefix functions --omit=dev --ignore-scripts || true
       - name: Emit resolved dependency lock
         shell: bash
         run: |
@@ -30,3 +29,16 @@ jobs:
       - run: node --input-type=module -e "await import('./functions/index.mjs')"
         env:
           GCLOUD_PROJECT: demo-denis-aviation-rules
+      - name: Check temporary protobuf cleanup compatibility
+        working-directory: functions
+        run: |
+          node --input-type=module <<'NODE'
+          import {mkdtemp,writeFile,access} from 'node:fs/promises';
+          import {tmpdir} from 'node:os';
+          import {join} from 'node:path';
+          import {rimraf} from 'rimraf';
+          const directory=await mkdtemp(join(tmpdir(),'aviation-cleanup-'));
+          await writeFile(join(directory,'test.proto'),'test');
+          if (!await rimraf(directory,{glob:true})) throw new Error('Cleanup failed');
+          await access(directory).then(()=>{throw new Error('Directory remains');},()=>{});
+          NODE
