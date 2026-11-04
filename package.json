@@ -1,6 +1,6 @@
 {
   "name": "denis-aviation",
-  "version": "1.1.10",
+  "version": "1.2.0",
   "description": "Static aviation portfolio with procedural aircraft, flight-network visualisation and a local flight simulation.",
   "scripts": {
     "build": "node scripts/build.mjs",
@@ -9,7 +9,7 @@
     "format:check": "prettier --check src scripts tests aircraft-renderer.js README.md docs .github/workflows .prettierrc.json package.json style.css gallery-data.js QA_CHECKLIST.md",
     "test": "node scripts/test.mjs",
     "test:firestore-rules": "bash scripts/test-firestore-rules.sh",
-    "check": "npm run build:check && npm run format:check && npm test",
+    "check": "node scripts/check-version.mjs && npm run build:check && npm run format:check && npm test",
     "dev": "python3 -m http.server 8000"
   },
   "repository": {
