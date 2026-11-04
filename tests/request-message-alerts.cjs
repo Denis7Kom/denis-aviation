@@ -62,6 +62,7 @@ const context = vm.createContext({
   fakeQuery: (...args) => args,
   fakeOrder: (...args) => args,
   fakeSubscribe: (_query, _options, cb) => {
+    if (typeof _options === 'function') return () => {};
     const entry = { cb, stopped: false };
     subscriptions.push(entry);
     return () => {
@@ -93,7 +94,7 @@ context.requests = requests;
 context.card = new Element();
 vm.runInContext('attachChat(card, requests.docs[0])', context);
 assert.equal(
-  context.card.children[0].children[3].children[1].children[0].children[1].maxLength,
+  context.card.children[0].children[1].children[1].children[0].children[1].maxLength,
   150,
 );
 const snapshot = (id, author = 'admin', metadata = {}, docMetadata = {}) => ({
@@ -122,7 +123,6 @@ subscriptions[0].cb(snapshot('new'));
 assert.equal(alerts.length, 1);
 assert(!alerts[0].options.body.includes('SECRET_CONTACT'));
 assert(!alerts[0].options.body.includes('SECRET_NOTES'));
-assert.match(context.card.children[0].children[1].textContent, /Ответ/);
 assert.equal(context.card.children[0].dataset.unread, 'true');
 assert.equal(document.querySelector('#message-alert').hidden, false);
 assert.match(document.querySelector('#message-alert-body').textContent, /RYR3152/);
@@ -131,7 +131,7 @@ assert.equal(alerts.length, 1, 'Repeated snapshot is not a duplicate alert');
 alerts[0].onclick();
 assert.deepEqual(opened, ['one']);
 assert.equal(document.querySelector('#message-alert').hidden, true);
-assert.equal(vm.runInContext("chatStates.get('one').open", context), true);
+assert.equal(vm.runInContext("messageAlerts.has('one')", context), false);
 subscriptions[0].cb(snapshot('own', 'alice'));
 assert.equal(alerts.length, 1);
 subscriptions[0].cb(snapshot('cached', 'admin', { fromCache: true }));

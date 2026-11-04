@@ -5383,7 +5383,7 @@ nav a[href='#flying']:is(:hover, :focus-visible, :active)::after {
 }
 
 nav a[href='requests.html#new-request'] {
-  --request-border: #8bcaff80;
+  --request-border: #8bcaff;
 }
 nav a[href='requests.html#new-request'][data-status='new'] {
   --request-border: #a9dcff;
@@ -5406,6 +5406,29 @@ nav a[href='requests.html#new-request'][data-status='cancelled'] {
 nav a[href='requests.html#new-request']::before,
 nav a[href='requests.html#new-request']:is(:hover, :focus-visible, :active)::before {
   border-color: var(--request-border);
+}
+nav a[href='requests.html#new-request']::before {
+  background-image: linear-gradient(
+    110deg,
+    transparent 42%,
+    color-mix(in srgb, var(--request-border) 30%, transparent) 50%,
+    transparent 58%
+  );
+}
+nav a[href='requests.html#new-request']::after {
+  background: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--request-border) 22%, transparent) 0 3px,
+    transparent 3px 10px
+  );
+}
+@media (prefers-reduced-motion: reduce) {
+  nav a[href='requests.html#new-request']::before {
+    background-image: none;
+  }
+}
+.motion-off nav a[href='requests.html#new-request']::before {
+  background-image: none;
 }
 .request-status-tooltip {
   position: absolute;
