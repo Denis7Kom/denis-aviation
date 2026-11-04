@@ -68,7 +68,7 @@ credentials. Functions deployment may require the Firebase Blaze billing plan; d
 enable billing merely to run the static client changes.
 
 1. Install the function dependencies from the repository:
-   `npm install --prefix functions`.
+   `npm ci --prefix functions`.
 2. Run root checks and Firestore emulator tests:
    `npm ci`, `npm run check`, `npm run test:firestore-rules`.
 3. Deploy functions, rules and indexes to the existing project:
@@ -98,3 +98,13 @@ read markers, account isolation, bounded admin pages, time zones/DST/calendar va
 quota boundaries and secure-mode direct-write denials. Real Web Push delivery, production
 rules, Telegram, Safari, iPhone/Android and switching two real Google accounts still
 require live verification. Items 11–13 and the Telegram implementation are unchanged.
+
+## Dependency verification
+
+The server lock records the tested dependency resolution. A scoped override updates
+rimraf's glob dependency to 14.0.2; the resolved minimatch version is 11.0.4.
+These address [GHSA-3g3m-2fjr-6pw4](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4)
+and [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249).
+The production dependency audit reported zero known vulnerabilities on 2026-11-04.
+Module imports and the temporary-file cleanup API were checked with the patched resolution.
+CI installs from the lock and checks the production audit on subsequent changes.
