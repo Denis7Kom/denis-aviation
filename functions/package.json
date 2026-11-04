@@ -13,9 +13,6 @@
   "overrides": {
     "rimraf": {
       "glob": "14.0.2"
-    },
-    "glob": {
-      "minimatch": "11.0.1"
     }
   }
 }
