@@ -1,6 +1,6 @@
 // Increase the cache version when changing the pre-cached app shell.
 const CACHE_PREFIX = 'denis-aviation-';
-const CACHE_NAME = `${CACHE_PREFIX}v29`;
+const CACHE_NAME = `${CACHE_PREFIX}v30`;
 const SHELL = [
   './',
   './index.html',
@@ -12,7 +12,7 @@ const SHELL = [
   './app.js?v=email-form-78',
   './pwa.js?v=1',
   './request-status.js?v=2',
-  './assets/hero-night.png',
+  './assets/hero-night-mobile.webp',
   './assets/if-refueling.jpg',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
@@ -71,4 +71,42 @@ self.addEventListener('fetch', (event) => {
 
   if (!['script', 'style', 'image', 'font', 'manifest'].includes(request.destination)) return;
   event.respondWith(networkFirst(request, request));
+});
+
+self.addEventListener('push', (event) => {
+  let payload;
+  try {
+    payload = event.data?.json();
+  } catch (_) {
+    return;
+  }
+  const data = payload?.data || {};
+  if (!['message', 'status', 'request'].includes(data.kind)) return;
+  const title =
+    data.language === 'it'
+      ? 'Denis Aviation · Aggiornamento'
+      : data.language === 'en'
+        ? 'Denis Aviation · Update'
+        : 'Denis Aviation · Обновление';
+  const body =
+    data.language === 'it'
+      ? 'Apri le richieste per vedere le novità.'
+      : data.language === 'en'
+        ? 'Open requests to see what changed.'
+        : 'Открой заявки, чтобы посмотреть изменения.';
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: new URL('./assets/icons/icon-192.png', self.registration.scope).href,
+      tag: `aviation-${data.requestId || 'requests'}`,
+      data: { requestId: data.requestId || '' },
+    }),
+  );
+});
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const target = new URL('./requests.html', self.registration.scope);
+  if (/^[A-Za-z0-9_-]{1,128}$/.test(event.notification.data?.requestId || ''))
+    target.searchParams.set('request', event.notification.data.requestId);
+  event.waitUntil(self.clients.openWindow(target.href));
 });

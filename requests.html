@@ -156,6 +156,11 @@
                   </div>
                   <input type="hidden" name="time" />
                 </fieldset>
+                <label class="timezone-search-label">
+                  <span data-ru="Найти часовой пояс" data-en="Find a time zone" data-it="Cerca un fuso orario">Найти часовой пояс</span>
+                  <input id="timezone-search" type="search" autocomplete="off" aria-controls="timezone"
+                    data-placeholder-ru="Город, регион или Europe/Rome" data-placeholder-en="City, region or Europe/Rome" data-placeholder-it="Città, regione o Europe/Rome" placeholder="Город, регион или Europe/Rome" />
+                </label>
                 <label
                   ><span data-ru="Часовой пояс" data-en="Time zone" data-it="Fuso orario">Часовой пояс</span
                   ><select name="timezone" id="timezone" required>
@@ -238,7 +243,7 @@
               </section>
               <div id="visitor-tools" class="admin-alert" hidden>
                 <div class="admin-alert-heading"><span aria-hidden="true">●</span><strong data-ru="Изменения статуса" data-en="Status updates" data-it="Aggiornamenti di stato">Изменения статуса</strong></div>
-                <p class="admin-alert-help" data-ru="Оставь страницу открытой для уведомлений браузера. Изменения за время отсутствия появятся при следующем входе на этом устройстве." data-en="Keep this page open for browser notifications. Changes while away appear when you return on this device." data-it="Lascia aperta la pagina per ricevere le notifiche del browser. Le modifiche avvenute in tua assenza appariranno al prossimo accesso da questo dispositivo.">Оставь страницу открытой для уведомлений браузера. Изменения за время отсутствия появятся при следующем входе на этом устройстве.</p>
+                <p class="admin-alert-help" data-ru="Непрочитанные сообщения сохраняются на этом устройстве. Фоновую доставку можно включить после настройки сервера." data-en="Unread messages persist on this device. Background delivery can be enabled after server setup." data-it="I messaggi non letti restano salvati su questo dispositivo. La ricezione in background richiede la configurazione del server.">Непрочитанные сообщения сохраняются на этом устройстве. Фоновую доставку можно включить после настройки сервера.</p>
                 <p id="visitor-alert-status" class="admin-alert-details" role="status" aria-live="polite"></p>
                 <div class="admin-alert-actions"><button id="enable-visitor-alerts" type="button"></button></div>
               </div>
@@ -254,7 +259,7 @@
                     <strong data-ru="Последняя новая заявка" data-en="Latest new request" data-it="Ultima nuova richiesta">Последняя новая заявка</strong>
                     <p id="admin-alert-details"></p>
                   </div>
-                  <p class="admin-alert-help" data-ru="Оповещения работают, пока эта страница открыта и вы вошли как администратор." data-en="Alerts work while this page is open and you are signed in as the administrator." data-it="Gli avvisi funzionano quando la pagina è aperta e hai effettuato l’accesso come amministratore.">Оповещения работают, пока эта страница открыта и вы вошли как администратор.</p>
+                  <p class="admin-alert-help" data-ru="Живые обновления относятся к открытой странице списка. Фоновые уведомления требуют настройки сервера." data-en="Live updates cover the current list page. Background notifications require server setup." data-it="Gli aggiornamenti in tempo reale riguardano la pagina corrente dell’elenco. Le notifiche in background richiedono la configurazione del server.">Живые обновления относятся к открытой странице списка. Фоновые уведомления требуют настройки сервера.</p>
                   <div class="admin-alert-actions">
                     <button id="show-new-requests" type="button" data-ru="Показать новые" data-en="Show new requests" data-it="Mostra le nuove richieste">Показать новые</button>
                     <button id="enable-browser-alerts" type="button"></button>
@@ -276,7 +281,7 @@
                   </div>
                 </div>
                 <label class="search-label"
-                  ><span data-ru="Поиск по заявкам" data-en="Search requests" data-it="Cerca richieste">Поиск по заявкам</span
+                  ><span data-ru="Поиск на текущей странице" data-en="Search this page" data-it="Cerca in questa pagina">Поиск на текущей странице</span
                   ><input
                     id="request-search"
                     type="search"
@@ -287,7 +292,7 @@
                 /></label>
               </div>
               <label id="filter-label" class="filter-label" hidden
-                ><span data-ru="Фильтр по статусу" data-en="Filter by status" data-it="Filtra per stato"
+                ><span id="status-filter-title" data-ru="Фильтр по статусу" data-en="Filter by status" data-it="Filtra per stato"
                   >Фильтр по статусу</span
                 ><select id="status-filter">
                   <option value="all" data-ru="Все заявки" data-en="All requests" data-it="Tutte le richieste">
@@ -311,6 +316,13 @@
               >
               <p id="list-notice" role="status" aria-live="polite"></p>
               <div id="list" aria-live="polite"></div>
+              <nav id="request-pagination" class="chat-actions" aria-label="Request pages" hidden>
+                <button id="requests-previous" type="button" data-ru="Предыдущая страница" data-en="Previous page" data-it="Pagina precedente">Предыдущая страница</button>
+                <span id="requests-page" role="status"></span>
+                <button id="requests-latest" type="button" data-ru="К списку заявок" data-en="Back to request list" data-it="Torna all’elenco">К списку заявок</button>
+                <button id="requests-next" type="button" data-ru="Следующая страница" data-en="Next page" data-it="Pagina successiva">Следующая страница</button>
+              </nav>
+              <p id="push-status" class="chat-feedback" role="status"></p>
             </section>
           </div>
         </section>
@@ -320,9 +332,9 @@
         ><a href="./#booking" data-ru="ВЕРНУТЬСЯ НА САЙТ ↗" data-en="BACK TO WEBSITE ↗" data-it="TORNA AL SITO ↗"
           >ВЕРНУТЬСЯ НА САЙТ ↗</a
         >
-        <small class="project-version">ver. 1.2.3</small>
+        <small class="project-version">ver. 1.2.4</small>
       </footer>
     </div>
-    <script type="module" src="requests.js?v=28"></script>
+    <script type="module" src="requests.js?v=29"></script>
   </body>
 </html>

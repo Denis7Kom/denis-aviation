@@ -31,7 +31,9 @@ if (!/^(?:127\.0\.0\.1|localhost):\d+$/.test(emulator)) {
 }
 const environment = await initializeTestEnvironment({
   projectId,
-  firestore: { rules: await readFile(new URL('../../firestore.rules', import.meta.url), 'utf8') },
+  firestore: {
+    rules: await readFile(new URL('../../firestore.rules', import.meta.url), 'utf8'),
+  },
 });
 const google = (email) => ({
   email,
@@ -83,7 +85,8 @@ async function create(ref, data) {
     const previous = await tx.get(quota);
     const old = previous.exists() ? previous.data() : null;
     const sameDay =
-      old?.updatedAt?.toDate().toISOString().slice(0, 10) === new Date().toISOString().slice(0, 10);
+      old?.updatedAt?.toDate().toISOString().slice(0, 10) ===
+      new Date().toISOString().slice(0, 10);
     tx.set(quota, {
       count: sameDay ? old.count + 1 : 1,
       updatedAt: serverTimestamp(),
@@ -201,7 +204,12 @@ try {
     ['invalid-minute', '2030-12-01', '12:60'],
   ]) {
     await assertFails(
-      create(path(alice, id), { ...request('alice'), date, time, createdAt: serverTimestamp() }),
+      create(path(alice, id), {
+        ...request('alice'),
+        date,
+        time,
+        createdAt: serverTimestamp(),
+      }),
     );
   }
 
@@ -256,23 +264,53 @@ try {
   await assertFails(deleteDoc(path(admin, 'bob-new')));
   await assertFails(getDoc(doc(alice, 'other', 'private')));
 
+  // Calendar validation also applies to direct requests.
+  const calendar = environment
+    .authenticatedContext('calendar', google('calendar@example.invalid'))
+    .firestore();
+  for (const date of ['2030-02-31', '2030-02-29', '2100-02-29', '2030-04-31']) {
+    await assertFails(
+      create(path(calendar, 'invalid-' + date), {
+        ...request('calendar'),
+        date,
+        createdAt: serverTimestamp(),
+      }),
+    );
+  }
+  await assertSucceeds(
+    create(path(calendar, 'leap-year'), {
+      ...request('calendar'),
+      date: '2032-02-29',
+      createdAt: serverTimestamp(),
+    }),
+  );
+
   // Atomic quota enforcement, including bypass attempts and a new UTC day.
   const limited = environment
     .authenticatedContext('limited', google('limited@example.invalid'))
     .firestore();
   for (let i = 0; i < 5; i++) {
     await assertSucceeds(
-      create(path(limited, `daily-${i}`), { ...request('limited'), createdAt: serverTimestamp() }),
+      create(path(limited, `daily-${i}`), {
+        ...request('limited'),
+        createdAt: serverTimestamp(),
+      }),
     );
   }
   await assertFails(
     create(path(limited, 'daily-six'), { ...request('limited'), createdAt: serverTimestamp() }),
   );
   await assertFails(
-    setDoc(path(limited, 'without-quota'), { ...request('limited'), createdAt: serverTimestamp() }),
+    setDoc(path(limited, 'without-quota'), {
+      ...request('limited'),
+      createdAt: serverTimestamp(),
+    }),
   );
   await assertFails(
-    updateDoc(doc(limited, 'requestQuotas', 'limited'), { count: 0, updatedAt: serverTimestamp() }),
+    updateDoc(doc(limited, 'requestQuotas', 'limited'), {
+      count: 0,
+      updatedAt: serverTimestamp(),
+    }),
   );
   await assertFails(deleteDoc(doc(limited, 'requestQuotas', 'limited')));
   await assertFails(getDoc(doc(bob, 'requestQuotas', 'limited')));
@@ -292,8 +330,14 @@ try {
     create(path(limited, 'next-day'), { ...request('limited'), createdAt: serverTimestamp() }),
   );
   const batch = writeBatch(limited);
-  batch.set(path(limited, 'batch-one'), { ...request('limited'), createdAt: serverTimestamp() });
-  batch.set(path(limited, 'batch-two'), { ...request('limited'), createdAt: serverTimestamp() });
+  batch.set(path(limited, 'batch-one'), {
+    ...request('limited'),
+    createdAt: serverTimestamp(),
+  });
+  batch.set(path(limited, 'batch-two'), {
+    ...request('limited'),
+    createdAt: serverTimestamp(),
+  });
   batch.set(doc(limited, 'requestQuotas', 'limited'), {
     count: 2,
     updatedAt: serverTimestamp(),
@@ -307,7 +351,8 @@ try {
     body: '<img src=x onerror=alert(1)>',
     createdAt: serverTimestamp(),
   };
-  const msg = (db, id, parentId = 'valid') => doc(db, 'flightRequests', parentId, 'messages', id);
+  const msg = (db, id, parentId = 'valid') =>
+    doc(db, 'flightRequests', parentId, 'messages', id);
   await assertSucceeds(setDoc(msg(alice, 'client'), message));
   await assertSucceeds(setDoc(msg(alice, 'boundary'), { ...message, body: 'a'.repeat(150) }));
   await assertFails(
@@ -365,6 +410,32 @@ try {
     });
   });
   await assertSucceeds(setDoc(msg(alice, 'old-message', 'expired'), message));
+  // Activation closes both direct-write bypasses. Only server callables may create.
+  await environment.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'requestService', 'config'), {
+      secureApi: true,
+      vapidKey: 'public-key',
+    });
+  });
+  await assertSucceeds(getDoc(doc(guest, 'requestService', 'config')));
+  await assertFails(updateDoc(doc(alice, 'requestService', 'config'), { secureApi: false }));
+  await assertFails(
+    create(path(calendar, 'bypass-server'), {
+      ...request('calendar'),
+      createdAt: serverTimestamp(),
+    }),
+  );
+  await assertFails(setDoc(msg(alice, 'bypass-rate-limit'), message));
+  await assertFails(
+    setDoc(msg(admin, 'bypass-admin-limit'), {
+      ...message,
+      authorUid: 'admin',
+      authorRole: 'admin',
+    }),
+  );
+  await assertFails(getDoc(doc(alice, 'requestPushDevices', 'private-token')));
+  await assertFails(setDoc(doc(alice, 'requestMessageQuotas', 'alice'), { count: 0 }));
+  await assertSucceeds(getDoc(path(alice, 'valid')));
   console.log(
     'PASS: Firestore ownership, cancellation, admin identity, validation and denied operations',
   );

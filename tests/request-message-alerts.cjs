@@ -53,9 +53,15 @@ class Notification {
   }
   close() {}
 }
+const savedRead = new Map();
 const context = vm.createContext({
   document,
-  localStorage: { getItem: () => null, setItem() {} },
+  localStorage: {
+    getItem: (key) => savedRead.get(key) || null,
+    setItem(key, value) {
+      savedRead.set(key, value);
+    },
+  },
   Intl,
   Notification,
   fakeCollection: (...args) => args,
@@ -71,7 +77,10 @@ const context = vm.createContext({
   },
   fakeOpen: (id) => opened.push(id),
 });
-vm.runInContext(fs.readFileSync('requests.js', 'utf8').split('async function start()')[0], context);
+vm.runInContext(
+  fs.readFileSync('requests.js', 'utf8').split('async function start()')[0],
+  context,
+);
 vm.runInContext(
   `db={};collection=fakeCollection;query=fakeQuery;orderBy=fakeOrder;limitToLast=fakeOrder;limit=fakeOrder;where=fakeOrder;onSnapshot=fakeSubscribe;user={uid:'alice'};openRequestFromAlert=fakeOpen;`,
   context,
@@ -168,6 +177,39 @@ subscriptions[1].cb(snapshot('admin-own', 'admin'));
 assert.equal(alerts.length, 3);
 vm.runInContext('syncMessageWatchers({docs:[]})', context);
 assert(subscriptions[1].stopped, 'Removed requests stop message subscriptions');
+vm.runInContext("user={uid:'alice'};syncMessageWatchers(requests)", context);
+subscriptions[2].cb(snapshot('new'));
+assert.equal(
+  vm.runInContext("messageAlerts.has('one')", context),
+  false,
+  'Explicit read marker survives reconnection',
+);
+subscriptions[2].cb(snapshot('while-away'));
+assert.equal(
+  vm.runInContext("messageAlerts.has('one')", context),
+  true,
+  'Messages received while away remain unread',
+);
+vm.runInContext(
+  "markMessagesRead('one');clearMessageWatchers();messageReadMarkers.clear();syncMessageWatchers(requests)",
+  context,
+);
+subscriptions[3].cb(snapshot('while-away'));
+assert.equal(
+  vm.runInContext("messageAlerts.has('one')", context),
+  false,
+  'Read state reloads from device storage',
+);
+vm.runInContext(
+  "clearMessageWatchers();user={uid:'bob'};syncMessageWatchers(requests)",
+  context,
+);
+subscriptions[4].cb(snapshot('while-away'));
+assert.equal(
+  vm.runInContext("messageAlerts.has('one')", context),
+  true,
+  'Another account does not inherit read markers',
+);
 console.log(
   'PASS: client/admin message alerts, deduplication, history/cache/pending suppression, own messages, permissions and account cleanup',
 );

@@ -1,1 +1,13 @@
-{ "firestore": { "rules": "firestore.rules" } }
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "aviation-requests",
+      "ignore": ["node_modules", ".git", "*.log"]
+    }
+  ]
+}

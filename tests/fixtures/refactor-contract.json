@@ -18,14 +18,13 @@
     "f71f7b3017b260ff2d75bdf797e6aee4787ba8ae2eb317dcd5ce4e9fe05cd801"
   ],
   "static": {
-    "index.html": "18775372016444ec5b22cd8da491b202066ad5143fcc7bf4e7d7b46231b276d3"
+    "index.html": "3f10816c6b76611020fc7c27c2be9d304ae8ce8add8b21bb33e536e06bc684b5"
   },
   "renderer": "9b5054080a9bd04374c321fb9dcf3abd7d0e48489a64dff9c076ab42f87a4245",
   "stylesheet": "8da24c55ebed14f9be0093e18eff204f2754bc481af4364ff625d2176c564a37",
   "gallery": "d64e546e53bb908b95d37bd85d18213f34d84f7d93522e6d333e8e243e35788b",
   "reviewedChange": {
-    "base": "a7db32b260508f28b40a6daefebdb2c73c265bc4",
     "date": "2026-11-04",
-    "scope": "Email form parity, request chat and free scheduled cleanup"
+    "scope": "Request chat reliability, pagination, persistent read markers, server validation and Web Push preparation"
   }
 }
