@@ -46,6 +46,7 @@ const bar = document.querySelector('#daily-usage');
 bar.append(...Array.from({ length: 5 }, () => new Element()));
 const writes = [];
 let listener,
+  adminListener,
   stopped = 0,
   fail = false;
 const context = vm.createContext({
@@ -57,7 +58,9 @@ const context = vm.createContext({
   fakeQuery: (...args) => args,
   fakeOrder: (...args) => args,
   fakeSnapshot: (_query, next) => {
-    listener = next;
+    if (_query.some((part) => Array.isArray(part) && part[0] === 'authorRole'))
+      adminListener = next;
+    else listener = next;
     return () => stopped++;
   },
   fakeAdd: async (ref, payload) => {
@@ -69,7 +72,7 @@ const context = vm.createContext({
 });
 vm.runInContext(fs.readFileSync('requests.js', 'utf8').split('async function start()')[0], context);
 vm.runInContext(
-  `user={uid:'alice',email:'alice@example.invalid'};db={};collection=fakeCollection;query=fakeQuery;orderBy=fakeOrder;limitToLast=fakeOrder;onSnapshot=fakeSnapshot;addDoc=fakeAdd;serverTimestamp=fakeStamp;Timestamp=fakeTimestamp;`,
+  `user={uid:'alice',email:'alice@example.invalid'};db={};collection=fakeCollection;query=fakeQuery;orderBy=fakeOrder;limitToLast=fakeOrder;limit=fakeOrder;where=fakeOrder;onSnapshot=fakeSnapshot;addDoc=fakeAdd;serverTimestamp=fakeStamp;Timestamp=fakeTimestamp;`,
   context,
 );
 const created = Date.now();
@@ -88,8 +91,26 @@ const [label, actions, feedback] = composer.children;
 const [, input] = label.children;
 const [, send] = actions.children;
 (async () => {
-  assert.notEqual(panel.hidden, true);
-  assert.equal(typeof listener, 'function', 'History loads without opening a conversation');
+  assert.equal(shell.hidden, true, 'A new client request has no comment block');
+  assert.equal(
+    listener,
+    undefined,
+    'Do not load the full conversation before an administrator replies',
+  );
+  adminListener({ empty: true, docs: [] });
+  assert.equal(shell.hidden, true);
+  input.value = 'Too early';
+  await composer.listeners.submit({ preventDefault() {} });
+  assert.equal(writes.length, 0, 'Hidden composer cannot send before the administrator');
+  adminListener({ empty: false, docs: [{ data: () => ({ authorRole: 'admin' }) }] });
+  assert.equal(shell.hidden, false, 'First administrator reply reveals the conversation live');
+  assert.equal(
+    typeof listener,
+    'function',
+    'History loads automatically after first administrator reply',
+  );
+  input.value = '';
+  input.listeners.input();
   assert(!shell.children.some((child) => child.className === 'chat-toggle'));
   assert.equal(send.disabled, true);
   const hostile = '<img src=x onerror=alert(1)>';
@@ -134,7 +155,7 @@ const [, send] = actions.children;
   await composer.listeners.submit({ preventDefault() {} });
   assert.equal(writes.length, 2);
   vm.runInContext('closeChatSubscriptions()', context);
-  assert.equal(stopped, 1);
+  assert.equal(stopped, 2);
   context.nextCard = new Element();
   vm.runInContext('attachChat(nextCard,item)', context);
   assert.equal(
@@ -156,6 +177,26 @@ const [, send] = actions.children;
   document.querySelector('#form').elements.notes.value = 'a'.repeat(500);
   vm.runInContext('updateNotesCounter()', context);
   assert.equal(document.querySelector('#notes-counter').textContent, '500 / 500');
+  context.legacyCard = new Element();
+  vm.runInContext(
+    "attachChat(legacyCard,{id:'legacy',data:()=>({adminComment:'Previously approved'})})",
+    context,
+  );
+  assert.equal(
+    context.legacyCard.children[0].hidden,
+    false,
+    'Legacy administrator comments unlock replies',
+  );
+  context.adminCard = new Element();
+  vm.runInContext(
+    "user={uid:'admin',email:'deniska7best@gmail.com',emailVerified:true,providerData:[{providerId:'google.com'}]};attachChat(adminCard,{id:'fresh-admin',data:()=>({})})",
+    context,
+  );
+  assert.equal(
+    context.adminCard.children[0].hidden,
+    false,
+    'Administrator can always start the conversation',
+  );
   console.log(
     'PASS: chat replies, safe rendering, failed-send drafts, lifecycle, daily segments and notes counter',
   );

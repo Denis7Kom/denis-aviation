@@ -44,6 +44,7 @@ let db,
   runTransaction,
   orderBy,
   limitToLast,
+  limit,
   Timestamp;
 const italian = {
   'Comments': 'Commenti',
@@ -658,6 +659,8 @@ function attachChat(card, item) {
   heading.textContent = text('Комментарии', 'Comments');
   shell.append(heading);
   const oldComment = item.data().adminComment;
+  state.canReply = !!(state.canReply || isAdmin(user) || (typeof oldComment === 'string' && oldComment.trim()));
+  shell.hidden = !state.canReply;
   if (typeof oldComment === 'string' && oldComment.trim()) {
     const legacy = document.createElement('p');
     legacy.className = 'admin-comment';
@@ -697,7 +700,7 @@ function attachChat(card, item) {
   feedback.setAttribute('role', 'status');
   function updateComposer() {
     counter.textContent = `${input.value.length} / 150`;
-    send.disabled = state.sending || !!phase || !input.value.trim() || input.value.length > 150;
+    send.disabled = !state.canReply || state.sending || !!phase || !input.value.trim() || input.value.length > 150;
   }
   input.addEventListener('input', () => { state.draft = input.value; updateComposer(); });
   updateComposer();
@@ -751,7 +754,7 @@ function attachChat(card, item) {
   composer.addEventListener('submit', async (event) => {
     event.preventDefault();
     const body = input.value.trim();
-    if (state.sending || phase || !body || body.length > 150 || !user) return;
+    if (!state.canReply || state.sending || phase || !body || body.length > 150 || !user) return;
     const account = user;
     state.sending = true;
     renderControls();
@@ -777,7 +780,21 @@ function attachChat(card, item) {
       updateComposer();
     }
   });
-  loadMessages();
+  if (state.canReply) loadMessages();
+  else {
+    const uid = user.uid;
+    // Check the whole history, even if the administrator's first reply is older
+    // than the ten messages displayed in the conversation.
+    const firstAdminReply = query(collection(db, 'flightRequests', item.id, 'messages'), where('authorRole', '==', 'admin'), limit(1));
+    const stop = onSnapshot(firstAdminReply, (snapshot) => {
+      if (user?.uid !== uid || chatViews.get(item.id)?.history !== history || snapshot.empty) return;
+      state.canReply = true;
+      shell.hidden = false;
+      updateComposer();
+      loadMessages();
+    }, () => {});
+    chatSubscriptions.set(`${item.id}:admin`, stop);
+  }
 }
 
 // Drafts are stored only after the visitor explicitly opts in.
@@ -1205,7 +1222,7 @@ async function start() {
     const app = appSdk.initializeApp(config);
     auth = authSdk.getAuth(app);
     db = fs.getFirestore(app);
-    ({ collection, query, where, onSnapshot, addDoc, serverTimestamp, updateDoc, doc, runTransaction, orderBy, limitToLast, Timestamp } = fs);
+    ({ collection, query, where, onSnapshot, addDoc, serverTimestamp, updateDoc, doc, runTransaction, orderBy, limitToLast, limit, Timestamp } = fs);
     $('#login').addEventListener('click', async () => {
       if (!authReady || phase) return;
       phase = 'signing-in';
