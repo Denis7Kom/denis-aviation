@@ -1,0 +1,39 @@
+name: Clean expired requests
+on:
+  schedule:
+    - cron: '23 4 * * *'
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: 'Delete expired requests and their messages (otherwise dry-run)'
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: cleanup-requests
+  cancel-in-progress: false
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: maintenance/package-lock.json
+      - run: npm ci --prefix maintenance --ignore-scripts
+      - name: Inspect or remove expired data
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          APPLY: ${{ github.event_name == 'schedule' || inputs.apply }}
+        run: |
+          if [ "$APPLY" = "true" ]; then
+            node maintenance/cleanup.mjs --apply
+          else
+            node maintenance/cleanup.mjs
+          fi

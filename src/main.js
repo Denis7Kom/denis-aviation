@@ -8485,16 +8485,21 @@ import {
 
   const requestForm = $('#flight-request');
   $('#request-timezone').value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  const emailNotes = $('#request-notes');
+  emailNotes.addEventListener('input', () => {
+    $('#email-notes-counter').textContent = `${emailNotes.value.length} / 500`;
+  });
   requestForm.addEventListener('submit', (event) => {
     event.preventDefault();
     if (!requestForm.reportValidity()) return;
     const type = $('#request-type').selectedOptions[0].textContent,
       network = $('#request-network').value,
-      date = $('#request-date').value,
+      date = $('#request-date').value.split('-').reverse().join('.'),
       time = $('#request-time').value,
       timezone = $('#request-timezone').value.trim(),
       callsign = $('#request-callsign').value.trim(),
       route = $('#request-route').value.trim(),
+      contact = $('#request-contact').value.trim(),
       notes = $('#request-notes').value.trim(),
       subject =
         lang !== 'ru'
@@ -8505,9 +8510,9 @@ import {
       body =
         lang !== 'ru'
           ? lang === 'it'
-            ? `Richiesta: ${type}\nRete: ${network}\nData e ora: ${date} ${time} (${timezone})\nNome utente: ${callsign}\nRotta / aeroporto: ${route}\nDettagli: ${notes}`
-            : `Request: ${type}\nNetwork: ${network}\nDate and time: ${date} ${time} (${timezone})\nUsername: ${callsign}\nRoute / airport: ${route}\nDetails: ${notes}`
-          : `Заявка: ${type}\nСеть: ${network}\nДата и время: ${date} ${time} (${timezone})\nНик: ${callsign}\nМаршрут / аэропорт: ${route}\nПодробности: ${notes}`;
+            ? `Richiesta: ${type}\nRete: ${network}\nData e ora: ${date} ${time} (${timezone})\nNominativo o nickname: ${callsign}\nRotta / aeroporto: ${route}${contact ? `\nContatto: ${contact}` : ''}\nDettagli: ${notes}`
+            : `Request: ${type}\nNetwork: ${network}\nDate and time: ${date} ${time} (${timezone})\nCallsign or nickname: ${callsign}\nRoute / airport: ${route}${contact ? `\nContact: ${contact}` : ''}\nDetails: ${notes}`
+          : `Заявка: ${type}\nСеть: ${network}\nДата и время: ${date} ${time} (${timezone})\nПозывной или никнейм: ${callsign}\nМаршрут / аэропорт: ${route}${contact ? `\nКонтакт: ${contact}` : ''}\nДетали: ${notes}`;
     window.location.href =
       'mailto:deniska7best@gmail.com?subject=' +
       encodeURIComponent(subject) +

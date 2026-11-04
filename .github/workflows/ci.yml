@@ -31,6 +31,7 @@ jobs:
           distribution: temurin
           java-version: 17
       - run: npm ci --prefix tests/firestore-security --ignore-scripts
+      - run: npm ci --prefix maintenance --ignore-scripts
       - name: Download pinned Firestore emulator
         run: >-
           curl --fail --silent --show-error --location

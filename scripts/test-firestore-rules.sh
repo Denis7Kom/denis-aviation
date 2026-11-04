@@ -47,3 +47,5 @@ if [[ "$ready" != true ]]; then
   exit 1
 fi
 FIRESTORE_EMULATOR_HOST="127.0.0.1:$port" node "$project_dir/tests/firestore-security/rules.test.mjs"
+
+FIRESTORE_EMULATOR_HOST="127.0.0.1:$port" node "$project_dir/maintenance/emulator.test.mjs"
