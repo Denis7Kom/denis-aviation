@@ -34,7 +34,7 @@ remain disabled until the deployment below is completed. No credential is in thi
   are unchanged.
 - Hero: mobile WebP 768px, approximately 29 KB; desktop WebP approximately 106 KB;
   original PNG approximately 2 MB remains the fallback. The service worker precaches
-  the mobile image rather than the original PNG.
+  both optimized variants rather than the original PNG.
 
 ## Server behavior after activation
 
