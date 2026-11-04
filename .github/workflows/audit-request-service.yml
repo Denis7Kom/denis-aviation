@@ -14,4 +14,19 @@ jobs:
         with:
           node-version: 22
       - run: npm install --prefix functions --ignore-scripts
-      - run: npm audit --prefix functions --omit=dev --json || true
+      - run: npm audit fix --prefix functions --omit=dev --ignore-scripts || true
+      - name: Emit resolved dependency lock
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import {readFile} from 'node:fs/promises';
+          for (const path of ['functions/package.json','functions/package-lock.json']) {
+            const content = await readFile(path,'utf8');
+            for (let index=0;index<content.length;index+=12000)
+              console.log('DEPENDENCY_FILE_JSON:'+JSON.stringify({path,index,part:content.slice(index,index+12000)}));
+          }
+          NODE
+      - run: npm audit --prefix functions --omit=dev --json
+      - run: node --input-type=module -e "await import('./functions/index.mjs')"
+        env:
+          GCLOUD_PROJECT: demo-denis-aviation-rules
