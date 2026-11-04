@@ -75,6 +75,7 @@ const context = vm.createContext({
   fakeWhere: (...args) => args,
   fakeQuery: (...args) => args,
   fakeOnSnapshot: (_query, options, cb, error) => {
+    if (typeof options === 'function' || _query.includes('message-order')) return () => {};
     assert.equal(options.includeMetadataChanges, true);
     callback = cb;
     onError = error;
@@ -84,7 +85,7 @@ const context = vm.createContext({
 const source = fs.readFileSync('requests.js', 'utf8').split('async function start()')[0];
 vm.runInContext(source, context);
 vm.runInContext(
-  'db = {}; collection = fakeCollection; where = fakeWhere; query = fakeQuery; onSnapshot = fakeOnSnapshot;',
+  'db = {}; collection = fakeCollection; where = fakeWhere; query = fakeQuery; onSnapshot = fakeOnSnapshot; orderBy = () => "message-order"; limitToLast = (...args) => args;',
   context,
 );
 const request = (id, status = 'new', pending = false, overrides = {}) => ({

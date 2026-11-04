@@ -54,6 +54,7 @@ const context = vm.createContext({
   fakeQuery: (...args) => args,
   fakeDoc: (...args) => args,
   fakeOnSnapshot: (_q, _options, cb) => {
+    if (typeof _options === 'function' || _q.includes('message-order')) return () => {};
     callback = cb;
     return () => {};
   },
@@ -66,7 +67,7 @@ const source = fs.readFileSync('requests.js', 'utf8').split('async function star
 vm.runInContext(source, context);
 vm.runInContext(
   `db = {}; collection = fakeCollection; where = fakeWhere; query = fakeQuery;
-  doc = fakeDoc; updateDoc = fakeUpdate; onSnapshot = fakeOnSnapshot;`,
+  doc = fakeDoc; updateDoc = fakeUpdate; onSnapshot = fakeOnSnapshot; orderBy = () => 'message-order'; limitToLast = (...args) => args;`,
   context,
 );
 const fakeDoc = (status) => ({

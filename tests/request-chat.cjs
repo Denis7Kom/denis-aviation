@@ -82,16 +82,15 @@ context.item = {
 context.card = new Element();
 vm.runInContext('attachChat(card,item)', context);
 const [shell] = context.card.children;
-const [, , toggle, panel] = shell.children;
+const [, panel] = shell.children;
 const [history, composer] = panel.children;
 const [label, actions, feedback] = composer.children;
 const [, input] = label.children;
 const [, send] = actions.children;
 (async () => {
-  assert.equal(panel.hidden, true);
-  assert.equal(listener, undefined, 'Closed chat has no subscription');
-  toggle.listeners.click();
-  assert.equal(panel.hidden, false);
+  assert.notEqual(panel.hidden, true);
+  assert.equal(typeof listener, 'function', 'History loads without opening a conversation');
+  assert(!shell.children.some((child) => child.className === 'chat-toggle'));
   assert.equal(send.disabled, true);
   const hostile = '<img src=x onerror=alert(1)>';
   listener({
@@ -134,13 +133,12 @@ const [, send] = actions.children;
   input.value = 'a'.repeat(151);
   await composer.listeners.submit({ preventDefault() {} });
   assert.equal(writes.length, 2);
-  toggle.listeners.click();
+  vm.runInContext('closeChatSubscriptions()', context);
   assert.equal(stopped, 1);
-  assert.equal(panel.hidden, true);
   context.nextCard = new Element();
   vm.runInContext('attachChat(nextCard,item)', context);
   assert.equal(
-    context.nextCard.children[0].children[3].children[1].children[0].children[1].value,
+    context.nextCard.children[0].children[1].children[1].children[0].children[1].value,
     'Не потерять',
     'Draft survives card rerender',
   );

@@ -47,6 +47,9 @@ let db,
   Timestamp;
 const italian = {
   'Comments': 'Commenti',
+  'Reply to client': 'Rispondi al cliente',
+  'Reply to administrator': 'Rispondi all’amministratore',
+  'Write a short reply…': 'Scrivi una breve risposta…',
   'Collapse': 'Comprimi',
   'Reply': 'Rispondi',
   'New message': 'Nuovo messaggio',
@@ -61,7 +64,7 @@ const italian = {
   'Client': 'Cliente',
   'No messages yet.': 'Nessun messaggio.',
   'Loading messages…': 'Caricamento messaggi…',
-  'Could not load messages. Try reopening the conversation.': 'Impossibile caricare i messaggi. Riapri la conversazione.',
+  'Could not load messages. Refresh the page.': 'Impossibile caricare i messaggi. Ricarica la pagina.',
   'Could not send the message. Try again.': 'Impossibile inviare il messaggio. Riprova.',
   'Daily activity': 'Attività giornaliera',
   'Sending is temporarily unavailable. Try tomorrow.': 'Invio temporaneamente non disponibile. Riprova domani.',
@@ -384,6 +387,7 @@ function renderControls() {
   $('#send').disabled = !authReady || !!phase;
   $('#login').disabled = !authReady || !!phase;
   $('#logout').disabled = !authReady || !!phase;
+  $('#switch-account').disabled = !authReady || !!phase || [...chatStates.values()].some((state) => state.sending);
   $('#form-auth-hint').hidden = !!user;
   $('#send-label').textContent = serviceFailed
     ? text('Сервис недоступен', 'Service unavailable')
@@ -568,7 +572,6 @@ function syncMessageWatchers(snapshot) {
 }
 function openMessageFromAlert(id) {
   const state = chatStates.get(id) || { draft: '', sending: false };
-  state.open = true;
   chatStates.set(id, state);
   messageAlerts.delete(id);
   renderMessageAlerts();
@@ -647,7 +650,7 @@ function closeChatSubscriptions() {
   chatSubscriptions.clear();
 }
 function attachChat(card, item) {
-  const state = chatStates.get(item.id) || { open: false, draft: '', sending: false };
+  const state = chatStates.get(item.id) || { draft: '', sending: false };
   chatStates.set(item.id, state);
   const shell = document.createElement('section');
   shell.className = 'request-chat';
@@ -661,19 +664,9 @@ function attachChat(card, item) {
     legacy.textContent = `${text('Комментарий администратора', 'Administrator comment')}: ${oldComment}`;
     shell.append(legacy);
   }
-  const preview = document.createElement('p');
-  preview.className = 'chat-latest';
-  shell.append(preview);
-  const toggle = document.createElement('button');
-  toggle.type = 'button';
-  toggle.className = 'chat-toggle';
-  toggle.textContent = state.open ? text('Свернуть', 'Collapse') : isAdmin(user) && !oldComment && !chatPreviews.has(item.id) ? text('Добавить комментарий', 'Add comment') : text('Ответить', 'Reply');
   const panel = document.createElement('div');
   panel.className = 'chat-panel';
-  panel.hidden = !state.open;
   panel.id = `chat-${item.id}`;
-  toggle.setAttribute('aria-controls', panel.id);
-  toggle.setAttribute('aria-expanded', String(state.open));
   const history = document.createElement('div');
   history.className = 'chat-history';
   history.setAttribute('role', 'log');
@@ -683,10 +676,11 @@ function attachChat(card, item) {
   composer.className = 'chat-composer';
   const label = document.createElement('label');
   const title = document.createElement('span');
-  title.textContent = text('Сообщение', 'Message');
+  title.textContent = isAdmin(user) ? text('Ответить клиенту', 'Reply to client') : text('Ответить администратору', 'Reply to administrator');
   const input = document.createElement('textarea');
   input.maxLength = 150;
-  input.rows = 1;
+  input.rows = 2;
+  input.placeholder = text('Напиши короткий ответ…', 'Write a short reply…');
   input.required = true;
   input.value = state.draft;
   input.disabled = state.sending;
@@ -703,32 +697,29 @@ function attachChat(card, item) {
   feedback.setAttribute('role', 'status');
   function updateComposer() {
     counter.textContent = `${input.value.length} / 150`;
-    send.disabled = state.sending || !input.value.trim();
+    send.disabled = state.sending || !!phase || !input.value.trim() || input.value.length > 150;
   }
   input.addEventListener('input', () => { state.draft = input.value; updateComposer(); });
   updateComposer();
   actions.append(counter, send);
   composer.append(label, actions, feedback);
   panel.append(history, composer);
-  shell.append(toggle, panel);
+  shell.append(panel);
   card.append(shell);
   function refreshPreview() {
-    const latest = chatPreviews.get(item.id);
-    preview.hidden = state.open || !latest;
-    preview.textContent = latest
-      ? `${latest.authorRole === 'admin' ? text('Администратор', 'Administrator') : text('Клиент', 'Client')}: ${String(latest.body).slice(0, 120)}` : '';
     shell.dataset.unread = String(messageAlerts.has(item.id));
-    toggle.textContent = state.open ? text('Свернуть', 'Collapse') : isAdmin(user) && !oldComment && !latest ? text('Добавить комментарий', 'Add comment') : text('Ответить', 'Reply');
   }
-  chatViews.set(item.id, { refresh: refreshPreview });
+  chatViews.set(item.id, { refresh: refreshPreview, history });
   refreshPreview();
   function loadMessages() {
-    if (!state.open || chatSubscriptions.has(item.id)) return;
+    if (chatSubscriptions.has(item.id)) return;
     history.textContent = text('Загружаем сообщения…', 'Loading messages…');
     const uid = user.uid;
     const messages = query(collection(db, 'flightRequests', item.id, 'messages'), orderBy('createdAt'), limitToLast(10));
     const stop = onSnapshot(messages, (snapshot) => {
-      if (user?.uid !== uid) return;
+      if (user?.uid !== uid || chatViews.get(item.id)?.history !== history) return;
+      const atBottom = history.scrollHeight - history.scrollTop - history.clientHeight < 40;
+      const firstLoad = !history.children.length;
       history.replaceChildren();
       if (snapshot.empty) history.textContent = text('Сообщений пока нет.', 'No messages yet.');
       for (const message of snapshot.docs) {
@@ -736,9 +727,10 @@ function attachChat(card, item) {
         const bubble = document.createElement('div');
         bubble.className = 'chat-message';
         bubble.dataset.own = String(data.authorUid === uid);
+        bubble.dataset.role = data.authorRole;
         const meta = document.createElement('span');
         meta.className = 'chat-meta';
-        const author = data.authorRole === 'admin' ? text('Администратор', 'Administrator') : text('Клиент', 'Client');
+        const author = data.authorUid === uid ? text('Вы', 'You') : data.authorRole === 'admin' ? text('Администратор', 'Administrator') : text('Клиент', 'Client');
         const date = data.createdAt?.toDate?.();
         const stamp = date ? new Intl.DateTimeFormat(language, {dateStyle:'short',timeStyle:'short'}).format(date) : '…';
         meta.textContent = `${author} · ${stamp}`;
@@ -747,25 +739,22 @@ function attachChat(card, item) {
         bubble.append(meta, body);
         history.append(bubble);
       }
-      history.scrollTop = history.scrollHeight;
-    }, () => { history.textContent = text('Не удалось загрузить сообщения. Откройте обсуждение заново.', 'Could not load messages. Try reopening the conversation.'); });
+      if (firstLoad || atBottom) history.scrollTop = history.scrollHeight;
+    }, () => { history.textContent = text('Не удалось загрузить сообщения. Обновите страницу.', 'Could not load messages. Refresh the page.'); });
     chatSubscriptions.set(item.id, stop);
   }
-  toggle.addEventListener('click', () => {
-    state.open = !state.open;
-    panel.hidden = !state.open;
-    toggle.setAttribute('aria-expanded', String(state.open));
-    toggle.textContent = state.open ? text('Свернуть', 'Collapse') : isAdmin(user) && !oldComment && !chatPreviews.has(item.id) ? text('Добавить комментарий', 'Add comment') : text('Ответить', 'Reply');
-    if (state.open) { messageAlerts.delete(item.id); renderMessageAlerts(); loadMessages(); input.focus?.(); }
-    else { chatSubscriptions.get(item.id)?.(); chatSubscriptions.delete(item.id); }
+  input.addEventListener('focus', () => {
+    messageAlerts.delete(item.id);
+    renderMessageAlerts();
     refreshPreview();
   });
   composer.addEventListener('submit', async (event) => {
     event.preventDefault();
     const body = input.value.trim();
-    if (state.sending || !body || body.length > 150 || !user) return;
+    if (state.sending || phase || !body || body.length > 150 || !user) return;
     const account = user;
     state.sending = true;
+    renderControls();
     input.disabled = true;
     updateComposer();
     feedback.textContent = '';
@@ -783,11 +772,12 @@ function attachChat(card, item) {
       feedback.textContent = text('Не удалось отправить сообщение. Попробуйте ещё раз.', 'Could not send the message. Try again.');
     } finally {
       state.sending = false;
+      renderControls();
       input.disabled = false;
       updateComposer();
     }
   });
-  if (state.open) loadMessages();
+  loadMessages();
 }
 
 // Drafts are stored only after the visitor explicitly opts in.
@@ -1188,6 +1178,22 @@ $('#form').addEventListener('submit', async (event) => {
     renderControls();
   }
 });
+async function switchAccount() {
+  if (!authReady || phase || [...chatStates.values()].some((state) => state.sending)) return;
+  phase = 'signing-in';
+  renderControls();
+  notice('', '');
+  try {
+    const provider = new authSdk.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    await authSdk.signInWithPopup(auth, provider);
+  } catch (error) {
+    signInError(error);
+  } finally {
+    phase = '';
+    renderControls();
+  }
+}
 async function start() {
   try {
     const [appSdk, loadedAuthSdk, fs] = await Promise.all([
@@ -1214,6 +1220,7 @@ async function start() {
         renderControls();
       }
     });
+    $('#switch-account').addEventListener('click', switchAccount);
     $('#logout').addEventListener('click', async () => {
       if (!authReady || phase) return;
       try {
@@ -1252,6 +1259,7 @@ async function start() {
       $('.grid').classList.toggle('is-guest', !u);
       $('#login').hidden = !!u;
       $('#logout').hidden = !u;
+      $('#switch-account').hidden = !u;
       $('#identity').textContent = u?.email || '';
       $('#account-info').hidden = !u;
       $('#auth-hint').hidden = !!u;

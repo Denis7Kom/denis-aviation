@@ -36,6 +36,7 @@ function boot(values, blocked = false) {
     ['#send-label', element()],
     ['#login', element()],
     ['#logout', element()],
+    ['#switch-account', element()],
     ['#form-auth-hint', element()],
     ['#new-form', element()],
     ['#status-filter', element()],
