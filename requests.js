@@ -69,6 +69,7 @@ let requestPageCursor = null,
   requestDirectId = null;
 const requestCounts = {};
 const italian = {
+  'Filter by status': 'Filtra per stato',
   'Status on this page': 'Stato in questa pagina',
   'Request from notification': 'Richiesta dalla notifica',
   'Background delivery is not configured yet. Browser notifications work while this page is open.':
