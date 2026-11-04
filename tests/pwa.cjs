@@ -78,7 +78,7 @@ vm.runInNewContext(readFileSync('sw.js', 'utf8'), {
   await task;
   assert(entries.has(resolve('./index.html')), 'Entry page is cached');
   for (const src of [
-    'style.css?v=status-theme-89',
+    'style.css?v=mobile-arrows-90',
     'app.js?v=email-form-78',
     'assets/hero-night.png',
   ]) {
