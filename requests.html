@@ -13,7 +13,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="requests.css?v=29" />
+    <link rel="stylesheet" href="requests.css?v=30" />
   </head>
   <body>
     <div class="page-shell">
@@ -227,6 +227,11 @@
                 Статус обновляется на этой странице. Время считается согласованным после
                 подтверждения.
               </p>
+              <section id="message-alert" class="message-alert" hidden aria-live="polite">
+                <strong id="message-alert-title"></strong>
+                <p id="message-alert-body"></p>
+                <button id="message-alert-open" type="button"></button>
+              </section>
               <div id="visitor-tools" class="admin-alert" hidden>
                 <div class="admin-alert-heading"><span aria-hidden="true">●</span><strong data-ru="Изменения статуса" data-en="Status updates" data-it="Aggiornamenti di stato">Изменения статуса</strong></div>
                 <p class="admin-alert-help" data-ru="Оставь страницу открытой для уведомлений браузера. Изменения за время отсутствия появятся при следующем входе на этом устройстве." data-en="Keep this page open for browser notifications. Changes while away appear when you return on this device." data-it="Lascia aperta la pagina per ricevere le notifiche del browser. Le modifiche avvenute in tua assenza appariranno al prossimo accesso da questo dispositivo.">Оставь страницу открытой для уведомлений браузера. Изменения за время отсутствия появятся при следующем входе на этом устройстве.</p>
@@ -311,9 +316,9 @@
         ><a href="./#booking" data-ru="ВЕРНУТЬСЯ НА САЙТ ↗" data-en="BACK TO WEBSITE ↗" data-it="TORNA AL SITO ↗"
           >ВЕРНУТЬСЯ НА САЙТ ↗</a
         >
-        <small class="project-version">ver. 1.1.8</small>
+        <small class="project-version">ver. 1.1.9</small>
       </footer>
     </div>
-    <script type="module" src="requests.js?v=24"></script>
+    <script type="module" src="requests.js?v=25"></script>
   </body>
 </html>

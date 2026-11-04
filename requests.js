@@ -46,6 +46,12 @@ let db,
   limitToLast,
   Timestamp;
 const italian = {
+  'Comments': 'Commenti',
+  'Collapse': 'Comprimi',
+  'Reply': 'Rispondi',
+  'New message': 'Nuovo messaggio',
+  'Open message': 'Apri messaggio',
+  'Could not connect message alerts. Refresh the page.': 'Impossibile attivare gli avvisi dei messaggi. Ricarica la pagina.',
   'Conversation': 'Conversazione',
   'Close conversation': 'Chiudi conversazione',
   'Message': 'Messaggio',
@@ -365,6 +371,7 @@ function translate() {
   renderAdminAlerts();
   renderVisitorAlerts();
   renderQuota();
+  renderMessageAlerts();
   if (lastSnapshot) renderList(lastSnapshot);
 }
 function renderConfirmation() {
@@ -492,6 +499,85 @@ if (typeof window !== 'undefined') {
 let quotaData = null;
 const chatStates = new Map();
 const chatSubscriptions = new Map();
+const chatPreviews = new Map();
+const chatViews = new Map();
+const messageWatchers = new Map();
+const messageAlerts = new Map();
+function renderMessageAlerts() {
+  const banner = $('#message-alert');
+  if (!banner) return;
+  banner.hidden = !user || !messageAlerts.size;
+  $('#message-alert-title').textContent = text('Новое сообщение', 'New message');
+  $('#message-alert-open').textContent = text('Открыть сообщение', 'Open message');
+  $('#message-alert-body').textContent = Array.from(messageAlerts.values()).map((entry) =>
+    `${entry.request.callsign || '—'} · ${entry.request.route || '—'}\n${entry.body}`).join('\n\n');
+}
+function clearMessageWatchers() {
+  for (const entry of messageWatchers.values()) entry.stop();
+  messageWatchers.clear();
+  chatPreviews.clear();
+  chatViews.clear();
+  messageAlerts.clear();
+  renderMessageAlerts();
+}
+function syncMessageWatchers(snapshot) {
+  // Test helpers and failed SDK loads must not start partially initialised subscriptions.
+  if (!user || !orderBy || !limitToLast) return;
+  const uid = user.uid;
+  const ids = new Set(snapshot.docs.map((item) => item.id));
+  for (const [id, entry] of messageWatchers) {
+    if (!ids.has(id)) {
+      entry.stop(); messageWatchers.delete(id); chatPreviews.delete(id); messageAlerts.delete(id);
+    }
+  }
+  for (const item of snapshot.docs) {
+    const existing = messageWatchers.get(item.id);
+    if (existing) { existing.request = item.data(); continue; }
+    const entry = { request: item.data(), ready: false, lastId: null, stop: () => {} };
+    messageWatchers.set(item.id, entry);
+    entry.stop = onSnapshot(query(collection(db, 'flightRequests', item.id, 'messages'), orderBy('createdAt'), limitToLast(1)),
+      { includeMetadataChanges: true }, (messages) => {
+        if (user?.uid !== uid || messageWatchers.get(item.id) !== entry || messages.metadata?.fromCache) return;
+        const latest = messages.docs.at(-1);
+        if (latest?.metadata?.hasPendingWrites) return;
+        const data = latest?.data();
+        if (data) chatPreviews.set(item.id, data); else chatPreviews.delete(item.id);
+        if (entry.ready && latest && latest.id !== entry.lastId && data.authorUid !== uid) {
+          messageAlerts.delete(item.id);
+          messageAlerts.set(item.id, { request: entry.request, body: data.body });
+          renderMessageAlerts();
+          if (browserAlertsSupported() && Notification.permission === 'granted') {
+            try {
+              const alert = new Notification(text('Новое сообщение', 'New message'), {
+                body: `${data.body}\n${formatVisitorUpdate(entry.request)}`,
+                icon: 'favicon.svg', tag: `request-message-${item.id}`,
+              });
+              alert.onclick = () => { alert.close(); openMessageFromAlert(item.id); };
+            } catch (_) {}
+          }
+        }
+        entry.ready = true;
+        entry.lastId = latest?.id || null;
+        chatViews.get(item.id)?.refresh();
+      }, () => {
+        if (user?.uid !== uid || messageWatchers.get(item.id) !== entry) return;
+        notice('Не удалось подключить уведомления о сообщениях. Обнови страницу.', 'Could not connect message alerts. Refresh the page.', 'list');
+      });
+  }
+  renderMessageAlerts();
+}
+function openMessageFromAlert(id) {
+  const state = chatStates.get(id) || { draft: '', sending: false };
+  state.open = true;
+  chatStates.set(id, state);
+  messageAlerts.delete(id);
+  renderMessageAlerts();
+  openRequestFromAlert(id);
+}
+$('#message-alert-open')?.addEventListener('click', () => {
+  const latest = Array.from(messageAlerts.keys()).at(-1);
+  if (latest) openMessageFromAlert(latest);
+});
 function utcDay(milliseconds) {
   return new Date(milliseconds).toISOString().slice(0, 10);
 }
@@ -565,10 +651,23 @@ function attachChat(card, item) {
   chatStates.set(item.id, state);
   const shell = document.createElement('section');
   shell.className = 'request-chat';
+  const heading = document.createElement('h4');
+  heading.textContent = text('Комментарии', 'Comments');
+  shell.append(heading);
+  const oldComment = item.data().adminComment;
+  if (typeof oldComment === 'string' && oldComment.trim()) {
+    const legacy = document.createElement('p');
+    legacy.className = 'admin-comment';
+    legacy.textContent = `${text('Комментарий администратора', 'Administrator comment')}: ${oldComment}`;
+    shell.append(legacy);
+  }
+  const preview = document.createElement('p');
+  preview.className = 'chat-latest';
+  shell.append(preview);
   const toggle = document.createElement('button');
   toggle.type = 'button';
   toggle.className = 'chat-toggle';
-  toggle.textContent = state.open ? text('Закрыть обсуждение', 'Close conversation') : text('Обсуждение', 'Conversation');
+  toggle.textContent = state.open ? text('Свернуть', 'Collapse') : isAdmin(user) && !oldComment && !chatPreviews.has(item.id) ? text('Добавить комментарий', 'Add comment') : text('Ответить', 'Reply');
   const panel = document.createElement('div');
   panel.className = 'chat-panel';
   panel.hidden = !state.open;
@@ -586,8 +685,8 @@ function attachChat(card, item) {
   const title = document.createElement('span');
   title.textContent = text('Сообщение', 'Message');
   const input = document.createElement('textarea');
-  input.maxLength = 1000;
-  input.rows = 2;
+  input.maxLength = 50;
+  input.rows = 1;
   input.required = true;
   input.value = state.draft;
   input.disabled = state.sending;
@@ -603,7 +702,7 @@ function attachChat(card, item) {
   feedback.className = 'chat-feedback';
   feedback.setAttribute('role', 'status');
   function updateComposer() {
-    counter.textContent = `${Array.from(input.value).length} / 1000`;
+    counter.textContent = `${input.value.length} / 50`;
     send.disabled = state.sending || !input.value.trim();
   }
   input.addEventListener('input', () => { state.draft = input.value; updateComposer(); });
@@ -613,11 +712,21 @@ function attachChat(card, item) {
   panel.append(history, composer);
   shell.append(toggle, panel);
   card.append(shell);
+  function refreshPreview() {
+    const latest = chatPreviews.get(item.id);
+    preview.hidden = state.open || !latest;
+    preview.textContent = latest
+      ? `${latest.authorRole === 'admin' ? text('Администратор', 'Administrator') : text('Клиент', 'Client')}: ${String(latest.body).slice(0, 120)}` : '';
+    shell.dataset.unread = String(messageAlerts.has(item.id));
+    toggle.textContent = state.open ? text('Свернуть', 'Collapse') : isAdmin(user) && !oldComment && !latest ? text('Добавить комментарий', 'Add comment') : text('Ответить', 'Reply');
+  }
+  chatViews.set(item.id, { refresh: refreshPreview });
+  refreshPreview();
   function loadMessages() {
     if (!state.open || chatSubscriptions.has(item.id)) return;
     history.textContent = text('Загружаем сообщения…', 'Loading messages…');
     const uid = user.uid;
-    const messages = query(collection(db, 'flightRequests', item.id, 'messages'), orderBy('createdAt'), limitToLast(50));
+    const messages = query(collection(db, 'flightRequests', item.id, 'messages'), orderBy('createdAt'), limitToLast(10));
     const stop = onSnapshot(messages, (snapshot) => {
       if (user?.uid !== uid) return;
       history.replaceChildren();
@@ -646,14 +755,15 @@ function attachChat(card, item) {
     state.open = !state.open;
     panel.hidden = !state.open;
     toggle.setAttribute('aria-expanded', String(state.open));
-    toggle.textContent = state.open ? text('Закрыть обсуждение', 'Close conversation') : text('Обсуждение', 'Conversation');
-    if (state.open) { loadMessages(); input.focus?.(); }
+    toggle.textContent = state.open ? text('Свернуть', 'Collapse') : isAdmin(user) && !oldComment && !chatPreviews.has(item.id) ? text('Добавить комментарий', 'Add comment') : text('Ответить', 'Reply');
+    if (state.open) { messageAlerts.delete(item.id); renderMessageAlerts(); loadMessages(); input.focus?.(); }
     else { chatSubscriptions.get(item.id)?.(); chatSubscriptions.delete(item.id); }
+    refreshPreview();
   });
   composer.addEventListener('submit', async (event) => {
     event.preventDefault();
     const body = input.value.trim();
-    if (state.sending || !body || Array.from(body).length > 1000 || !user) return;
+    if (state.sending || !body || body.length > 50 || !user) return;
     const account = user;
     state.sending = true;
     input.disabled = true;
@@ -666,6 +776,9 @@ function attachChat(card, item) {
       });
       state.draft = '';
       input.value = '';
+      messageAlerts.delete(item.id);
+      renderMessageAlerts();
+      refreshPreview();
     } catch (_) {
       feedback.textContent = text('Не удалось отправить сообщение. Попробуйте ещё раз.', 'Could not send the message. Try again.');
     } finally {
@@ -802,6 +915,7 @@ function subscribe() {
       announceNewRequests(snapshot);
       announceVisitorChanges(snapshot);
       lastSnapshot = snapshot;
+      syncMessageWatchers(snapshot);
       adminAlertProblem = false;
       renderList(snapshot);
       // Rebuild the title before adding the current count.
@@ -810,6 +924,7 @@ function subscribe() {
     },
     () => {
       adminAlertProblem = true;
+      clearMessageWatchers();
       lastSnapshot = null;
       document.title = text('Заявки на полёт — Denis Aviation', 'Flight requests — Denis Aviation');
       renderAdminAlerts();
@@ -823,6 +938,7 @@ function subscribe() {
 }
 function renderList(snapshot) {
   closeChatSubscriptions();
+  chatViews.clear();
   const list = $('#list');
   list.replaceChildren();
   const counts = { new: 0, review: 0, confirmed: 0 };
@@ -877,12 +993,6 @@ function renderList(snapshot) {
       details.textContent += `\n${text('Почта аккаунта', 'Account email')}: ${d.ownerEmail || text('нет данных', 'unavailable')}`;
     }
     card.append(title, details);
-    if (typeof d.adminComment === 'string' && d.adminComment.trim()) {
-      const comment = document.createElement('p');
-      comment.className = 'admin-comment';
-      comment.textContent = `${text('Комментарий администратора', 'Administrator comment')}: ${d.adminComment}`;
-      card.append(comment);
-    }
 
     if (isAdmin(user)) {
       const label = document.createElement('label'),
@@ -920,44 +1030,6 @@ function renderList(snapshot) {
       });
       label.append(span, select);
       card.append(label);
-      const commentToggle = document.createElement('button');
-      const commentPanel = document.createElement('div');
-      commentToggle.type = 'button';
-      commentToggle.className = 'comment-toggle';
-      commentToggle.textContent = d.adminComment ? text('Изменить комментарий', 'Edit comment') : text('Добавить комментарий', 'Add comment');
-      commentToggle.setAttribute('aria-expanded', 'false');
-      commentPanel.className = 'admin-comment-panel';
-      commentPanel.hidden = true;
-      commentToggle.addEventListener('click', () => {
-        commentPanel.hidden = !commentPanel.hidden;
-        commentToggle.setAttribute('aria-expanded', String(!commentPanel.hidden));
-        if (!commentPanel.hidden) commentInput.focus();
-      });
-      const commentLabel = document.createElement('label');
-      const commentTitle = document.createElement('span');
-      const commentInput = document.createElement('textarea');
-      const saveComment = document.createElement('button');
-      commentLabel.className = 'admin-comment-editor';
-      commentTitle.textContent = text('Комментарий администратора', 'Administrator comment');
-      commentInput.value = typeof d.adminComment === 'string' ? d.adminComment : '';
-      commentInput.maxLength = 500;
-      commentInput.rows = 3;
-      saveComment.type = 'button';
-      saveComment.textContent = text('Сохранить комментарий', 'Save comment');
-      saveComment.addEventListener('click', async () => {
-        saveComment.disabled = true;
-        try {
-          await updateDoc(doc(db, 'flightRequests', item.id), { adminComment: commentInput.value.trim() });
-          notice('Комментарий сохранён.', 'Comment saved.', 'list', 'success');
-        } catch (_) {
-          notice('Не удалось сохранить комментарий. Проверь соединение и попробуй снова.', 'Could not save comment. Check your connection and try again.', 'list');
-        } finally {
-          saveComment.disabled = false;
-        }
-      });
-      commentLabel.append(commentTitle, commentInput);
-      commentPanel.append(commentLabel, saveComment);
-      card.append(commentToggle, commentPanel);
 
     } else {
       const status = document.createElement('p');
@@ -1152,6 +1224,7 @@ async function start() {
     });
     authSdk.onAuthStateChanged(auth, (u) => {
       closeChatSubscriptions();
+      clearMessageWatchers();
       chatStates.clear();
       if (quotaUnsubscribe) quotaUnsubscribe();
       quotaUnsubscribe = null;

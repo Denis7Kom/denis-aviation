@@ -114,7 +114,13 @@ const render = () =>
     'Visitor does not see account email in the card',
   );
   assert(
-    cards.every((c) => c.children.some((child) => child.textContent.includes('Flight approved'))),
+    cards.every((c) =>
+      c.children.some(
+        (child) =>
+          child.className === 'request-chat' &&
+          child.children.some((part) => part.textContent.includes('Flight approved')),
+      ),
+    ),
     'Owner sees administrator comment',
   );
   vm.runInContext(
@@ -165,26 +171,22 @@ const render = () =>
   elements.get('#status-filter').listeners.change();
   render();
   cards = elements.get('#list').children;
-  const toggle = cards[0].children.find((child) => child.className === 'comment-toggle');
-  const panel = cards[0].children.find((child) => child.className === 'admin-comment-panel');
-  assert.equal(panel.hidden, true);
-  assert.equal(toggle['aria-expanded'], 'false');
-  panel.children[0].children[1].focus = () => {};
-  toggle.listeners.click();
-  assert.equal(panel.hidden, false);
-  assert.equal(toggle['aria-expanded'], 'true');
-  const editor = panel.children[0].children[1];
-  const saveComment = panel.children[1];
-  assert.equal(editor.value, 'Flight approved');
-  editor.value = 'Updated message';
-  await saveComment.listeners.click();
-  assert.equal(updates[0].adminComment, 'Updated message');
-  toggle.listeners.click();
-  assert.equal(panel.hidden, true);
+  const comments = cards[0].children.find((child) => child.className === 'request-chat');
+  assert(
+    comments.children.some(
+      (child) =>
+        child.className === 'admin-comment' && child.textContent.includes('Flight approved'),
+    ),
+    'Legacy administrator comment remains in the conversation',
+  );
+  assert(
+    !cards[0].children.some((child) => child.className === 'comment-toggle'),
+    'Only one conversation editor is shown',
+  );
   const select = cards[0].children.find((child) => child.tag === 'label').children[1];
   select.value = 'confirmed';
   await select.listeners.change();
-  assert.equal(updates[1].status, 'confirmed');
+  assert.equal(updates[0].status, 'confirmed');
   assert.equal(cards[0].dataset.status, 'confirmed');
   updateFails = true;
   select.value = 'declined';
