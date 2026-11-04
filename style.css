@@ -5508,3 +5508,13 @@ nav a[href='requests.html#new-request']::after {
     background-image: none;
   }
 }
+
+@media (max-width: 800px) {
+  .booking-email .request-form select {
+    background-position: right 16px center;
+    padding-inline-end: 44px;
+  }
+  .booking-email .request-form :is(input[type='date'], input[type='time']) {
+    padding-inline: 16px;
+  }
+}

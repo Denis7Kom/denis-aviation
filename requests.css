@@ -430,6 +430,7 @@ textarea:hover {
 }
 select {
   appearance: none;
+  -webkit-appearance: none;
   padding-inline-end: 44px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none'%3E%3Cpath d='m3 5 4 4 4-4' stroke='%23c2d3e2' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -990,3 +991,16 @@ textarea:focus-visible {
 .message-alert strong { font-size: 12px; color: #c7e8ff; }
 .message-alert p { margin: 8px 0 12px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; }
 .message-alert button { min-height: 32px; padding: 6px 11px; font-size: 11px; border-radius: 999px; }
+
+/* Reserve the same inset for chevrons on touch screens, including time fields. */
+@media (max-width: 800px) {
+  select,
+  .time-controls select {
+    background-position: right 16px center;
+    background-size: 14px 14px;
+    padding-inline-end: 38px;
+  }
+  .time-controls select { padding-inline-start: 8px; }
+  #login, #logout, #switch-account, #send { padding-inline-end: 24px; }
+  .button-arrow { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 18px; }
+}
