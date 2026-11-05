@@ -84,13 +84,14 @@ assert.equal(test.en.attributes['aria-pressed'], 'true');
 assert.equal(test.ru.attributes['aria-pressed'], 'false');
 assert.equal(test.translated.textContent, 'Request');
 const timezone = test.named.get('#form').elements.timezone;
-assert(
-  timezone.children.some(
-    (option) => option.value === 'Europe/Moscow' && option.textContent.includes('Moscow'),
-  ),
-);
 const selectedZone = timezone.value;
 assert(selectedZone, 'Device time zone is selected');
+assert.equal(selectedZone, Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
+assert.deepEqual(
+  timezone.children.map((option) => option.value),
+  [...new Set([selectedZone, 'UTC', 'Zulu'])],
+  'Only the device time zone, UTC and Zulu are offered',
+);
 vm.runInContext("notice('Сохранено', 'Saved');", test.context);
 test.ru.listeners.click();
 assert.equal(test.document.documentElement.lang, 'ru');
@@ -98,28 +99,17 @@ assert.equal(test.ru.attributes['aria-pressed'], 'true');
 assert.equal(test.en.attributes['aria-pressed'], 'false');
 assert.equal(test.translated.textContent, 'Заявка');
 assert.equal(timezone.value, selectedZone, 'Switching language preserves the selected zone');
-assert(
-  timezone.children.some(
-    (option) => option.value === 'Europe/Moscow' && option.textContent.includes('Москва'),
-  ),
-);
+assert(timezone.children.some((option) => option.value === selectedZone));
 assert.equal(test.named.get('#notice').textContent, 'Сохранено');
 assert.equal(test.storage.get('dk-aviation-lang'), 'ru');
 test.it.listeners.click();
 assert.equal(test.document.documentElement.lang, 'it');
 assert.equal(test.translated.textContent, 'Richiesta');
-assert(
-  timezone.children.some(
-    (option) => option.value === 'Europe/Rome' && option.textContent.startsWith('Roma ·'),
-  ),
-);
-assert(
-  timezone.children.some(
-    (option) => option.value === 'Europe/Moscow' && option.textContent.startsWith('Mosca ·'),
-  ),
-);
 assert.equal(timezone.value, selectedZone, 'Switching to Italian preserves the selected zone');
 assert.equal(test.storage.get('dk-aviation-lang'), 'it');
+timezone.value = 'Zulu';
+test.en.listeners.click();
+assert.equal(timezone.value, 'Zulu', 'Switching language preserves the explicit Zulu choice');
 assert.equal(boot({ 'dk-aviation-lang': 'it' }).document.documentElement.lang, 'it');
 const old = boot({ 'requests-language': 'en' });
 assert.equal(old.document.documentElement.lang, 'en');

@@ -156,20 +156,14 @@
                   </div>
                   <input type="hidden" name="time" />
                 </fieldset>
-                <label class="timezone-search-label">
-                  <span data-ru="Найти часовой пояс" data-en="Find a time zone" data-it="Cerca un fuso orario">Найти часовой пояс</span>
-                  <input id="timezone-search" type="search" autocomplete="off" aria-controls="timezone"
-                    data-placeholder-ru="Город, регион или Europe/Rome" data-placeholder-en="City, region or Europe/Rome" data-placeholder-it="Città, regione o Europe/Rome" placeholder="Город, регион или Europe/Rome" />
-                </label>
                 <label
                   ><span data-ru="Часовой пояс" data-en="Time zone" data-it="Fuso orario">Часовой пояс</span
                   ><select name="timezone" id="timezone" required>
                     <option value="UTC">UTC</option></select
                   ><small
-                    data-ru="Определён автоматически. Смещение указано на сегодняшний день и может меняться."
-                    data-en="Detected automatically. Offsets are current and may change with daylight saving time." data-it="Rilevato automaticamente. La differenza oraria è quella attuale e può cambiare con l’ora legale."
-                    >Определён автоматически. Смещение указано на сегодняшний день и может
-                    меняться.</small
+                    data-ru="Твой часовой пояс выбран автоматически. При необходимости выбери UTC или Zulu — это одно время."
+                    data-en="Your time zone is selected automatically. You can switch to UTC or Zulu — they use the same time." data-it="Il tuo fuso orario è selezionato automaticamente. Puoi scegliere UTC o Zulu: indicano la stessa ora."
+                    >Твой часовой пояс выбран автоматически. При необходимости выбери UTC или Zulu — это одно время.</small
                   ></label
                 >
                 <label
@@ -332,9 +326,9 @@
         ><a href="./#booking" data-ru="ВЕРНУТЬСЯ НА САЙТ ↗" data-en="BACK TO WEBSITE ↗" data-it="TORNA AL SITO ↗"
           >ВЕРНУТЬСЯ НА САЙТ ↗</a
         >
-        <small class="project-version">ver. 1.2.4</small>
+        <small class="project-version">ver. 1.2.5</small>
       </footer>
     </div>
-    <script type="module" src="requests.js?v=29"></script>
+    <script type="module" src="requests.js?v=30"></script>
   </body>
 </html>

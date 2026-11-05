@@ -305,6 +305,7 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   assert.equal(app.form.resets, 0);
   assert.match(app.get('#notice').textContent, /Аккаунт изменился/);
 
+  app.form.fields.timezone = 'Zulu';
   app.setSignInMode('success');
   const submission = app.submit();
   await flush();
@@ -313,6 +314,7 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   assert.equal(app.getWrites().length, 1);
   assert.equal(app.getWrites()[0].owner, app.fakeUser.uid);
   assert.equal(app.getWrites()[0].date, '2099-11-01');
+  assert.equal(app.getWrites()[0].timezone, 'UTC', 'Zulu is saved as UTC');
   assert.equal(
     app.getWrites()[0].ownerEmail,
     'guest@example.com',
@@ -335,7 +337,11 @@ const flush = () => new Promise((resolve) => setImmediate(resolve));
   assert.match(app.get('#notice').textContent, /сохранена/);
   app.get('#new-form').listeners.click();
   assert.equal(app.form.hidden, false);
-  assert(app.form.fields.timezone);
+  assert.equal(
+    app.form.fields.timezone,
+    Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+    'A new request starts in the device time zone',
+  );
   assert.equal(app.get('#notice').textContent, '');
 
   Object.assign(app.form.fields, {

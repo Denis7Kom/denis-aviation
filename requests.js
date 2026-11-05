@@ -584,29 +584,6 @@ document.querySelectorAll('[data-lang]').forEach((button) => {
     translate();
   });
 });
-const commonZones = [
-  'UTC',
-  'Europe/Moscow',
-  'Europe/Rome',
-  'Europe/Madrid',
-  'Europe/London',
-  'Europe/Paris',
-  'Europe/Malta',
-  'Europe/Vienna',
-  'America/New_York',
-  'America/Chicago',
-  'America/Denver',
-  'America/Los_Angeles',
-  'America/Anchorage',
-  'Pacific/Honolulu',
-  'America/Mexico_City',
-  'America/Cancun',
-  'Asia/Tokyo',
-  'Asia/Hong_Kong',
-  'Asia/Singapore',
-  'Australia/Sydney',
-  'Australia/Canberra',
-];
 const zoneNames = {
   UTC: ['UTC', 'UTC'],
   'Europe/Moscow': ['Москва', 'Moscow', 'Mosca'],
@@ -631,10 +608,6 @@ const zoneNames = {
   'Australia/Canberra': ['Канберра', 'Canberra'],
 };
 const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-let availableZones = [];
-try {
-  availableZones = Intl.supportedValuesOf ? Intl.supportedValuesOf('timeZone') : [];
-} catch (_) {}
 function timezoneLabel(zone) {
   const names = zoneNames[zone];
   const name =
@@ -655,36 +628,18 @@ function timezoneLabel(zone) {
 }
 function renderTimezoneOptions() {
   const select = $('#form').elements.timezone;
-  const previous = select.value || detectedTimezone;
-  const allZones = [
-    ...new Set([...commonZones, detectedTimezone, previous, ...availableZones]),
-  ];
-  const term = ($('#timezone-search')?.value || '')
-    .trim()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLocaleLowerCase();
-  const zones = allZones.filter(
-    (zone) =>
-      zone === previous ||
-      !term ||
-      [zone, timezoneLabel(zone), ...(zoneNames[zone] || [])]
-        .join(' ')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLocaleLowerCase()
-        .includes(term),
-  );
+  const zones = [...new Set([detectedTimezone, 'UTC', 'Zulu'])];
+  const previous = zones.includes(select.value) ? select.value : detectedTimezone;
   select.replaceChildren();
   for (const zone of zones) {
     const option = document.createElement('option');
     option.value = zone;
-    option.textContent = timezoneLabel(zone);
+    option.textContent =
+      zone === 'Zulu' ? 'Zulu (UTC+0)' : zone === 'UTC' ? 'UTC (UTC+0)' : timezoneLabel(zone);
     select.append(option);
   }
   select.value = previous;
 }
-$('#timezone-search')?.addEventListener('input', renderTimezoneOptions);
 renderTimezoneOptions();
 $('#form').elements.timezone.value = detectedTimezone;
 if (typeof window !== 'undefined') {
@@ -1275,21 +1230,14 @@ try {
   if (saved && typeof saved === 'object') {
     for (const key of draftFields) {
       if (typeof saved[key] === 'string' && $('#form').elements[key]) {
-        if (
-          key === 'timezone' &&
-          ![...$('#form').elements.timezone.options].some(
-            (option) => option.value === saved[key],
-          )
-        ) {
-          const option = document.createElement('option');
-          option.value = saved[key];
-          option.textContent = timezoneLabel(saved[key]);
-          $('#form').elements.timezone.append(option);
-        }
         $('#form').elements[key].value =
           key === 'date'
             ? parseDate(saved[key]) || parseDate(displayDate(saved[key])) || ''
-            : saved[key];
+            : key === 'timezone'
+              ? [detectedTimezone, 'UTC', 'Zulu'].includes(saved[key])
+                ? saved[key]
+                : detectedTimezone
+              : saved[key];
       }
     }
     if (saved.notes) $('.more-details').open = true;
@@ -1790,6 +1738,8 @@ $('#form').addEventListener('submit', async (event) => {
   data.date = parsedDate;
   for (const key of ['timezone', 'callsign', 'route', 'contact', 'notes'])
     data[key] = data[key].trim();
+  // Zulu is the aviation name for UTC, not a separate time offset.
+  if (data.timezone === 'Zulu') data.timezone = 'UTC';
   if (!data.timezone || !data.callsign || !data.route) {
     notice('Заполни обязательные поля.', 'Fill in the required fields.');
     return;
