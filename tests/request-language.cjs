@@ -86,11 +86,13 @@ assert.equal(test.translated.textContent, 'Request');
 const timezone = test.named.get('#form').elements.timezone;
 const selectedZone = timezone.value;
 assert(selectedZone, 'Device time zone is selected');
+assert(timezone.children[0].textContent.startsWith('Automatic ·'));
+assert.equal(timezone.children[1].textContent, 'ZULU (UTC+0)');
 assert.equal(selectedZone, Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
 assert.deepEqual(
   timezone.children.map((option) => option.value),
-  [...new Set([selectedZone, 'UTC', 'Zulu'])],
-  'Only the device time zone, UTC and Zulu are offered',
+  [...new Set([selectedZone, 'Zulu'])],
+  'Only automatic device time and ZULU are offered',
 );
 vm.runInContext("notice('Сохранено', 'Saved');", test.context);
 test.ru.listeners.click();
@@ -102,15 +104,23 @@ assert.equal(timezone.value, selectedZone, 'Switching language preserves the sel
 assert(timezone.children.some((option) => option.value === selectedZone));
 assert.equal(test.named.get('#notice').textContent, 'Сохранено');
 assert.equal(test.storage.get('dk-aviation-lang'), 'ru');
+assert(timezone.children[0].textContent.startsWith('Автоматически ·'));
 test.it.listeners.click();
 assert.equal(test.document.documentElement.lang, 'it');
 assert.equal(test.translated.textContent, 'Richiesta');
 assert.equal(timezone.value, selectedZone, 'Switching to Italian preserves the selected zone');
 assert.equal(test.storage.get('dk-aviation-lang'), 'it');
+assert(timezone.children[0].textContent.startsWith('Automatico ·'));
 timezone.value = 'Zulu';
 test.en.listeners.click();
 assert.equal(timezone.value, 'Zulu', 'Switching language preserves the explicit Zulu choice');
 assert.equal(boot({ 'dk-aviation-lang': 'it' }).document.documentElement.lang, 'it');
+const savedUtc = boot({ 'dk-flight-request-draft-v1': JSON.stringify({ timezone: 'UTC' }) });
+assert.equal(
+  savedUtc.named.get('#form').elements.timezone.value,
+  selectedZone === 'UTC' ? 'UTC' : 'Zulu',
+  'An older explicit UTC draft keeps its meaning without adding another option',
+);
 const old = boot({ 'requests-language': 'en' });
 assert.equal(old.document.documentElement.lang, 'en');
 const restricted = boot({}, true);

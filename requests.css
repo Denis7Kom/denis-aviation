@@ -439,6 +439,7 @@ select {
 @media (forced-colors: active) {
   select {
     appearance: auto;
+    -webkit-appearance: auto;
     background-image: none;
   }
 }
@@ -998,9 +999,25 @@ textarea:focus-visible {
   .time-controls select {
     background-position: right 16px center;
     background-size: 14px 14px;
-    padding-inline-end: 38px;
+    padding-inline-end: 44px;
   }
-  .time-controls select { padding-inline-start: 8px; }
+  .time-controls select { padding-inline-start: 12px; }
+  #request-date { padding-inline-end: 16px; }
+  #request-date::-webkit-calendar-picker-indicator {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    padding: 0;
+    flex-shrink: 0;
+  }
   #login, #logout, #switch-account, #send { padding-inline-end: 24px; }
   .button-arrow { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 18px; }
+}
+
+/* Keep hours/minutes wide enough for their value and chevron on narrow phones. */
+@media (max-width: 480px) {
+  #form > .date-field,
+  #form > .time-field {
+    grid-column: 1 / -1;
+  }
 }

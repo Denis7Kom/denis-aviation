@@ -69,6 +69,7 @@ let requestPageCursor = null,
   requestDirectId = null;
 const requestCounts = {};
 const italian = {
+  Automatic: 'Automatico',
   'Filter by status': 'Filtra per stato',
   'Status on this page': 'Stato in questa pagina',
   'Request from notification': 'Richiesta dalla notifica',
@@ -628,14 +629,14 @@ function timezoneLabel(zone) {
 }
 function renderTimezoneOptions() {
   const select = $('#form').elements.timezone;
-  const zones = [...new Set([detectedTimezone, 'UTC', 'Zulu'])];
+  const zones = [...new Set([detectedTimezone, 'Zulu'])];
   const previous = zones.includes(select.value) ? select.value : detectedTimezone;
   select.replaceChildren();
   for (const zone of zones) {
     const option = document.createElement('option');
     option.value = zone;
     option.textContent =
-      zone === 'Zulu' ? 'Zulu (UTC+0)' : zone === 'UTC' ? 'UTC (UTC+0)' : timezoneLabel(zone);
+      zone === 'Zulu' ? 'ZULU (UTC+0)' : `${text('Автоматически', 'Automatic')} · ${timezoneLabel(zone)}`;
     select.append(option);
   }
   select.value = previous;
@@ -1234,9 +1235,11 @@ try {
           key === 'date'
             ? parseDate(saved[key]) || parseDate(displayDate(saved[key])) || ''
             : key === 'timezone'
-              ? [detectedTimezone, 'UTC', 'Zulu'].includes(saved[key])
-                ? saved[key]
-                : detectedTimezone
+              ? saved[key] === 'UTC' && detectedTimezone !== 'UTC'
+                ? 'Zulu'
+                : [detectedTimezone, 'Zulu'].includes(saved[key])
+                  ? saved[key]
+                  : detectedTimezone
               : saved[key];
       }
     }
