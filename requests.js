@@ -69,7 +69,6 @@ let requestPageCursor = null,
   requestDirectId = null;
 const requestCounts = {};
 const italian = {
-  Automatic: 'Automatico',
   'Filter by status': 'Filtra per stato',
   'Status on this page': 'Stato in questa pagina',
   'Request from notification': 'Richiesta dalla notifica',
@@ -585,35 +584,8 @@ document.querySelectorAll('[data-lang]').forEach((button) => {
     translate();
   });
 });
-const zoneNames = {
-  UTC: ['UTC', 'UTC'],
-  'Europe/Moscow': ['Москва', 'Moscow', 'Mosca'],
-  'Europe/Rome': ['Рим', 'Rome', 'Roma'],
-  'Europe/Madrid': ['Мадрид', 'Madrid'],
-  'Europe/London': ['Лондон', 'London', 'Londra'],
-  'Europe/Paris': ['Париж', 'Paris', 'Parigi'],
-  'Europe/Malta': ['Мальта', 'Malta'],
-  'Europe/Vienna': ['Вена', 'Vienna', 'Vienna'],
-  'America/New_York': ['Нью-Йорк', 'New York'],
-  'America/Chicago': ['Чикаго', 'Chicago'],
-  'America/Denver': ['Денвер', 'Denver'],
-  'America/Los_Angeles': ['Лос-Анджелес', 'Los Angeles'],
-  'America/Anchorage': ['Анкоридж', 'Anchorage'],
-  'Pacific/Honolulu': ['Гонолулу', 'Honolulu'],
-  'America/Mexico_City': ['Мехико', 'Mexico City', 'Città del Messico'],
-  'America/Cancun': ['Канкун', 'Cancun'],
-  'Asia/Tokyo': ['Токио', 'Tokyo', 'Tokyo'],
-  'Asia/Hong_Kong': ['Гонконг', 'Hong Kong'],
-  'Asia/Singapore': ['Сингапур', 'Singapore', 'Singapore'],
-  'Australia/Sydney': ['Сидней', 'Sydney'],
-  'Australia/Canberra': ['Канберра', 'Canberra'],
-};
 const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 function timezoneLabel(zone) {
-  const names = zoneNames[zone];
-  const name =
-    (language === 'it' ? names?.[2] || names?.[1] : names?.[language === 'ru' ? 0 : 1]) ||
-    zone.split('/').pop().replaceAll('_', ' ');
   let offset = '';
   try {
     const parts = new Intl.DateTimeFormat('en', {
@@ -625,7 +597,8 @@ function timezoneLabel(zone) {
       'UTC',
     );
   } catch (_) {}
-  return `${name}${offset && offset !== name ? ` · ${offset}` : ''}${zone === 'UTC' ? '' : ` · ${zone}`}`;
+  if (offset === 'UTC') offset = 'UTC+0';
+  return offset ? `${offset} · ${zone}` : zone;
 }
 function renderTimezoneOptions() {
   const select = $('#form').elements.timezone;
@@ -636,7 +609,7 @@ function renderTimezoneOptions() {
     const option = document.createElement('option');
     option.value = zone;
     option.textContent =
-      zone === 'Zulu' ? 'ZULU (UTC+0)' : `${text('Автоматически', 'Automatic')} · ${timezoneLabel(zone)}`;
+      zone === 'Zulu' ? 'ZULU (UTC+0)' : timezoneLabel(zone);
     select.append(option);
   }
   select.value = previous;
