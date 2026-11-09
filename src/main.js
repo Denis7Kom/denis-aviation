@@ -1034,7 +1034,7 @@ import {
         directional = light.group === 'landing' || light.group === 'taxi',
         intensity = level * (directional ? 0.28 + 0.72 * facing ** 4 : 0.68 + 0.32 * facing),
         radius = light.size * Math.min(1.35, Math.max(0.65, scale / 10)),
-        glowRadius = radius * (directional ? 4.5 : light.group === 'strobe' ? 4 : 3.2);
+        glowRadius = radius * (directional ? 10 : light.group === 'strobe' ? 4 : 3.2);
       c.save();
       // A compact optical halo keeps the wingtip readable. All projections use
       // the same mount as the physical lens and the existing occlusion test.
@@ -1070,11 +1070,11 @@ import {
       c.fill();
       if (directional && facing > 0.65) {
         c.strokeStyle = light.color;
-        c.globalAlpha = intensity * 0.28;
-        c.lineWidth = 0.7;
+        c.globalAlpha = intensity * 0.55;
+        c.lineWidth = 1.2;
         c.beginPath();
-        c.moveTo(p[0] - radius * 3.2, p[1]);
-        c.lineTo(p[0] + radius * 3.2, p[1]);
+        c.moveTo(p[0] - radius * 6, p[1]);
+        c.lineTo(p[0] + radius * 6, p[1]);
         c.stroke();
       }
       c.restore();
@@ -1111,10 +1111,11 @@ import {
       sa = Math.sin(rot),
       pitch = Math.max(
         -1.15,
-        Math.min(1.15, (detail === 'gear' ? -0.32 : detail === 'cockpit' ? 0.3 : 0.5) + viewPitch),
+        Math.min(1.15, (detail === 'gear' ? -0.32 : detail === 'cockpit' ? 0.3 : 0.25) + viewPitch),
       ),
       scale = Math.min(w / 94, h / 51) * visualZoom;
-    const bank = flightMotion(systemsClock, motion).bank;
+    // Keep drag axes aligned with the screen instead of rolling the model automatically.
+    const bank = 0;
     function bankPoint(point) {
       return [
         point[0] * Math.cos(bank) - point[1] * Math.sin(bank),
@@ -1136,17 +1137,36 @@ import {
     }
     if (motion) {
       c.save();
-      c.strokeStyle = 'rgba(124,185,235,0.16)';
-      c.lineWidth = 0.8;
-      for (let i = 0; i < 14; i++) {
-        const x = Math.sin(i * 83.1) * 39,
-          y = Math.cos(i * 27.7) * 17;
-        const z = ((systemsClock * 0.022 + i * 13) % 100) - 50;
-        const a = project([x, y, z]),
-          b = project([x, y, z + 5]);
+      // Soft cloud banks move independently from the model, behind the aircraft.
+      for (let i = 0; i < 5; i++) {
+        const x = (((((i * 0.43 - systemsClock * 0.000014) % 1.5) + 1.5) % 1.5) - 0.25) * w,
+          y = h * (0.18 + (i % 3) * 0.25),
+          radius = w * (i % 2 ? 0.19 : 0.24);
+        c.save();
+        c.translate(x, y);
+        c.scale(1, 0.32);
+        const cloud = c.createRadialGradient(0, 0, 0, 0, 0, radius);
+        cloud.addColorStop(0, 'rgba(164, 207, 240, .17)');
+        cloud.addColorStop(0.55, 'rgba(126, 181, 224, .07)');
+        cloud.addColorStop(1, 'rgba(126, 181, 224, 0)');
+        c.fillStyle = cloud;
         c.beginPath();
-        c.moveTo(a[0], a[1]);
-        c.lineTo(b[0], b[1]);
+        c.arc(0, 0, radius, 0, Math.PI * 2);
+        c.fill();
+        c.restore();
+      }
+      c.lineWidth = 1;
+      for (let i = 0; i < 22; i++) {
+        const x =
+            (((((i * 0.173 - systemsClock * (0.00007 + (i % 3) * 0.00002)) % 1.3) + 1.3) % 1.3) -
+              0.15) *
+            w,
+          y = h * (0.09 + ((i * 0.347) % 0.82)),
+          length = w * (0.025 + (i % 4) * 0.012);
+        c.strokeStyle = i % 3 ? 'rgba(150, 211, 247, .22)' : 'rgba(183, 226, 250, .34)';
+        c.beginPath();
+        c.moveTo(x, y);
+        c.lineTo(x + length, y);
         c.stroke();
       }
       c.restore();

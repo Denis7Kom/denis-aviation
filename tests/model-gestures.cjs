@@ -45,6 +45,22 @@ const assert = require('node:assert/strict');
   assert.equal(state.angle, previous.angle, 'transition from pinch to drag does not jump');
   send('pointercancel', 1, 20, 10);
   assert.equal(active, false, 'cancel releases interaction');
+  const beforeVertical = { ...state };
+  send('pointerdown', 3, 100, 100);
+  send('pointermove', 3, 104, 150);
+  assert.equal(state.angle, beforeVertical.angle, 'vertical swipe does not yaw from finger drift');
+  assert(state.pitch > beforeVertical.pitch, 'vertical swipe changes pitch');
+  send('pointerup', 3, 104, 150);
+  const beforeHorizontal = { ...state };
+  send('pointerdown', 4, 100, 100);
+  send('pointermove', 4, 150, 104);
+  assert.equal(
+    state.pitch,
+    beforeHorizontal.pitch,
+    'horizontal swipe does not pitch from finger drift',
+  );
+  assert(state.angle > beforeHorizontal.angle, 'horizontal swipe changes yaw');
+  send('pointerup', 4, 150, 104);
   let prevented = false;
   listeners.get('wheel')({
     deltaY: -100,

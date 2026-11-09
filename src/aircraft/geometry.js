@@ -777,9 +777,23 @@ export function buildPlane(a, wireframe = false) {
     r = a.r,
     spec = airframe(a),
     N = wireframe ? 24 : 48,
-    body = [204, 217, 232],
+    body = ['B737', 'A321'].includes(a.code) ? [120, 183, 37] : [204, 217, 232],
     wingColor = [150, 171, 194],
-    dark = [12, 27, 44];
+    dark = [12, 27, 44],
+    airline = {
+      B77W: 'AEROFLOT',
+      A339: 'AEROFLOT',
+      A333: 'AMERICAN',
+      A35K: 'AMERICAN',
+      B737: 'S7',
+      A321: 'S7',
+    }[a.code],
+    airlineColor =
+      airline === 'AEROFLOT'
+        ? [25, 69, 133]
+        : airline === 'AMERICAN'
+          ? [55, 72, 90]
+          : [241, 250, 226];
   let part = null;
   const add = (p, color = body, edge = true, normals = null, material = 0) =>
     faces.push({ p, color, edge, part, normals, material });
@@ -1756,6 +1770,113 @@ export function buildPlane(a, wireframe = false) {
       [z - w / 2, y + h / 2 - round],
       [z - w / 2, y - h / 2 + round],
     ];
+    // Livery lettering follows the curved fuselage and remains attached in 3D.
+    // The markings are stylised, not exact replicas of individual aircraft.
+    if (!wireframe) {
+      marking = 'livery';
+      const glyph = {
+        A: [
+          [0, 0, 0.5, 1],
+          [0.5, 1, 1, 0],
+          [0.2, 0.4, 0.8, 0.4],
+        ],
+        E: [
+          [1, 1, 0, 1],
+          [0, 1, 0, 0],
+          [0, 0.5, 0.8, 0.5],
+          [0, 0, 1, 0],
+        ],
+        R: [
+          [0, 0, 0, 1],
+          [0, 1, 0.8, 1],
+          [0.8, 1, 0.8, 0.55],
+          [0.8, 0.55, 0, 0.55],
+          [0.45, 0.55, 1, 0],
+        ],
+        O: [
+          [0, 0, 0, 1],
+          [0, 1, 1, 1],
+          [1, 1, 1, 0],
+          [1, 0, 0, 0],
+        ],
+        F: [
+          [0, 0, 0, 1],
+          [0, 1, 1, 1],
+          [0, 0.5, 0.8, 0.5],
+        ],
+        L: [
+          [0, 1, 0, 0],
+          [0, 0, 1, 0],
+        ],
+        T: [
+          [0, 1, 1, 1],
+          [0.5, 1, 0.5, 0],
+        ],
+        M: [
+          [0, 0, 0, 1],
+          [0, 1, 0.5, 0.4],
+          [0.5, 0.4, 1, 1],
+          [1, 1, 1, 0],
+        ],
+        I: [
+          [0.15, 1, 0.85, 1],
+          [0.5, 1, 0.5, 0],
+          [0.15, 0, 0.85, 0],
+        ],
+        C: [
+          [1, 1, 0, 1],
+          [0, 1, 0, 0],
+          [0, 0, 1, 0],
+        ],
+        N: [
+          [0, 0, 0, 1],
+          [0, 1, 1, 0],
+          [1, 0, 1, 1],
+        ],
+        S: [
+          [1, 1, 0, 1],
+          [0, 1, 0, 0.5],
+          [0, 0.5, 1, 0.5],
+          [1, 0.5, 1, 0],
+          [1, 0, 0, 0],
+        ],
+        7: [
+          [0, 1, 1, 1],
+          [1, 1, 0.2, 0],
+        ],
+      };
+      const height = spec.narrow ? 1.2 : 1.55,
+        letterWidth = height * 0.64,
+        start = -half + spec.noseLength + (spec.narrow ? 1.1 : 2.0),
+        baseline = spec.narrow ? -0.65 : -0.95;
+      for (let i = 0; i < airline.length; i++) {
+        const z = start + i * letterWidth * 1.3,
+          along = (x) =>
+            sign > 0
+              ? z + x * letterWidth
+              : start + airline.length * letterWidth * 1.3 - (z - start) - x * letterWidth;
+        for (const [x1, y1, x2, y2] of glyph[airline[i]])
+          skinStroke(
+            [
+              [along(x1), baseline + y1 * height],
+              [along(x2), baseline + y2 * height],
+            ],
+            airlineColor,
+            height * 0.11,
+            0.065,
+          );
+      }
+      // A restrained lower fuselage stripe links the fuselage to the tail colours.
+      skinStroke(
+        [
+          [-half + spec.noseLength + 1, spec.narrow ? -1.05 : -1.5],
+          [half - (spec.narrow ? 5 : 9), spec.narrow ? -1.05 : -1.5],
+        ],
+        airlineColor,
+        0.1,
+        0.05,
+      );
+    }
     const windowStep = spec.narrow ? 0.65 : a.code === 'A35K' ? 0.9 : 0.94,
       windowWidth = spec.narrow ? 0.28 : a.code === 'A35K' ? 0.42 : 0.36;
     marking = 'window';
@@ -2237,7 +2358,17 @@ export function buildPlane(a, wireframe = false) {
         });
         add(
           p,
-          groove ? [36, 66, 99] : rudder ? [65, 118, 174] : [75, 132, 193],
+          groove
+            ? [36, 66, 99]
+            : airline === 'S7'
+              ? [111, 185, 23]
+              : airline === 'AEROFLOT'
+                ? [21, 61, 125]
+                : (j + k) % 3 === 0
+                  ? [183, 39, 49]
+                  : (j + k) % 3 === 1
+                    ? [43, 78, 120]
+                    : [212, 221, 228],
           true,
           normals,
           0.12,

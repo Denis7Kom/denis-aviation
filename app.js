@@ -630,7 +630,7 @@
       anchor = points.length > 1 ? {
         distance: Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y) || 1,
         zoom: state.zoom
-      } : { x: points[0].x, y: points[0].y, angle: state.angle, pitch: state.pitch };
+      } : { x: points[0].x, y: points[0].y, angle: state.angle, pitch: state.pitch, axis: null };
     }
     canvas.addEventListener("pointerdown", (event) => {
       if (event.pointerType === "mouse" && event.button !== 0) return;
@@ -646,10 +646,15 @@
         const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
         zoom(anchor.zoom * distance / anchor.distance);
       } else if (points.length === 1 && anchor.x !== void 0) {
-        rotate(
-          anchor.angle + (points[0].x - anchor.x) * 0.012,
-          anchor.pitch + (points[0].y - anchor.y) * 8e-3
-        );
+        const dx = points[0].x - anchor.x, dy = points[0].y - anchor.y;
+        if (!anchor.axis && Math.hypot(dx, dy) >= 8) {
+          anchor.axis = Math.abs(dx) > Math.abs(dy) * 2.5 ? "horizontal" : Math.abs(dy) > Math.abs(dx) * 2.5 ? "vertical" : "both";
+        }
+        if (anchor.axis)
+          rotate(
+            anchor.angle + (anchor.axis === "vertical" ? 0 : dx * 0.012),
+            anchor.pitch + (anchor.axis === "horizontal" ? 0 : dy * 8e-3)
+          );
       }
     });
     function finish(event) {
@@ -1297,7 +1302,14 @@
     return true;
   }
   function buildPlane(a, wireframe = false) {
-    const faces = [], half = a.len / 2, r = a.r, spec = airframe(a), N = wireframe ? 24 : 48, body = [204, 217, 232], wingColor = [150, 171, 194], dark = [12, 27, 44];
+    const faces = [], half = a.len / 2, r = a.r, spec = airframe(a), N = wireframe ? 24 : 48, body = ["B737", "A321"].includes(a.code) ? [120, 183, 37] : [204, 217, 232], wingColor = [150, 171, 194], dark = [12, 27, 44], airline = {
+      B77W: "AEROFLOT",
+      A339: "AEROFLOT",
+      A333: "AMERICAN",
+      A35K: "AMERICAN",
+      B737: "S7",
+      A321: "S7"
+    }[a.code], airlineColor = airline === "AEROFLOT" ? [25, 69, 133] : airline === "AMERICAN" ? [55, 72, 90] : [241, 250, 226];
     let part = null;
     const add = (p, color = body, edge = true, normals = null, material = 0) => faces.push({ p, color, edge, part, normals, material });
     const radius = (z) => fuselageSection(a, z).radius;
@@ -2179,6 +2191,103 @@
         [z2 - w / 2, y + h / 2 - round],
         [z2 - w / 2, y - h / 2 + round]
       ];
+      if (!wireframe) {
+        marking = "livery";
+        const glyph = {
+          A: [
+            [0, 0, 0.5, 1],
+            [0.5, 1, 1, 0],
+            [0.2, 0.4, 0.8, 0.4]
+          ],
+          E: [
+            [1, 1, 0, 1],
+            [0, 1, 0, 0],
+            [0, 0.5, 0.8, 0.5],
+            [0, 0, 1, 0]
+          ],
+          R: [
+            [0, 0, 0, 1],
+            [0, 1, 0.8, 1],
+            [0.8, 1, 0.8, 0.55],
+            [0.8, 0.55, 0, 0.55],
+            [0.45, 0.55, 1, 0]
+          ],
+          O: [
+            [0, 0, 0, 1],
+            [0, 1, 1, 1],
+            [1, 1, 1, 0],
+            [1, 0, 0, 0]
+          ],
+          F: [
+            [0, 0, 0, 1],
+            [0, 1, 1, 1],
+            [0, 0.5, 0.8, 0.5]
+          ],
+          L: [
+            [0, 1, 0, 0],
+            [0, 0, 1, 0]
+          ],
+          T: [
+            [0, 1, 1, 1],
+            [0.5, 1, 0.5, 0]
+          ],
+          M: [
+            [0, 0, 0, 1],
+            [0, 1, 0.5, 0.4],
+            [0.5, 0.4, 1, 1],
+            [1, 1, 1, 0]
+          ],
+          I: [
+            [0.15, 1, 0.85, 1],
+            [0.5, 1, 0.5, 0],
+            [0.15, 0, 0.85, 0]
+          ],
+          C: [
+            [1, 1, 0, 1],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0]
+          ],
+          N: [
+            [0, 0, 0, 1],
+            [0, 1, 1, 0],
+            [1, 0, 1, 1]
+          ],
+          S: [
+            [1, 1, 0, 1],
+            [0, 1, 0, 0.5],
+            [0, 0.5, 1, 0.5],
+            [1, 0.5, 1, 0],
+            [1, 0, 0, 0]
+          ],
+          7: [
+            [0, 1, 1, 1],
+            [1, 1, 0.2, 0]
+          ]
+        };
+        const height = spec.narrow ? 1.2 : 1.55, letterWidth = height * 0.64, start = -half + spec.noseLength + (spec.narrow ? 1.1 : 2), baseline = spec.narrow ? -0.65 : -0.95;
+        for (let i = 0; i < airline.length; i++) {
+          const z2 = start + i * letterWidth * 1.3, along = (x) => sign > 0 ? z2 + x * letterWidth : start + airline.length * letterWidth * 1.3 - (z2 - start) - x * letterWidth;
+          for (const [x1, y1, x2, y2] of glyph[airline[i]])
+            skinStroke(
+              [
+                [along(x1), baseline + y1 * height],
+                [along(x2), baseline + y2 * height]
+              ],
+              airlineColor,
+              height * 0.11,
+              0.065
+            );
+        }
+        skinStroke(
+          [
+            [-half + spec.noseLength + 1, spec.narrow ? -1.05 : -1.5],
+            [half - (spec.narrow ? 5 : 9), spec.narrow ? -1.05 : -1.5]
+          ],
+          airlineColor,
+          0.1,
+          0.05
+        );
+      }
       const windowStep = spec.narrow ? 0.65 : a.code === "A35K" ? 0.9 : 0.94, windowWidth = spec.narrow ? 0.28 : a.code === "A35K" ? 0.42 : 0.36;
       marking = "window";
       for (let wz = -half + spec.doors[0] + 1.6; wz < half - (spec.narrow ? a.code === "B737" ? 6 : 6.1 : 12); wz += windowStep) {
@@ -2485,7 +2594,7 @@
           });
           add(
             p,
-            groove ? [36, 66, 99] : rudder ? [65, 118, 174] : [75, 132, 193],
+            groove ? [36, 66, 99] : airline === "S7" ? [111, 185, 23] : airline === "AEROFLOT" ? [21, 61, 125] : (j + k) % 3 === 0 ? [183, 39, 49] : (j + k) % 3 === 1 ? [43, 78, 120] : [212, 221, 228],
             true,
             normals,
             0.12
@@ -3421,7 +3530,7 @@
         const p = project(point), axis = light.normal, facing = Math.max(
           0,
           axis.reduce((value, n, i) => value + n * eye[i], 0) / Math.hypot(...axis)
-        ), directional = light.group === "landing" || light.group === "taxi", intensity = level * (directional ? 0.28 + 0.72 * facing ** 4 : 0.68 + 0.32 * facing), radius = light.size * Math.min(1.35, Math.max(0.65, scale / 10)), glowRadius = radius * (directional ? 4.5 : light.group === "strobe" ? 4 : 3.2);
+        ), directional = light.group === "landing" || light.group === "taxi", intensity = level * (directional ? 0.28 + 0.72 * facing ** 4 : 0.68 + 0.32 * facing), radius = light.size * Math.min(1.35, Math.max(0.65, scale / 10)), glowRadius = radius * (directional ? 10 : light.group === "strobe" ? 4 : 3.2);
         c.save();
         const halo = c.createRadialGradient(p[0], p[1], 0, p[0], p[1], glowRadius);
         halo.addColorStop(
@@ -3449,11 +3558,11 @@
         c.fill();
         if (directional && facing > 0.65) {
           c.strokeStyle = light.color;
-          c.globalAlpha = intensity * 0.28;
-          c.lineWidth = 0.7;
+          c.globalAlpha = intensity * 0.55;
+          c.lineWidth = 1.2;
           c.beginPath();
-          c.moveTo(p[0] - radius * 3.2, p[1]);
-          c.lineTo(p[0] + radius * 3.2, p[1]);
+          c.moveTo(p[0] - radius * 6, p[1]);
+          c.lineTo(p[0] + radius * 6, p[1]);
           c.stroke();
         }
         c.restore();
@@ -3483,9 +3592,9 @@
       if (!c) return;
       const w = model.w, h = model.h, rot = visualAngle, ca = Math.cos(rot), sa = Math.sin(rot), pitch2 = Math.max(
         -1.15,
-        Math.min(1.15, (detail === "gear" ? -0.32 : detail === "cockpit" ? 0.3 : 0.5) + viewPitch)
+        Math.min(1.15, (detail === "gear" ? -0.32 : detail === "cockpit" ? 0.3 : 0.25) + viewPitch)
       ), scale = Math.min(w / 94, h / 51) * visualZoom;
-      const bank2 = flightMotion(systemsClock, motion).bank;
+      const bank2 = 0;
       function bankPoint(point) {
         return [
           point[0] * Math.cos(bank2) - point[1] * Math.sin(bank2),
@@ -3504,15 +3613,28 @@
       }
       if (motion) {
         c.save();
-        c.strokeStyle = "rgba(124,185,235,0.16)";
-        c.lineWidth = 0.8;
-        for (let i = 0; i < 14; i++) {
-          const x = Math.sin(i * 83.1) * 39, y = Math.cos(i * 27.7) * 17;
-          const z = (systemsClock * 0.022 + i * 13) % 100 - 50;
-          const a = project([x, y, z]), b = project([x, y, z + 5]);
+        for (let i = 0; i < 5; i++) {
+          const x = (((i * 0.43 - systemsClock * 14e-6) % 1.5 + 1.5) % 1.5 - 0.25) * w, y = h * (0.18 + i % 3 * 0.25), radius = w * (i % 2 ? 0.19 : 0.24);
+          c.save();
+          c.translate(x, y);
+          c.scale(1, 0.32);
+          const cloud = c.createRadialGradient(0, 0, 0, 0, 0, radius);
+          cloud.addColorStop(0, "rgba(164, 207, 240, .17)");
+          cloud.addColorStop(0.55, "rgba(126, 181, 224, .07)");
+          cloud.addColorStop(1, "rgba(126, 181, 224, 0)");
+          c.fillStyle = cloud;
           c.beginPath();
-          c.moveTo(a[0], a[1]);
-          c.lineTo(b[0], b[1]);
+          c.arc(0, 0, radius, 0, Math.PI * 2);
+          c.fill();
+          c.restore();
+        }
+        c.lineWidth = 1;
+        for (let i = 0; i < 22; i++) {
+          const x = (((i * 0.173 - systemsClock * (7e-5 + i % 3 * 2e-5)) % 1.3 + 1.3) % 1.3 - 0.15) * w, y = h * (0.09 + i * 0.347 % 0.82), length = w * (0.025 + i % 4 * 0.012);
+          c.strokeStyle = i % 3 ? "rgba(150, 211, 247, .22)" : "rgba(183, 226, 250, .34)";
+          c.beginPath();
+          c.moveTo(x, y);
+          c.lineTo(x + length, y);
           c.stroke();
         }
         c.restore();

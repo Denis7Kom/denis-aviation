@@ -17,7 +17,7 @@ export function bindModelGestures(canvas, { read, rotate, zoom, dragging }) {
             distance: Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y) || 1,
             zoom: state.zoom,
           }
-        : { x: points[0].x, y: points[0].y, angle: state.angle, pitch: state.pitch };
+        : { x: points[0].x, y: points[0].y, angle: state.angle, pitch: state.pitch, axis: null };
   }
   canvas.addEventListener('pointerdown', (event) => {
     if (event.pointerType === 'mouse' && event.button !== 0) return;
@@ -33,10 +33,21 @@ export function bindModelGestures(canvas, { read, rotate, zoom, dragging }) {
       const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
       zoom((anchor.zoom * distance) / anchor.distance);
     } else if (points.length === 1 && anchor.x !== undefined) {
-      rotate(
-        anchor.angle + (points[0].x - anchor.x) * 0.012,
-        anchor.pitch + (points[0].y - anchor.y) * 0.008,
-      );
+      const dx = points[0].x - anchor.x,
+        dy = points[0].y - anchor.y;
+      if (!anchor.axis && Math.hypot(dx, dy) >= 8) {
+        anchor.axis =
+          Math.abs(dx) > Math.abs(dy) * 2.5
+            ? 'horizontal'
+            : Math.abs(dy) > Math.abs(dx) * 2.5
+              ? 'vertical'
+              : 'both';
+      }
+      if (anchor.axis)
+        rotate(
+          anchor.angle + (anchor.axis === 'vertical' ? 0 : dx * 0.012),
+          anchor.pitch + (anchor.axis === 'horizontal' ? 0 : dy * 0.008),
+        );
     }
   });
   function finish(event) {
