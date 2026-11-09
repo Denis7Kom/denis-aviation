@@ -5515,6 +5515,34 @@ nav a[href='requests.html#new-request']::after {
     padding-inline-end: 44px;
   }
   .booking-email .request-form :is(input[type='date'], input[type='time']) {
-    padding-inline: 16px;
+    position: relative;
+    padding-inline: 16px 44px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m7 10 5 5 5-5' stroke='%23c7d8e6' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: 18px 18px;
+    background-position: right 16px center;
+  }
+  .booking-email
+    .request-form
+    :is(input[type='date'], input[type='time'])::-webkit-calendar-picker-indicator {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: 44px;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+  @media (forced-colors: active) {
+    .booking-email .request-form :is(input[type='date'], input[type='time']) {
+      background-image: none;
+    }
+    .booking-email
+      .request-form
+      :is(input[type='date'], input[type='time'])::-webkit-calendar-picker-indicator {
+      position: static;
+      width: 18px;
+      height: 18px;
+      opacity: 1;
+    }
   }
 }

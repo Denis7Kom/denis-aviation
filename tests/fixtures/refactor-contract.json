@@ -18,13 +18,13 @@
     "f71f7b3017b260ff2d75bdf797e6aee4787ba8ae2eb317dcd5ce4e9fe05cd801"
   ],
   "static": {
-    "index.html": "68038eefc16a376c272f8c72586ed1f617b205677fdf451d6e8e9dbfefa72c15"
+    "index.html": "b3f17f9cd03ffcb7e638a73c86e2bd66ac3bfe044e846d15c84f2f6691973e13"
   },
   "renderer": "9b5054080a9bd04374c321fb9dcf3abd7d0e48489a64dff9c076ab42f87a4245",
-  "stylesheet": "8da24c55ebed14f9be0093e18eff204f2754bc481af4364ff625d2176c564a37",
+  "stylesheet": "b4abe9f96991806ed35f681df347bc7b62693aa21b424618bf9f6b7f198722f1",
   "gallery": "d64e546e53bb908b95d37bd85d18213f34d84f7d93522e6d333e8e243e35788b",
   "reviewedChange": {
     "date": "2026-11-09",
-    "scope": "Introductory section, site guide and contact previews"
+    "scope": "Align mobile date and time picker arrows in the email form"
   }
 }
