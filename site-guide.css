@@ -1,0 +1,31 @@
+/* Intro, guided tour and destination previews. */
+.site-intro { padding: 90px 0; background: #09121d; border-bottom: 1px solid #1d3448; }
+.site-intro h2 { margin: 10px 0 14px; font-size: clamp(28px, 3.6vw, 48px); line-height: 1.08; }
+.site-intro > .wrap > p { max-width: 760px; color: #b4c5d4; line-height: 1.7; }
+.intro-links { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 30px; }
+.intro-links a { padding: 20px; border: 1px solid #294256; color: #e4eef7; text-decoration: none; background: #0c1b29; transition: border-color .2s, transform .2s; }
+.intro-links a:hover, .intro-links a:focus-visible { border-color: #76c6ec; transform: translateY(-3px); }
+.intro-links b, .intro-links span { display: block; }
+.intro-links b { margin-bottom: 9px; font-size: 16px; }
+.intro-links span { color: #adc1d2; line-height: 1.5; font-size: 14px; }
+.guide-launch { position: fixed; bottom: max(20px, env(safe-area-inset-bottom)); left: max(20px, env(safe-area-inset-left)); z-index: 90; display: flex; align-items: center; gap: 9px; border: 1px solid #5597bb; border-radius: 999px; padding: 11px 16px; color: #e8f7ff; background: #102536; font: 700 11px Manrope, sans-serif; letter-spacing: .09em; box-shadow: 0 8px 30px #0008; cursor: pointer; }
+.guide-launch[hidden] { display: none; }
+.guide-launch i { display: grid; place-items: center; width: 20px; height: 20px; border: 1px solid #85c9e8; border-radius: 50%; font-style: normal; }
+.site-guide { width: min(550px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; padding: clamp(24px, 5vw, 38px); color: #e9f4fc; background: #0b1a29; border: 1px solid #477696; border-radius: 6px; box-shadow: 0 24px 80px #000a; }
+.site-guide::backdrop { background: #020912c9; }
+.guide-top { display: flex; align-items: center; justify-content: space-between; gap: 15px; color: #8ed3f4; font: 600 11px 'IBM Plex Mono', monospace; letter-spacing: .1em; }
+.guide-top button { border: 0; background: transparent; color: #c7dbe9; cursor: pointer; font-size: 28px; line-height: 1; }
+.site-guide h2 { margin: 35px 0 14px; font-size: clamp(27px, 4vw, 38px); line-height: 1.12; }
+.site-guide p { color: #bfd0dd; line-height: 1.65; min-height: 5em; }
+.guide-visit { display: inline-block; color: #94dafe; margin: 10px 0 28px; text-underline-offset: 5px; }
+.guide-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; border-top: 1px solid #294256; padding-top: 20px; }
+.guide-actions button { padding: 11px 16px; border: 1px solid #42627b; color: #e8f4fb; background: transparent; font: 600 13px Manrope, sans-serif; cursor: pointer; }
+.guide-actions button:disabled { opacity: .4; cursor: default; }
+.guide-actions [data-guide-next] { background: #a2dcf5; border-color: #a2dcf5; color: #071622; }
+.guide-actions [data-guide-skip] { margin-left: auto; border: 0; color: #b7c9d8; }
+.destination-preview { display: block; width: 100%; height: 100px; object-fit: cover; object-position: center; margin-top: 12px; border: 1px solid #2d4251; opacity: .88; }
+.contact-destination.has-preview { display: grid; grid-template-columns: 1fr auto; }
+.contact-destination.has-preview .destination-preview { grid-column: 1 / -1; }
+@media (max-width: 760px) { .site-intro { padding: 60px 0; } .intro-links { grid-template-columns: repeat(2, 1fr); } .guide-launch { left: 12px; bottom: max(12px, env(safe-area-inset-bottom)); } }
+@media (max-width: 380px) { .intro-links { grid-template-columns: 1fr; } .guide-launch { padding: 9px 12px; } }
+@media (prefers-reduced-motion: reduce) { .intro-links a { transition: none; } }

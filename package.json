@@ -1,6 +1,6 @@
 {
   "name": "denis-aviation",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "description": "Static aviation portfolio with procedural aircraft, flight-network visualisation and a local flight simulation.",
   "scripts": {
     "build": "node scripts/build.mjs",
@@ -10,7 +10,7 @@
     "test": "node scripts/test.mjs",
     "test:firestore-rules": "bash scripts/test-firestore-rules.sh",
     "check": "node scripts/check-version.mjs && npm run build:check && npm run format:check && npm test",
-    "dev": "python3 -m http.server 8000"
+    "dev": "bash -c 'python3 -m http.server 4173 -b 127.0.0.1' --"
   },
   "repository": {
     "type": "git",

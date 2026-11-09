@@ -43,8 +43,9 @@ for (const entry of context.window.DK_GALLERY) {
 }
 
 const scripts = [...html.matchAll(/<script\b([^>]*)><\/script>/g)].map((match) => match[1]);
-assert.equal(scripts.length, 5, 'Review changes to startup scripts');
+assert.equal(scripts.length, 6, 'Review changes to startup scripts');
 for (const [index, file] of [
+  'site-guide.js',
   'gallery-data.js',
   'aircraft-renderer.js',
   'app.js',
@@ -53,7 +54,7 @@ for (const [index, file] of [
 ].entries()) {
   assert(scripts[index].includes(`src="${file}?`), `Unexpected script order: ${file}`);
   assert(
-    index === 4 ? /type="module"/.test(scripts[index]) : /\bdefer\b/.test(scripts[index]),
+    index === 5 ? /type="module"/.test(scripts[index]) : /\bdefer\b/.test(scripts[index]),
     `Missing defer: ${file}`,
   );
 }
