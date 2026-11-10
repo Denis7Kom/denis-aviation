@@ -772,28 +772,298 @@ export function aircraftLightVisible(point, normal, a, eye) {
 }
 
 export function buildPlane(a, wireframe = false) {
+  const liveryGlyphs = {
+    AEROFLOT: {
+      height: 18,
+      rects: [
+        [7, 0, 10, 1],
+        [56, 0, 62, 1],
+        [34, 0, 44, 1],
+        [104, 0, 110, 1],
+        [34, 1, 47, 2],
+        [101, 1, 112, 2],
+        [6, 1, 10, 2],
+        [53, 1, 64, 2],
+        [53, 2, 65, 3],
+        [34, 2, 48, 3],
+        [117, 0, 130, 3],
+        [18, 0, 31, 3],
+        [6, 2, 11, 3],
+        [100, 2, 113, 3],
+        [70, 0, 82, 3],
+        [52, 3, 57, 4],
+        [109, 3, 114, 4],
+        [43, 3, 48, 4],
+        [100, 3, 105, 4],
+        [61, 3, 66, 4],
+        [99, 4, 103, 5],
+        [5, 3, 11, 5],
+        [63, 4, 66, 5],
+        [51, 4, 55, 5],
+        [4, 5, 8, 6],
+        [63, 5, 67, 6],
+        [111, 4, 114, 6],
+        [9, 5, 12, 7],
+        [45, 4, 48, 7],
+        [99, 5, 102, 7],
+        [34, 3, 37, 7],
+        [70, 3, 73, 7],
+        [18, 3, 22, 7],
+        [111, 6, 115, 7],
+        [34, 7, 48, 8],
+        [9, 7, 13, 8],
+        [4, 6, 7, 9],
+        [34, 8, 47, 9],
+        [34, 9, 46, 10],
+        [18, 7, 30, 10],
+        [10, 8, 13, 10],
+        [3, 9, 7, 10],
+        [70, 7, 81, 10],
+        [112, 7, 115, 11],
+        [10, 10, 14, 11],
+        [98, 7, 102, 11],
+        [40, 10, 45, 11],
+        [3, 10, 6, 11],
+        [111, 11, 115, 12],
+        [64, 6, 67, 12],
+        [2, 11, 14, 13],
+        [99, 11, 102, 13],
+        [63, 12, 67, 13],
+        [51, 5, 54, 13],
+        [42, 11, 46, 13],
+        [111, 12, 114, 13],
+        [99, 13, 103, 14],
+        [62, 13, 66, 14],
+        [110, 13, 114, 14],
+        [43, 13, 47, 14],
+        [1, 13, 15, 14],
+        [51, 13, 55, 14],
+        [52, 14, 57, 15],
+        [109, 14, 114, 15],
+        [12, 14, 15, 15],
+        [100, 14, 105, 15],
+        [18, 10, 22, 15],
+        [61, 14, 66, 15],
+        [85, 0, 88, 15],
+        [53, 15, 65, 16],
+        [1, 14, 4, 16],
+        [100, 15, 113, 16],
+        [44, 14, 48, 16],
+        [12, 15, 16, 16],
+        [102, 16, 111, 17],
+        [54, 16, 64, 17],
+        [45, 16, 49, 17],
+        [122, 3, 125, 18],
+        [56, 17, 62, 18],
+        [0, 16, 4, 18],
+        [34, 10, 37, 18],
+        [18, 15, 31, 18],
+        [46, 17, 50, 18],
+        [13, 16, 16, 18],
+        [70, 10, 73, 18],
+        [85, 15, 97, 18],
+        [104, 17, 110, 18],
+      ],
+      width: 130,
+    },
+    American: {
+      height: 18,
+      rects: [
+        [6, 0, 10, 2],
+        [61, 0, 63, 2],
+        [6, 2, 11, 3],
+        [5, 3, 8, 4],
+        [9, 3, 11, 5],
+        [80, 5, 88, 6],
+        [92, 5, 94, 6],
+        [95, 5, 101, 6],
+        [52, 5, 54, 6],
+        [5, 4, 7, 6],
+        [67, 5, 74, 6],
+        [9, 5, 12, 6],
+        [55, 5, 59, 6],
+        [29, 5, 35, 6],
+        [40, 5, 47, 6],
+        [21, 5, 27, 7],
+        [92, 6, 101, 7],
+        [52, 6, 59, 7],
+        [66, 6, 75, 7],
+        [18, 5, 20, 7],
+        [28, 6, 35, 7],
+        [10, 6, 12, 7],
+        [40, 6, 48, 7],
+        [79, 6, 89, 7],
+        [73, 7, 76, 8],
+        [47, 7, 49, 8],
+        [25, 7, 29, 8],
+        [78, 7, 81, 8],
+        [66, 7, 69, 8],
+        [4, 6, 6, 8],
+        [86, 7, 89, 8],
+        [92, 7, 95, 8],
+        [99, 7, 102, 8],
+        [39, 7, 41, 8],
+        [39, 8, 40, 9],
+        [78, 8, 80, 9],
+        [10, 7, 13, 9],
+        [18, 7, 21, 9],
+        [87, 8, 89, 9],
+        [74, 8, 76, 9],
+        [66, 8, 68, 9],
+        [47, 8, 50, 9],
+        [11, 9, 13, 10],
+        [48, 9, 50, 10],
+        [65, 9, 68, 10],
+        [38, 9, 40, 10],
+        [86, 9, 89, 10],
+        [3, 8, 6, 10],
+        [81, 10, 89, 11],
+        [3, 10, 13, 11],
+        [2, 11, 14, 12],
+        [38, 10, 50, 12],
+        [79, 11, 89, 12],
+        [87, 12, 89, 13],
+        [78, 12, 82, 13],
+        [12, 12, 14, 13],
+        [65, 10, 67, 13],
+        [12, 13, 15, 14],
+        [2, 12, 4, 14],
+        [38, 12, 40, 14],
+        [47, 14, 50, 15],
+        [1, 14, 4, 15],
+        [77, 13, 80, 15],
+        [13, 14, 15, 15],
+        [86, 13, 89, 15],
+        [74, 13, 76, 15],
+        [66, 13, 68, 15],
+        [39, 14, 41, 15],
+        [73, 15, 76, 16],
+        [78, 15, 80, 16],
+        [66, 15, 69, 16],
+        [1, 15, 3, 16],
+        [39, 15, 42, 16],
+        [85, 15, 89, 16],
+        [46, 15, 49, 16],
+        [13, 15, 16, 17],
+        [67, 16, 75, 17],
+        [0, 16, 3, 17],
+        [78, 16, 86, 17],
+        [40, 16, 48, 17],
+        [42, 17, 47, 18],
+        [92, 8, 94, 18],
+        [26, 8, 28, 18],
+        [61, 5, 63, 18],
+        [0, 17, 2, 18],
+        [87, 16, 89, 18],
+        [52, 7, 55, 18],
+        [14, 17, 16, 18],
+        [100, 8, 102, 18],
+        [69, 17, 73, 18],
+        [33, 7, 36, 18],
+        [18, 9, 20, 18],
+        [80, 17, 85, 18],
+      ],
+      width: 102,
+    },
+    S7: {
+      height: 18,
+      rects: [
+        [4, 0, 10, 1],
+        [2, 1, 12, 2],
+        [1, 2, 12, 3],
+        [1, 3, 5, 4],
+        [16, 1, 27, 4],
+        [23, 4, 26, 5],
+        [9, 3, 13, 5],
+        [1, 4, 4, 6],
+        [22, 5, 25, 7],
+        [1, 6, 6, 7],
+        [1, 7, 10, 8],
+        [21, 7, 24, 8],
+        [2, 8, 12, 9],
+        [4, 9, 13, 10],
+        [20, 8, 23, 11],
+        [8, 10, 13, 11],
+        [10, 11, 14, 14],
+        [19, 11, 22, 14],
+        [0, 12, 4, 14],
+        [9, 14, 13, 15],
+        [1, 14, 5, 15],
+        [18, 14, 22, 15],
+        [1, 15, 13, 16],
+        [2, 16, 12, 17],
+        [18, 15, 21, 18],
+        [4, 17, 10, 18],
+      ],
+      width: 27,
+    },
+    spirit: {
+      height: 18,
+      rects: [
+        [37, 0, 39, 2],
+        [43, 1, 45, 2],
+        [24, 0, 27, 2],
+        [42, 2, 45, 4],
+        [12, 4, 20, 5],
+        [29, 4, 36, 5],
+        [1, 4, 8, 5],
+        [29, 5, 35, 6],
+        [12, 5, 21, 6],
+        [41, 4, 47, 6],
+        [0, 5, 9, 6],
+        [7, 6, 9, 7],
+        [29, 6, 33, 7],
+        [0, 6, 3, 7],
+        [34, 6, 35, 7],
+        [19, 6, 21, 8],
+        [0, 7, 5, 8],
+        [1, 8, 8, 9],
+        [3, 9, 9, 10],
+        [19, 8, 22, 10],
+        [7, 10, 10, 12],
+        [19, 10, 21, 12],
+        [12, 6, 15, 12],
+        [42, 6, 45, 12],
+        [0, 11, 3, 12],
+        [12, 12, 21, 13],
+        [1, 12, 9, 13],
+        [42, 12, 47, 13],
+        [2, 13, 8, 14],
+        [24, 4, 27, 14],
+        [12, 13, 20, 14],
+        [29, 7, 32, 14],
+        [37, 4, 39, 14],
+        [43, 13, 47, 14],
+        [12, 14, 15, 18],
+      ],
+      width: 47,
+    },
+  };
   const faces = [],
     half = a.len / 2,
     r = a.r,
     spec = airframe(a),
     N = wireframe ? 24 : 48,
-    body = ['B737', 'A321'].includes(a.code) ? [120, 183, 37] : [204, 217, 232],
+    body =
+      a.code === 'A321' ? [247, 210, 23] : a.code === 'B737' ? [112, 181, 35] : [205, 214, 222],
     wingColor = [150, 171, 194],
     dark = [12, 27, 44],
     airline = {
       B77W: 'AEROFLOT',
       A339: 'AEROFLOT',
-      A333: 'AMERICAN',
-      A35K: 'AMERICAN',
+      A333: 'American',
+      A35K: 'American',
       B737: 'S7',
-      A321: 'S7',
+      A321: 'spirit',
     }[a.code],
     airlineColor =
       airline === 'AEROFLOT'
         ? [25, 69, 133]
-        : airline === 'AMERICAN'
-          ? [55, 72, 90]
-          : [241, 250, 226];
+        : airline === 'American'
+          ? [74, 84, 95]
+          : airline === 'spirit'
+            ? [20, 21, 22]
+            : [250, 252, 247];
   let part = null;
   const add = (p, color = body, edge = true, normals = null, material = 0) =>
     faces.push({ p, color, edge, part, normals, material });
@@ -855,7 +1125,8 @@ export function buildPlane(a, wireframe = false) {
         surface(((j + 1) / N) * Math.PI * 2, stations[k]),
         surface(((j + 1) / N) * Math.PI * 2, stations[k - 1]),
       ];
-      add(p, body, true, p.map(surfaceNormal));
+      const underbody = airline === 'AEROFLOT' && Math.sin(((j + 0.5) / N) * Math.PI * 2) < -0.72;
+      add(p, underbody ? [25, 54, 99] : body, true, p.map(surfaceNormal));
     }
   function tube(x, y, sections, color = body, n = wireframe ? 18 : 36, round = false) {
     for (let k = 1; k < sections.length; k++)
@@ -1390,7 +1661,7 @@ export function buildPlane(a, wireframe = false) {
         ex,
         ey,
         contour.map((q) => [z + q[0], er * q[1]]),
-        [181, 198, 217],
+        airline === 'spirit' || airline === 'S7' ? body : [181, 198, 217],
       );
       const fy = ey + (b ? 0.1 : 0),
         outer = er * (b ? 0.87 : 0.91),
@@ -1770,112 +2041,55 @@ export function buildPlane(a, wireframe = false) {
       [z - w / 2, y + h / 2 - round],
       [z - w / 2, y - h / 2 + round],
     ];
-    // Livery lettering follows the curved fuselage and remains attached in 3D.
-    // The markings are stylised, not exact replicas of individual aircraft.
+    // Filled wordmarks are made from short surface patches, so they follow
+    // the fuselage and are occluded correctly as the model rotates.
     if (!wireframe) {
       marking = 'livery';
-      const glyph = {
-        A: [
-          [0, 0, 0.5, 1],
-          [0.5, 1, 1, 0],
-          [0.2, 0.4, 0.8, 0.4],
-        ],
-        E: [
-          [1, 1, 0, 1],
-          [0, 1, 0, 0],
-          [0, 0.5, 0.8, 0.5],
-          [0, 0, 1, 0],
-        ],
-        R: [
-          [0, 0, 0, 1],
-          [0, 1, 0.8, 1],
-          [0.8, 1, 0.8, 0.55],
-          [0.8, 0.55, 0, 0.55],
-          [0.45, 0.55, 1, 0],
-        ],
-        O: [
-          [0, 0, 0, 1],
-          [0, 1, 1, 1],
-          [1, 1, 1, 0],
-          [1, 0, 0, 0],
-        ],
-        F: [
-          [0, 0, 0, 1],
-          [0, 1, 1, 1],
-          [0, 0.5, 0.8, 0.5],
-        ],
-        L: [
-          [0, 1, 0, 0],
-          [0, 0, 1, 0],
-        ],
-        T: [
-          [0, 1, 1, 1],
-          [0.5, 1, 0.5, 0],
-        ],
-        M: [
-          [0, 0, 0, 1],
-          [0, 1, 0.5, 0.4],
-          [0.5, 0.4, 1, 1],
-          [1, 1, 1, 0],
-        ],
-        I: [
-          [0.15, 1, 0.85, 1],
-          [0.5, 1, 0.5, 0],
-          [0.15, 0, 0.85, 0],
-        ],
-        C: [
-          [1, 1, 0, 1],
-          [0, 1, 0, 0],
-          [0, 0, 1, 0],
-        ],
-        N: [
-          [0, 0, 0, 1],
-          [0, 1, 1, 0],
-          [1, 0, 1, 1],
-        ],
-        S: [
-          [1, 1, 0, 1],
-          [0, 1, 0, 0.5],
-          [0, 0.5, 1, 0.5],
-          [1, 0.5, 1, 0],
-          [1, 0, 0, 0],
-        ],
-        7: [
-          [0, 1, 1, 1],
-          [1, 1, 0.2, 0],
-        ],
-      };
-      const height = spec.narrow ? 1.2 : 1.55,
-        letterWidth = height * 0.64,
-        start = -half + spec.noseLength + (spec.narrow ? 1.1 : 2.0),
-        baseline = spec.narrow ? -0.65 : -0.95;
-      for (let i = 0; i < airline.length; i++) {
-        const z = start + i * letterWidth * 1.3,
-          along = (x) =>
-            sign > 0
-              ? z + x * letterWidth
-              : start + airline.length * letterWidth * 1.3 - (z - start) - x * letterWidth;
-        for (const [x1, y1, x2, y2] of glyph[airline[i]])
-          skinStroke(
-            [
-              [along(x1), baseline + y1 * height],
-              [along(x2), baseline + y2 * height],
-            ],
-            airlineColor,
-            height * 0.11,
-            0.065,
-          );
+      const art = liveryGlyphs[airline],
+        titleHeight = spec.narrow ? 1.35 : 1.55,
+        titleWidth =
+          airline === 'spirit' ? 8.8 : airline === 'S7' ? 3.1 : airline === 'American' ? 14 : 14.5,
+        start = -half + spec.noseLength + (spec.narrow ? 1.5 : 3.2),
+        bottom = spec.narrow ? -0.78 : -0.95,
+        along = (v) => (sign > 0 ? start + v * titleWidth : start + (1 - v) * titleWidth);
+      for (const [x0, y0, x1, y1] of art.rects) {
+        const z0 = along(x0 / art.width),
+          z1 = along(x1 / art.width),
+          low = bottom + titleHeight * (1 - y1 / art.height),
+          high = bottom + titleHeight * (1 - y0 / art.height);
+        skinPatch(
+          [
+            [z0, low],
+            [z1, low],
+            [z1, high],
+            [z0, high],
+          ],
+          airlineColor,
+          0.075,
+        );
       }
-      // A restrained lower fuselage stripe links the fuselage to the tail colours.
-      skinStroke(
-        [
-          [-half + spec.noseLength + 1, spec.narrow ? -1.05 : -1.5],
-          [half - (spec.narrow ? 5 : 9), spec.narrow ? -1.05 : -1.5],
-        ],
-        airlineColor,
-        0.1,
-        0.05,
-      );
+      if (airline === 'AEROFLOT') {
+        const from = -half + spec.noseLength + 1,
+          to = half - (spec.narrow ? 5 : 9);
+        skinStroke(
+          [
+            [from, -1.43],
+            [to, -1.43],
+          ],
+          [31, 74, 139],
+          0.13,
+          0.055,
+        );
+        skinStroke(
+          [
+            [from, -1.59],
+            [to, -1.59],
+          ],
+          [193, 38, 52],
+          0.1,
+          0.055,
+        );
+      }
     }
     const windowStep = spec.narrow ? 0.65 : a.code === 'A35K' ? 0.9 : 0.94,
       windowWidth = spec.narrow ? 0.28 : a.code === 'A35K' ? 0.42 : 0.36;
@@ -2200,7 +2414,7 @@ export function buildPlane(a, wireframe = false) {
         cy = small && spec.narrow ? 0.85 : 0.53,
         outline = rounded(z, cy, w, h, 0.16);
       skinPatch(outline, [103, 120, 137], 0.034);
-      skinPatch(rounded(z, cy, w - 0.07, h - 0.07, 0.14), [195, 209, 224], 0.052);
+      skinPatch(rounded(z, cy, w - 0.07, h - 0.07, 0.14), body, 0.052);
       skinPatch(rounded(z, 1.02, 0.23, 0.33, 0.065), [64, 83, 101], 0.071);
       skinPatch(rounded(z, 1.02, 0.17, 0.26, 0.05), [15, 39, 56], 0.085, 1);
       skinPatch(rounded(z + 0.18, 0.37, 0.27, 0.12, 0.04), [88, 104, 119], 0.074);
@@ -2244,7 +2458,7 @@ export function buildPlane(a, wireframe = false) {
         const z = -half + d,
           c = spec.narrow ? 0.66 : 1;
         skinPatch(rounded(z, -1.25 * c, 2.8 * c, 1.55 * c, 0.15), [107, 124, 140], 0.026);
-        skinPatch(rounded(z, -1.25 * c, 2.73 * c, 1.48 * c, 0.13), [190, 205, 220], 0.045);
+        skinPatch(rounded(z, -1.25 * c, 2.73 * c, 1.48 * c, 0.13), body, 0.045);
         skinPatch(rounded(z + 0.75 * c, -1.16 * c, 0.28, 0.12, 0.03), [71, 87, 105], 0.065);
       }
     // Pitot probes sit below and behind the radome, clear of the windshield.
@@ -2318,8 +2532,28 @@ export function buildPlane(a, wireframe = false) {
   }
   // A swept, closed airfoil fin with a dorsal root fillet and separate rudder.
   // Curved thickness and vertex normals remove the old faceted triangular cap.
-  const finSections = spec.finSections.map((q) => [q[0], half - q[1], q[2], q[3]]),
-    fractions = wireframe ? [0, 0.12, 0.48, 0.73, 1] : [0, 0.055, 0.2, 0.46, 0.73, 0.744, 0.93, 1];
+  const baseFinSections = spec.finSections.map((q) => [q[0], half - q[1], q[2], q[3]]),
+    finSections = wireframe
+      ? baseFinSections
+      : (() => {
+          const bottom = baseFinSections[0][0],
+            top = baseFinSections.at(-1)[0],
+            heights = [
+              ...baseFinSections.map((q) => q[0]),
+              ...Array.from({ length: 15 }, (_, i) => bottom + ((top - bottom) * i) / 14),
+            ]
+              .sort((x, y) => x - y)
+              .filter((y, i, all) => i === 0 || y - all[i - 1] > 1e-5);
+          return heights.map((y) => {
+            let k = 1;
+            while (k < baseFinSections.length - 1 && y > baseFinSections[k][0]) k++;
+            const lo = baseFinSections[k - 1],
+              hi = baseFinSections[k],
+              t = (y - lo[0]) / (hi[0] - lo[0]);
+            return lo.map((value, index) => value + (hi[index] - value) * t);
+          });
+        })(),
+    fractions = wireframe ? [0, 0.12, 0.48, 0.73, 1] : Array.from({ length: 25 }, (_, i) => i / 24);
   const finPoint = (q, f, side) => [
     side *
       q[3] *
@@ -2358,22 +2592,73 @@ export function buildPlane(a, wireframe = false) {
         });
         add(
           p,
-          groove
-            ? [36, 66, 99]
-            : airline === 'S7'
-              ? [111, 185, 23]
-              : airline === 'AEROFLOT'
-                ? [21, 61, 125]
-                : (j + k) % 3 === 0
-                  ? [183, 39, 49]
-                  : (j + k) % 3 === 1
-                    ? [43, 78, 120]
-                    : [212, 221, 228],
+          (() => {
+            const height =
+                ((lo[0] + hi[0]) / 2 - finSections[0][0]) /
+                (finSections.at(-1)[0] - finSections[0][0]),
+              chord = (u + v) / 2;
+            if (airline === 'spirit') return [247, 210, 23];
+            if (airline === 'S7') return [112, 181, 35];
+            if (airline === 'AEROFLOT') {
+              const band = height + chord * 0.55;
+              return band > 0.55 && band < 0.77
+                ? [228, 233, 235]
+                : band >= 0.77 && band < 0.99
+                  ? [194, 31, 47]
+                  : [17, 55, 111];
+            }
+            const stripe = Math.floor(height * 14);
+            return stripe % 2 === 0
+              ? [231, 235, 235]
+              : height > 0.55 && chord < 0.4
+                ? [33, 77, 128]
+                : [192, 43, 50];
+          })(),
           true,
           normals,
           0.12,
         );
       }
+  // Airline logos are attached to each side of the vertical stabilizer.
+  if (!wireframe && (airline === 'spirit' || airline === 'S7')) {
+    const art = liveryGlyphs[airline];
+    const finAt = (height, fraction, side) => {
+      const y =
+        baseFinSections[0][0] + height * (baseFinSections.at(-1)[0] - baseFinSections[0][0]);
+      let k = 1;
+      while (k < baseFinSections.length - 1 && y > baseFinSections[k][0]) k++;
+      const lo = baseFinSections[k - 1],
+        hi = baseFinSections[k],
+        t = (y - lo[0]) / (hi[0] - lo[0]);
+      const section = lo.map((v, i) => v + (hi[i] - v) * t);
+      const point = finPoint(section, fraction, side);
+      point[0] += side * 0.045;
+      return point;
+    };
+    for (const side of [-1, 1]) {
+      const normal = [side, 0, 0];
+      part = { kind: 'decal', marking: 'tail-livery', sign: side, normal };
+      const along = (x) => (side > 0 ? 0.13 + 0.67 * x : 0.8 - 0.67 * x);
+      for (const [x0, y0, x1, y1] of art.rects) {
+        const l = along(x0 / art.width),
+          r = along(x1 / art.width),
+          bottom = 0.38 + 0.32 * (1 - y1 / art.height),
+          top = 0.38 + 0.32 * (1 - y0 / art.height);
+        add(
+          [
+            finAt(bottom, l, side),
+            finAt(bottom, r, side),
+            finAt(top, r, side),
+            finAt(top, l, side),
+          ],
+          airlineColor,
+          false,
+          [normal, normal, normal, normal],
+        );
+      }
+      part = null;
+    }
+  }
   const cap = finSections.at(-1);
   for (let j = 1; j < fractions.length; j++)
     add(
@@ -2383,7 +2668,7 @@ export function buildPlane(a, wireframe = false) {
         finPoint(cap, fractions[j], 1),
         finPoint(cap, fractions[j], -1),
       ],
-      [116, 158, 203],
+      airline === 'spirit' || airline === 'S7' ? body : [116, 158, 203],
     );
   // The APU outlet belongs to the raised tail cone, not to the body centreline.
   const aft = fuselageSection(a, half),

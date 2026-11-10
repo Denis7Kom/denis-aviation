@@ -1097,6 +1097,7 @@ import {
         drawPlane();
       });
   }
+  let cloudSprite = null;
   function drawPlane() {
     if (planeDrawRequest) {
       cancelAnimationFrame(planeDrawRequest);
@@ -1136,37 +1137,72 @@ import {
       ];
     }
     if (motion) {
-      c.save();
-      // Soft cloud banks move independently from the model, behind the aircraft.
-      for (let i = 0; i < 5; i++) {
-        const x = (((((i * 0.43 - systemsClock * 0.000014) % 1.5) + 1.5) % 1.5) - 0.25) * w,
-          y = h * (0.18 + (i % 3) * 0.25),
-          radius = w * (i % 2 ? 0.19 : 0.24);
-        c.save();
-        c.translate(x, y);
-        c.scale(1, 0.32);
-        const cloud = c.createRadialGradient(0, 0, 0, 0, 0, radius);
-        cloud.addColorStop(0, 'rgba(164, 207, 240, .17)');
-        cloud.addColorStop(0.55, 'rgba(126, 181, 224, .07)');
-        cloud.addColorStop(1, 'rgba(126, 181, 224, 0)');
-        c.fillStyle = cloud;
-        c.beginPath();
-        c.arc(0, 0, radius, 0, Math.PI * 2);
-        c.fill();
-        c.restore();
+      // Draw a cached cloud sprite in independent layers to give the background
+      // shape and depth without recalculating dozens of gradients every frame.
+      if (!cloudSprite) {
+        cloudSprite = document.createElement('canvas');
+        cloudSprite.width = 640;
+        cloudSprite.height = 220;
+        const cc = cloudSprite.getContext('2d');
+        if (cc) {
+          const puffs = [
+            [85, 148, 100, 45],
+            [175, 138, 128, 55],
+            [267, 130, 146, 66],
+            [365, 143, 139, 54],
+            [476, 150, 137, 48],
+            [122, 125, 67, 50],
+            [205, 98, 69, 65],
+            [275, 86, 78, 70],
+            [343, 105, 77, 62],
+            [424, 118, 88, 53],
+          ];
+          for (const [x, y, rx, ry] of puffs) {
+            cc.save();
+            cc.translate(x, y);
+            cc.scale(1, ry / rx);
+            const shade = cc.createRadialGradient(0, -rx * 0.15, 0, 0, 0, rx);
+            shade.addColorStop(0, 'rgba(194,220,239,.27)');
+            shade.addColorStop(0.42, 'rgba(143,185,214,.16)');
+            shade.addColorStop(1, 'rgba(107,157,193,0)');
+            cc.fillStyle = shade;
+            cc.beginPath();
+            cc.arc(0, 0, rx, 0, Math.PI * 2);
+            cc.fill();
+            cc.restore();
+          }
+        }
       }
-      c.lineWidth = 1;
-      for (let i = 0; i < 22; i++) {
-        const x =
-            (((((i * 0.173 - systemsClock * (0.00007 + (i % 3) * 0.00002)) % 1.3) + 1.3) % 1.3) -
-              0.15) *
+      c.save();
+      for (let i = 0; i < 4; i++) {
+        const layer = i % 2,
+          width = w * (layer ? 0.62 : 0.8),
+          x =
+            (((((i * 0.57 - systemsClock * (layer ? 0.000009 : 0.000015)) % 1.8) + 1.8) % 1.8) -
+              0.4) *
             w,
-          y = h * (0.09 + ((i * 0.347) % 0.82)),
-          length = w * (0.025 + (i % 4) * 0.012);
-        c.strokeStyle = i % 3 ? 'rgba(150, 211, 247, .22)' : 'rgba(183, 226, 250, .34)';
+          y = h * (0.1 + (i % 3) * 0.27);
+        c.globalAlpha = layer ? 0.7 : 0.95;
+        c.drawImage(cloudSprite, x, y, width, (width * 220) / 640);
+      }
+      c.globalAlpha = 1;
+      // Tapered, gently curving streamlines make the airflow visible without
+      // attaching the motion to the aircraft or drawing across its surface.
+      for (let i = 0; i < 18; i++) {
+        const speed = 0.000055 + (i % 3) * 0.000025,
+          x = (((((i * 0.183 - systemsClock * speed) % 1.4) + 1.4) % 1.4) - 0.2) * w,
+          y = h * (0.08 + ((i * 0.317) % 0.84)),
+          length = w * (0.04 + (i % 4) * 0.016),
+          rise = h * (0.006 + (i % 3) * 0.003);
+        const flow = c.createLinearGradient(x, y, x + length, y);
+        flow.addColorStop(0, 'rgba(167,219,249,0)');
+        flow.addColorStop(0.45, 'rgba(167,219,249,.37)');
+        flow.addColorStop(1, 'rgba(167,219,249,0)');
+        c.strokeStyle = flow;
+        c.lineWidth = i % 4 === 0 ? 1.3 : 0.85;
         c.beginPath();
         c.moveTo(x, y);
-        c.lineTo(x + length, y);
+        c.bezierCurveTo(x + length * 0.3, y - rise, x + length * 0.7, y + rise, x + length, y);
         c.stroke();
       }
       c.restore();

@@ -1,7 +1,7 @@
 {
   "baseline": "4da04ba03ba70897377c9b3502065f1b1c1fa3a6",
   "modules": ["src/aircraft/geometry.js", "src/data/airports.js", "src/data/aircraft.js"],
-  "shell": "29b44530ecf95dc82746a7f9b8f25b117aa7ab8d4f1ed3fa2093feb0481a8b5c",
+  "shell": "8255782eea31640c699e770de0a1775004c39f176ce988c591a0aadf41f1b2b6",
   "extracted": [
     "07fee7655fba18c7b1a8ce7a76040f5ede09e960e9fdf10b2453931fe842f710",
     "2f66b0217ee3e29662cc2114778886b7af165c88d9f54b359daf0ece33622563",
@@ -11,20 +11,20 @@
     "83ccf472bed3a178cc4c63487d9b70f860a4f0fbae2638b851f79222e0692ef2",
     "8db715825dc8d59ba98297ff654c136f534627a6e1cec9a6c159fcd8189785f5",
     "bc4b69307407d39b4bb177dab699b82bde824b455c83e4a4751183fdd0a47f03",
+    "c6b0c098109b671838d8b6b123ed66f2827a5ae8e11fadbd8488aae0fe312700",
     "d53ae5911ca2f71964b31f5c00714f2cc45098155568959d965fe8098fab7d20",
-    "d55dbc1f72b2be462770753eb4b03caf5a37ada0d37464fb358c29f730ea3114",
     "dda13839d04b4da64f1010d27e9016e787d638711225c9c8902c58bab51e2a83",
     "dffe668dbbf62514728574c32ebc29506b1d9ce7e3ab5f7092b4d7fae7d6e164",
     "f71f7b3017b260ff2d75bdf797e6aee4787ba8ae2eb317dcd5ce4e9fe05cd801"
   ],
   "static": {
-    "index.html": "efbfbe2213a0a4be9b75565d1b0dc488483ecf6c90020ded5d2a66f498b0527b"
+    "index.html": "750a1c97cef0a0449d344b6424b9cab4971c38dc1b11331b392c14cd755070d3"
   },
   "renderer": "9b5054080a9bd04374c321fb9dcf3abd7d0e48489a64dff9c076ab42f87a4245",
   "stylesheet": "b4abe9f96991806ed35f681df347bc7b62693aa21b424618bf9f6b7f198722f1",
   "gallery": "d64e546e53bb908b95d37bd85d18213f34d84f7d93522e6d333e8e243e35788b",
   "reviewedChange": {
-    "date": "2026-11-09",
-    "scope": "Aircraft gesture axes, animated clouds and airflow, stylised airline liveries and VATSIM radio guide"
+    "date": "2026-11-10",
+    "scope": "Refine airline liveries and atmospheric effects"
   }
 }
