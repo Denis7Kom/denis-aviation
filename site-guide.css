@@ -23,7 +23,8 @@
 .guide-actions button:disabled { opacity: .4; cursor: default; }
 .guide-actions [data-guide-next] { background: #a2dcf5; border-color: #a2dcf5; color: #071622; }
 .guide-actions [data-guide-skip] { margin-left: auto; border: 0; color: #b7c9d8; }
-.destination-preview { display: block; width: 100%; height: clamp(145px, 19vw, 210px); object-fit: contain; object-position: center; background: #08131e; margin-top: 12px; border: 1px solid #2d4251; opacity: .94; }
+.destination-preview { display: block; width: 100%; height: clamp(145px, 19vw, 210px); object-fit: cover; object-position: center; background: #08131e; margin-top: 12px; border: 1px solid #2d4251; opacity: .94; }
+.contact-elsewhere .contact-destination:first-of-type .destination-preview { object-position: left center; }
 .contact-destination.has-preview { display: grid; grid-template-columns: 1fr auto; }
 .contact-destination.has-preview .destination-preview { grid-column: 1 / -1; }
 @media (max-width: 760px) { .site-intro { padding: 60px 0; } .intro-links { grid-template-columns: repeat(2, 1fr); } .guide-launch { left: 12px; bottom: max(12px, env(safe-area-inset-bottom)); } }
