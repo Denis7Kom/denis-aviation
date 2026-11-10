@@ -1663,6 +1663,62 @@ export function buildPlane(a, wireframe = false) {
         contour.map((q) => [z + q[0], er * q[1]]),
         airline === 'spirit' || airline === 'S7' ? body : [181, 198, 217],
       );
+      // Airline marks are attached to each engine cowling, not drawn in screen space.
+      if (!wireframe && (airline === 'spirit' || airline === 'S7')) {
+        const enginePoint = (distance, dy, lift = 0.03) => {
+          let k = 1;
+          while (k < contour.length - 1 && distance > contour[k][0]) k++;
+          const lo = contour[k - 1],
+            hi = contour[k],
+            t = (distance - lo[0]) / (hi[0] - lo[0]),
+            radius = er * (lo[1] + (hi[1] - lo[1]) * t),
+            outer = Math.sqrt(Math.max(0, radius * radius - dy * dy));
+          return [ex + sign * (outer + lift), ey + dy, z + distance];
+        };
+        const normal = [sign, 0, 0];
+        part = { kind: 'decal', marking: 'engine-livery', sign, normal };
+        if (airline === 'S7') {
+          const center = enginePoint(1.35, 0, 0.04),
+            segments = 32;
+          for (let i = 0; i < segments; i++) {
+            const t0 = (i * Math.PI * 2) / segments,
+              t1 = ((i + 1) * Math.PI * 2) / segments;
+            add(
+              [
+                center,
+                enginePoint(1.35 + 0.43 * Math.cos(t0), 0.43 * Math.sin(t0), 0.04),
+                enginePoint(1.35 + 0.43 * Math.cos(t1), 0.43 * Math.sin(t1), 0.04),
+              ],
+              [206, 35, 48],
+              false,
+              [normal, normal, normal],
+            );
+          }
+        }
+        const art = liveryGlyphs[airline],
+          width = airline === 'spirit' ? 1.75 : 0.57,
+          height = airline === 'spirit' ? 0.31 : 0.3,
+          begin = 1.35 - width / 2,
+          along = (x) => (sign > 0 ? begin + x * width : begin + (1 - x) * width);
+        for (const [x0, y0, x1, y1] of art.rects) {
+          const a0 = along(x0 / art.width),
+            a1 = along(x1 / art.width),
+            low = height * (0.5 - y1 / art.height),
+            high = height * (0.5 - y0 / art.height);
+          add(
+            [
+              enginePoint(a0, low, 0.065),
+              enginePoint(a1, low, 0.065),
+              enginePoint(a1, high, 0.065),
+              enginePoint(a0, high, 0.065),
+            ],
+            airlineColor,
+            false,
+            [normal, normal, normal, normal],
+          );
+        }
+        part = null;
+      }
       const fy = ey + (b ? 0.1 : 0),
         outer = er * (b ? 0.87 : 0.91),
         inner = er * (b ? 0.79 : 0.86),
@@ -1813,7 +1869,7 @@ export function buildPlane(a, wireframe = false) {
           [z + 3.9 * es, er * 0.94],
           [z + 5.4 * es, er * 0.7],
         ],
-        [172, 192, 215],
+        airline === 'AEROFLOT' ? [25, 55, 103] : [172, 192, 215],
       );
       tube(
         ex,
@@ -2065,6 +2121,82 @@ export function buildPlane(a, wireframe = false) {
             [z0, high],
           ],
           airlineColor,
+          0.075,
+        );
+      }
+      if (airline === 'American') {
+        const front = start - 1.2;
+        skinPatch(
+          [
+            [front, -0.2],
+            [front + 0.45, 0.45],
+            [front + 0.92, 0.17],
+            [front + 0.47, -0.48],
+          ],
+          [45, 92, 145],
+          0.074,
+        );
+        skinPatch(
+          [
+            [front + 0.5, -0.48],
+            [front + 0.92, 0.17],
+            [front + 1.18, -0.12],
+            [front + 0.7, -0.7],
+          ],
+          [192, 43, 50],
+          0.078,
+        );
+      }
+      // Small registration-country flags are intentionally generic and do not
+      // pretend that a fictional model represents a particular airframe.
+      const flagZ = half - (spec.narrow ? 6.8 : 11.5),
+        flagW = spec.narrow ? 0.58 : 0.78,
+        flagH = spec.narrow ? 0.3 : 0.4,
+        yFlag = 0.54;
+      if (airline === 'AEROFLOT' || airline === 'S7') {
+        const cols = [
+          [245, 245, 242],
+          [43, 79, 160],
+          [199, 42, 51],
+        ];
+        for (let i = 0; i < 3; i++) {
+          const top = yFlag + flagH / 2 - (i * flagH) / 3,
+            bottom = top - flagH / 3;
+          skinPatch(
+            [
+              [flagZ, bottom],
+              [flagZ + flagW, bottom],
+              [flagZ + flagW, top],
+              [flagZ, top],
+            ],
+            cols[i],
+            0.065,
+          );
+        }
+      } else {
+        for (let i = 0; i < 6; i++) {
+          const top = yFlag + flagH / 2 - (i * flagH) / 6,
+            bottom = top - flagH / 6;
+          skinPatch(
+            [
+              [flagZ, bottom],
+              [flagZ + flagW, bottom],
+              [flagZ + flagW, top],
+              [flagZ, top],
+            ],
+            i % 2 ? [244, 244, 239] : [190, 42, 48],
+            0.065,
+          );
+        }
+        const sideStart = sign > 0 ? flagZ : flagZ + flagW * 0.56;
+        skinPatch(
+          [
+            [sideStart, yFlag],
+            [sideStart + flagW * 0.44, yFlag],
+            [sideStart + flagW * 0.44, yFlag + flagH * 0.5],
+            [sideStart, yFlag + flagH * 0.5],
+          ],
+          [35, 65, 121],
           0.075,
         );
       }
@@ -2553,7 +2685,7 @@ export function buildPlane(a, wireframe = false) {
             return lo.map((value, index) => value + (hi[index] - value) * t);
           });
         })(),
-    fractions = wireframe ? [0, 0.12, 0.48, 0.73, 1] : Array.from({ length: 25 }, (_, i) => i / 24);
+    fractions = wireframe ? [0, 0.12, 0.48, 0.73, 1] : Array.from({ length: 49 }, (_, i) => i / 48);
   const finPoint = (q, f, side) => [
     side *
       q[3] *
@@ -2610,9 +2742,9 @@ export function buildPlane(a, wireframe = false) {
             const stripe = Math.floor(height * 14);
             return stripe % 2 === 0
               ? [231, 235, 235]
-              : height > 0.55 && chord < 0.4
-                ? [33, 77, 128]
-                : [192, 43, 50];
+              : stripe % 4 === 1
+                ? [192, 43, 50]
+                : [33, 77, 128];
           })(),
           true,
           normals,
@@ -2622,7 +2754,7 @@ export function buildPlane(a, wireframe = false) {
   // Airline logos are attached to each side of the vertical stabilizer.
   if (!wireframe && (airline === 'spirit' || airline === 'S7')) {
     const art = liveryGlyphs[airline];
-    const finAt = (height, fraction, side) => {
+    const finAt = (height, fraction, side, lift = 0.045) => {
       const y =
         baseFinSections[0][0] + height * (baseFinSections.at(-1)[0] - baseFinSections[0][0]);
       let k = 1;
@@ -2632,12 +2764,30 @@ export function buildPlane(a, wireframe = false) {
         t = (y - lo[0]) / (hi[0] - lo[0]);
       const section = lo.map((v, i) => v + (hi[i] - v) * t);
       const point = finPoint(section, fraction, side);
-      point[0] += side * 0.045;
+      point[0] += side * lift;
       return point;
     };
     for (const side of [-1, 1]) {
       const normal = [side, 0, 0];
       part = { kind: 'decal', marking: 'tail-livery', sign: side, normal };
+      if (airline === 'S7') {
+        const center = finAt(0.54, 0.46, side),
+          segments = 36;
+        for (let i = 0; i < segments; i++) {
+          const t0 = (i * Math.PI * 2) / segments,
+            t1 = ((i + 1) * Math.PI * 2) / segments;
+          add(
+            [
+              center,
+              finAt(0.54 + 0.23 * Math.sin(t0), 0.46 + 0.34 * Math.cos(t0), side),
+              finAt(0.54 + 0.23 * Math.sin(t1), 0.46 + 0.34 * Math.cos(t1), side),
+            ],
+            [206, 35, 48],
+            false,
+            [normal, normal, normal],
+          );
+        }
+      }
       const along = (x) => (side > 0 ? 0.13 + 0.67 * x : 0.8 - 0.67 * x);
       for (const [x0, y0, x1, y1] of art.rects) {
         const l = along(x0 / art.width),
@@ -2646,10 +2796,10 @@ export function buildPlane(a, wireframe = false) {
           top = 0.38 + 0.32 * (1 - y0 / art.height);
         add(
           [
-            finAt(bottom, l, side),
-            finAt(bottom, r, side),
-            finAt(top, r, side),
-            finAt(top, l, side),
+            finAt(bottom, l, side, airline === 'S7' ? 0.1 : 0.045),
+            finAt(bottom, r, side, airline === 'S7' ? 0.1 : 0.045),
+            finAt(top, r, side, airline === 'S7' ? 0.1 : 0.045),
+            finAt(top, l, side, airline === 'S7' ? 0.1 : 0.045),
           ],
           airlineColor,
           false,

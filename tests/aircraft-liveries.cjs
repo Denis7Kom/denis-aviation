@@ -6,6 +6,7 @@ const assert = require('node:assert/strict');
     ['B77W', '25,69,133'],
     ['A333', '74,84,95'],
     ['A321', '20,21,22'],
+    ['B737', '250,252,247'],
   ]) {
     const aircraft = fleet.find((item) => item.code === code);
     const solid = buildPlane(aircraft);
@@ -23,6 +24,23 @@ const assert = require('node:assert/strict');
       `${code} airline colour`,
     );
     assert(!buildPlane(aircraft, true).some((face) => face.part?.marking === 'livery'));
+    if (code === 'A321' || code === 'B737') {
+      const engine = solid.filter((face) => face.part?.marking === 'engine-livery');
+      for (const side of [-1, 1])
+        assert(
+          engine.some((face) => face.part.sign === side),
+          `${code} engine marking on side ${side}`,
+        );
+      assert(
+        !buildPlane(aircraft, true).some((face) => face.part?.marking === 'engine-livery'),
+        'wireframe omits engine paint',
+      );
+      if (code === 'B737')
+        assert(
+          engine.some((face) => face.color.join(',') === '206,35,48'),
+          'S7 red engine badge',
+        );
+    }
     if (code === 'A321') {
       assert(
         solid.some((face) => face.color.join(',') === '247,210,23'),
