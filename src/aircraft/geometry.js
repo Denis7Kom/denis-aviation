@@ -1039,6 +1039,587 @@ export function buildPlane(a, wireframe = false) {
       width: 47,
     },
   };
+  const aeroflotMarks = {
+    AEROFLOT: {
+      width: 105,
+      rects: [
+        [69, 0, 72, 1],
+        [46, 0, 51, 1],
+        [30, 0, 37, 1],
+        [7, 0, 11, 1],
+        [58, 0, 67, 1],
+        [83, 0, 88, 1],
+        [44, 1, 52, 2],
+        [17, 0, 27, 2],
+        [57, 1, 67, 2],
+        [94, 0, 105, 2],
+        [81, 1, 90, 2],
+        [57, 2, 66, 3],
+        [94, 2, 104, 3],
+        [81, 2, 85, 3],
+        [87, 2, 91, 3],
+        [17, 2, 26, 3],
+        [49, 2, 53, 3],
+        [69, 1, 71, 3],
+        [29, 1, 39, 3],
+        [43, 2, 47, 3],
+        [6, 1, 11, 3],
+        [98, 3, 100, 4],
+        [80, 3, 83, 4],
+        [88, 3, 91, 4],
+        [57, 3, 60, 4],
+        [29, 3, 32, 4],
+        [37, 3, 40, 5],
+        [5, 3, 8, 5],
+        [29, 4, 31, 5],
+        [16, 3, 19, 5],
+        [42, 3, 45, 5],
+        [57, 4, 59, 6],
+        [28, 5, 31, 6],
+        [42, 5, 44, 6],
+        [79, 4, 82, 6],
+        [36, 5, 39, 6],
+        [97, 4, 100, 7],
+        [16, 5, 26, 7],
+        [4, 5, 7, 7],
+        [28, 6, 39, 7],
+        [9, 3, 11, 7],
+        [89, 4, 92, 7],
+        [68, 3, 71, 7],
+        [16, 7, 25, 8],
+        [97, 7, 99, 8],
+        [89, 7, 91, 8],
+        [56, 6, 65, 8],
+        [68, 7, 70, 8],
+        [28, 7, 37, 8],
+        [33, 8, 36, 9],
+        [9, 7, 12, 9],
+        [56, 8, 59, 9],
+        [51, 3, 54, 9],
+        [3, 7, 6, 9],
+        [56, 9, 58, 10],
+        [79, 6, 81, 10],
+        [28, 8, 30, 10],
+        [50, 9, 53, 10],
+        [88, 8, 91, 10],
+        [50, 10, 52, 11],
+        [87, 10, 90, 11],
+        [41, 6, 44, 11],
+        [67, 8, 70, 11],
+        [15, 8, 18, 11],
+        [96, 8, 99, 11],
+        [34, 9, 37, 11],
+        [2, 9, 12, 11],
+        [79, 10, 82, 11],
+        [67, 11, 77, 12],
+        [42, 11, 46, 12],
+        [85, 11, 90, 12],
+        [1, 11, 4, 12],
+        [48, 11, 52, 12],
+        [79, 11, 83, 12],
+        [67, 12, 76, 13],
+        [35, 11, 38, 13],
+        [96, 11, 98, 13],
+        [1, 12, 3, 13],
+        [55, 10, 58, 13],
+        [42, 12, 51, 13],
+        [15, 11, 25, 13],
+        [80, 12, 89, 13],
+        [27, 10, 30, 13],
+        [10, 11, 12, 13],
+        [10, 13, 13, 14],
+        [66, 13, 76, 14],
+        [14, 13, 25, 14],
+        [95, 13, 98, 14],
+        [0, 13, 3, 14],
+        [44, 13, 49, 14],
+        [55, 13, 57, 14],
+        [82, 13, 87, 14],
+        [36, 13, 39, 14],
+        [27, 13, 29, 14],
+      ],
+      height: 14,
+    },
+    АЭРОФЛОТ: {
+      width: 109,
+      rects: [
+        [46, 0, 51, 1],
+        [19, 0, 24, 1],
+        [7, 0, 11, 1],
+        [88, 0, 92, 1],
+        [73, 0, 82, 1],
+        [31, 0, 37, 1],
+        [62, 0, 64, 1],
+        [44, 1, 52, 2],
+        [17, 1, 25, 2],
+        [61, 1, 64, 2],
+        [30, 1, 39, 2],
+        [86, 1, 94, 2],
+        [98, 0, 109, 2],
+        [72, 1, 81, 3],
+        [30, 2, 40, 3],
+        [16, 2, 20, 3],
+        [98, 2, 108, 3],
+        [91, 2, 95, 3],
+        [85, 2, 89, 3],
+        [59, 2, 66, 3],
+        [49, 2, 53, 3],
+        [22, 2, 26, 3],
+        [43, 2, 47, 3],
+        [6, 1, 11, 3],
+        [92, 3, 95, 4],
+        [72, 3, 75, 4],
+        [102, 3, 104, 4],
+        [57, 3, 67, 4],
+        [84, 3, 87, 4],
+        [16, 3, 19, 4],
+        [30, 3, 33, 4],
+        [51, 3, 53, 4],
+        [84, 4, 86, 5],
+        [78, 3, 81, 5],
+        [64, 4, 68, 5],
+        [30, 4, 32, 5],
+        [42, 3, 45, 5],
+        [61, 4, 63, 5],
+        [56, 4, 60, 5],
+        [5, 3, 8, 5],
+        [72, 4, 74, 6],
+        [56, 5, 58, 6],
+        [37, 3, 40, 6],
+        [24, 3, 27, 6],
+        [29, 5, 32, 6],
+        [29, 6, 39, 7],
+        [101, 4, 104, 7],
+        [4, 5, 7, 7],
+        [9, 3, 11, 7],
+        [51, 4, 54, 7],
+        [93, 4, 96, 7],
+        [20, 6, 27, 7],
+        [66, 5, 68, 7],
+        [41, 5, 44, 7],
+        [83, 5, 86, 7],
+        [19, 7, 27, 8],
+        [101, 7, 103, 8],
+        [93, 7, 95, 8],
+        [60, 5, 63, 8],
+        [78, 5, 80, 8],
+        [29, 7, 38, 8],
+        [55, 6, 58, 9],
+        [83, 7, 85, 9],
+        [24, 8, 27, 9],
+        [71, 6, 74, 9],
+        [65, 7, 68, 9],
+        [9, 7, 12, 9],
+        [41, 7, 43, 9],
+        [3, 7, 6, 9],
+        [51, 7, 53, 9],
+        [29, 8, 36, 9],
+        [50, 9, 53, 10],
+        [16, 9, 17, 10],
+        [71, 9, 73, 10],
+        [55, 9, 59, 10],
+        [60, 8, 62, 10],
+        [63, 9, 67, 10],
+        [29, 9, 31, 10],
+        [92, 8, 95, 10],
+        [23, 9, 26, 11],
+        [41, 9, 44, 11],
+        [77, 8, 80, 11],
+        [83, 9, 86, 11],
+        [49, 10, 52, 11],
+        [15, 10, 18, 11],
+        [100, 8, 103, 11],
+        [56, 10, 66, 11],
+        [2, 9, 12, 11],
+        [91, 10, 94, 11],
+        [77, 11, 79, 12],
+        [70, 10, 73, 12],
+        [21, 11, 25, 12],
+        [89, 11, 94, 12],
+        [84, 11, 87, 12],
+        [42, 11, 45, 12],
+        [1, 11, 4, 12],
+        [15, 11, 19, 12],
+        [57, 11, 64, 12],
+        [47, 11, 52, 12],
+        [28, 10, 31, 13],
+        [1, 12, 3, 13],
+        [42, 12, 51, 13],
+        [59, 12, 62, 13],
+        [68, 12, 72, 13],
+        [16, 12, 24, 13],
+        [100, 11, 102, 13],
+        [84, 12, 93, 13],
+        [10, 11, 12, 13],
+        [10, 13, 13, 14],
+        [86, 13, 91, 14],
+        [0, 13, 3, 14],
+        [99, 13, 102, 14],
+        [44, 13, 49, 14],
+        [76, 12, 79, 14],
+        [59, 13, 61, 14],
+        [28, 13, 30, 14],
+        [17, 13, 22, 14],
+        [68, 13, 71, 14],
+      ],
+      height: 14,
+    },
+    'Russian Airlines': {
+      width: 133,
+      rects: [
+        [0, 0, 9, 1],
+        [77, 0, 80, 1],
+        [7, 1, 10, 2],
+        [86, 0, 88, 2],
+        [43, 0, 45, 2],
+        [100, 0, 102, 2],
+        [79, 1, 80, 3],
+        [77, 1, 78, 3],
+        [9, 2, 10, 3],
+        [118, 3, 120, 4],
+        [76, 3, 78, 4],
+        [50, 3, 53, 4],
+        [26, 3, 29, 4],
+        [108, 3, 110, 4],
+        [93, 3, 95, 4],
+        [127, 3, 130, 4],
+        [36, 3, 38, 4],
+        [61, 3, 63, 4],
+        [92, 4, 95, 5],
+        [104, 4, 106, 5],
+        [58, 4, 59, 5],
+        [60, 4, 65, 5],
+        [126, 4, 132, 5],
+        [9, 3, 11, 5],
+        [24, 4, 30, 5],
+        [79, 3, 81, 5],
+        [90, 4, 91, 5],
+        [48, 4, 54, 5],
+        [116, 4, 122, 5],
+        [107, 4, 112, 5],
+        [34, 4, 40, 5],
+        [76, 4, 77, 5],
+        [24, 5, 26, 6],
+        [110, 5, 112, 6],
+        [58, 5, 61, 6],
+        [90, 5, 93, 6],
+        [47, 5, 49, 6],
+        [38, 5, 40, 6],
+        [115, 5, 117, 6],
+        [63, 5, 65, 6],
+        [120, 5, 123, 6],
+        [29, 5, 31, 6],
+        [130, 5, 132, 6],
+        [80, 5, 81, 6],
+        [8, 5, 10, 6],
+        [0, 1, 2, 6],
+        [39, 6, 40, 7],
+        [131, 6, 132, 7],
+        [121, 6, 123, 7],
+        [104, 5, 107, 7],
+        [58, 6, 60, 7],
+        [29, 6, 30, 7],
+        [80, 6, 82, 7],
+        [115, 6, 116, 7],
+        [0, 6, 10, 7],
+        [48, 6, 49, 7],
+        [125, 5, 127, 7],
+        [24, 6, 25, 7],
+        [75, 5, 77, 7],
+        [33, 5, 35, 7],
+        [125, 7, 128, 8],
+        [33, 7, 36, 8],
+        [81, 7, 82, 8],
+        [122, 7, 123, 8],
+        [114, 7, 116, 8],
+        [75, 7, 76, 8],
+        [24, 7, 27, 8],
+        [53, 5, 55, 8],
+        [0, 7, 8, 8],
+        [74, 8, 83, 9],
+        [126, 8, 132, 9],
+        [25, 8, 30, 9],
+        [48, 8, 55, 9],
+        [6, 8, 8, 9],
+        [34, 8, 40, 9],
+        [114, 8, 123, 9],
+        [74, 9, 75, 10],
+        [27, 9, 31, 10],
+        [47, 9, 50, 10],
+        [129, 9, 133, 10],
+        [114, 9, 116, 10],
+        [37, 9, 41, 10],
+        [81, 9, 83, 10],
+        [7, 9, 9, 10],
+        [115, 10, 116, 11],
+        [126, 10, 127, 11],
+        [20, 4, 22, 11],
+        [34, 10, 35, 11],
+        [121, 11, 123, 12],
+        [39, 10, 41, 12],
+        [13, 4, 15, 12],
+        [131, 10, 133, 12],
+        [33, 11, 35, 12],
+        [115, 11, 117, 12],
+        [30, 10, 31, 12],
+        [19, 11, 22, 12],
+        [125, 11, 127, 12],
+        [24, 10, 25, 12],
+        [73, 10, 75, 12],
+        [53, 9, 55, 12],
+        [8, 10, 10, 12],
+        [24, 12, 26, 13],
+        [125, 12, 128, 13],
+        [33, 12, 36, 13],
+        [52, 12, 55, 13],
+        [14, 12, 16, 13],
+        [9, 12, 11, 13],
+        [47, 10, 49, 13],
+        [38, 12, 40, 13],
+        [116, 12, 118, 13],
+        [130, 12, 132, 13],
+        [82, 10, 84, 13],
+        [18, 12, 22, 13],
+        [29, 12, 31, 13],
+        [120, 12, 123, 13],
+        [72, 12, 75, 13],
+        [104, 7, 106, 14],
+        [35, 13, 39, 14],
+        [111, 6, 113, 14],
+        [83, 13, 85, 14],
+        [72, 13, 74, 14],
+        [58, 7, 59, 14],
+        [100, 4, 102, 14],
+        [127, 13, 131, 14],
+        [43, 4, 45, 14],
+        [117, 13, 121, 14],
+        [25, 13, 30, 14],
+        [96, 0, 98, 14],
+        [15, 13, 18, 14],
+        [48, 13, 52, 14],
+        [54, 13, 56, 14],
+        [86, 4, 88, 14],
+        [64, 6, 66, 14],
+        [90, 6, 92, 14],
+        [10, 13, 12, 14],
+        [20, 13, 22, 14],
+        [0, 8, 2, 14],
+      ],
+      height: 14,
+    },
+    'Российские авиалинии': {
+      width: 200,
+      rects: [
+        [54, 0, 55, 1],
+        [58, 0, 60, 1],
+        [0, 0, 8, 1],
+        [7, 1, 10, 2],
+        [55, 1, 59, 2],
+        [56, 2, 58, 3],
+        [66, 3, 69, 4],
+        [35, 3, 38, 4],
+        [110, 3, 113, 4],
+        [15, 3, 18, 4],
+        [26, 3, 28, 4],
+        [94, 3, 97, 4],
+        [141, 3, 144, 4],
+        [139, 4, 146, 5],
+        [87, 4, 89, 5],
+        [150, 4, 158, 5],
+        [24, 4, 30, 5],
+        [77, 4, 80, 5],
+        [108, 4, 115, 5],
+        [118, 4, 125, 5],
+        [134, 4, 136, 5],
+        [64, 4, 70, 5],
+        [48, 4, 50, 5],
+        [93, 4, 99, 5],
+        [34, 4, 39, 5],
+        [166, 4, 168, 5],
+        [198, 4, 200, 5],
+        [13, 4, 19, 5],
+        [144, 5, 146, 6],
+        [28, 5, 30, 6],
+        [47, 5, 50, 6],
+        [13, 5, 15, 6],
+        [38, 5, 40, 6],
+        [92, 5, 94, 6],
+        [0, 1, 2, 6],
+        [165, 5, 168, 6],
+        [197, 5, 200, 6],
+        [133, 5, 136, 6],
+        [123, 5, 125, 6],
+        [108, 5, 110, 6],
+        [8, 2, 10, 6],
+        [77, 5, 78, 6],
+        [187, 4, 189, 6],
+        [139, 5, 141, 6],
+        [69, 5, 71, 6],
+        [64, 5, 66, 6],
+        [18, 5, 20, 6],
+        [58, 4, 61, 6],
+        [97, 5, 99, 6],
+        [33, 5, 35, 6],
+        [23, 5, 25, 7],
+        [70, 6, 71, 7],
+        [0, 6, 9, 7],
+        [86, 5, 89, 7],
+        [39, 6, 41, 7],
+        [29, 6, 31, 7],
+        [196, 6, 200, 7],
+        [76, 6, 78, 7],
+        [124, 6, 126, 7],
+        [139, 6, 140, 7],
+        [186, 6, 187, 7],
+        [133, 6, 134, 7],
+        [57, 6, 61, 7],
+        [145, 6, 146, 7],
+        [108, 6, 109, 7],
+        [47, 6, 48, 7],
+        [165, 6, 166, 7],
+        [19, 6, 20, 7],
+        [196, 7, 197, 8],
+        [177, 4, 179, 8],
+        [0, 7, 8, 8],
+        [164, 7, 166, 8],
+        [113, 5, 115, 8],
+        [144, 7, 146, 8],
+        [185, 7, 187, 8],
+        [73, 4, 75, 8],
+        [91, 6, 93, 8],
+        [132, 7, 134, 8],
+        [85, 7, 89, 8],
+        [76, 7, 77, 8],
+        [171, 4, 173, 8],
+        [118, 5, 120, 8],
+        [57, 7, 58, 8],
+        [98, 6, 100, 8],
+        [124, 7, 125, 8],
+        [46, 7, 48, 8],
+        [139, 8, 146, 9],
+        [85, 8, 86, 9],
+        [171, 8, 179, 9],
+        [108, 8, 115, 9],
+        [118, 8, 125, 9],
+        [132, 8, 133, 9],
+        [91, 8, 100, 9],
+        [164, 8, 165, 9],
+        [73, 8, 76, 9],
+        [46, 8, 47, 9],
+        [195, 8, 197, 9],
+        [185, 8, 186, 9],
+        [56, 8, 58, 9],
+        [195, 9, 196, 10],
+        [23, 7, 24, 10],
+        [81, 4, 83, 10],
+        [123, 9, 126, 10],
+        [128, 4, 130, 10],
+        [73, 9, 77, 10],
+        [139, 9, 142, 10],
+        [181, 4, 183, 10],
+        [192, 4, 194, 10],
+        [84, 9, 85, 10],
+        [184, 9, 186, 10],
+        [42, 4, 44, 10],
+        [131, 9, 132, 10],
+        [45, 9, 46, 10],
+        [56, 9, 57, 10],
+        [163, 9, 165, 10],
+        [19, 7, 21, 10],
+        [160, 4, 162, 10],
+        [107, 9, 110, 10],
+        [32, 6, 34, 11],
+        [42, 10, 46, 11],
+        [76, 10, 78, 11],
+        [128, 10, 132, 11],
+        [30, 10, 31, 11],
+        [55, 10, 56, 11],
+        [70, 10, 72, 11],
+        [91, 9, 93, 11],
+        [192, 10, 196, 11],
+        [145, 9, 146, 11],
+        [81, 10, 85, 11],
+        [12, 6, 14, 11],
+        [19, 10, 20, 11],
+        [53, 4, 54, 11],
+        [160, 10, 164, 11],
+        [150, 5, 152, 12],
+        [23, 10, 25, 12],
+        [181, 10, 185, 12],
+        [92, 11, 94, 12],
+        [107, 10, 109, 12],
+        [63, 6, 65, 12],
+        [39, 10, 41, 12],
+        [192, 11, 195, 12],
+        [113, 9, 115, 12],
+        [29, 11, 31, 12],
+        [144, 11, 146, 12],
+        [53, 11, 56, 12],
+        [124, 10, 126, 12],
+        [13, 11, 14, 12],
+        [118, 9, 120, 12],
+        [138, 10, 140, 12],
+        [69, 11, 71, 12],
+        [18, 11, 20, 12],
+        [98, 11, 100, 12],
+        [33, 11, 35, 12],
+        [148, 12, 152, 13],
+        [128, 11, 131, 13],
+        [28, 12, 30, 13],
+        [77, 11, 79, 13],
+        [24, 12, 26, 13],
+        [38, 12, 40, 13],
+        [160, 11, 163, 13],
+        [118, 12, 125, 13],
+        [112, 12, 115, 13],
+        [42, 11, 45, 13],
+        [143, 12, 146, 13],
+        [33, 12, 36, 13],
+        [13, 12, 15, 13],
+        [68, 12, 71, 13],
+        [96, 12, 99, 13],
+        [139, 12, 141, 13],
+        [81, 11, 84, 13],
+        [64, 12, 66, 13],
+        [17, 12, 20, 13],
+        [92, 12, 95, 13],
+        [107, 12, 110, 13],
+        [181, 12, 184, 13],
+        [188, 6, 189, 14],
+        [145, 13, 147, 14],
+        [78, 13, 80, 14],
+        [59, 7, 61, 14],
+        [198, 7, 200, 14],
+        [156, 5, 158, 14],
+        [148, 13, 151, 14],
+        [128, 13, 130, 14],
+        [0, 8, 2, 14],
+        [49, 6, 50, 14],
+        [181, 13, 183, 14],
+        [81, 13, 83, 14],
+        [94, 13, 98, 14],
+        [135, 6, 136, 14],
+        [73, 10, 75, 14],
+        [118, 13, 124, 14],
+        [167, 6, 168, 14],
+        [192, 12, 194, 14],
+        [171, 9, 173, 14],
+        [139, 13, 144, 14],
+        [25, 13, 29, 14],
+        [114, 13, 116, 14],
+        [177, 9, 179, 14],
+        [35, 13, 39, 14],
+        [87, 8, 89, 14],
+        [160, 13, 162, 14],
+        [14, 13, 18, 14],
+        [108, 13, 112, 14],
+        [65, 13, 70, 14],
+        [42, 13, 44, 14],
+        [53, 12, 55, 14],
+      ],
+      height: 14,
+    },
+  };
   const faces = [],
     half = a.len / 2,
     r = a.r,
@@ -1117,17 +1698,63 @@ export function buildPlane(a, wireframe = false) {
     for (let d = 0.9; d < (a.code === 'A339' ? 3.6 : 4.5); d += 0.1) stations.push(-half + d);
   stations.push(half);
   stations.sort((x, y) => x - y);
-  for (let k = 1; k < stations.length; k++)
-    for (let j = 0; j < N; j++) {
-      const p = [
-        surface((j / N) * Math.PI * 2, stations[k - 1]),
-        surface((j / N) * Math.PI * 2, stations[k]),
-        surface(((j + 1) / N) * Math.PI * 2, stations[k]),
-        surface(((j + 1) / N) * Math.PI * 2, stations[k - 1]),
+  // The painted boundary is part of the hull mesh. It follows the circular
+  // cross-section and rises smoothly into the navy tail, as on the reference.
+  function aeroflotBoundary(z) {
+    const t = Math.max(0, Math.min(1, (z + half) / a.len)),
+      u = Math.max(0, Math.min(1, (t - 0.58) / 0.42)),
+      smooth = u * u * (3 - 2 * u);
+    return -0.42 + 0.76 * smooth;
+  }
+  if (airline === 'AEROFLOT' && !wireframe) {
+    function paintAngle(z, range, fraction) {
+      const boundary = aeroflotBoundary(z),
+        lower = Math.asin(boundary),
+        upper = Math.asin(Math.min(0.95, boundary + 0.12));
+      const cuts = [
+        upper,
+        Math.PI - upper,
+        Math.PI - lower,
+        Math.PI * 2 + lower,
+        Math.PI * 2 + upper,
       ];
-      const underbody = airline === 'AEROFLOT' && Math.sin(((j + 0.5) / N) * Math.PI * 2) < -0.72;
-      add(p, underbody ? [25, 54, 99] : body, true, p.map(surfaceNormal));
+      return cuts[range] + (cuts[range + 1] - cuts[range]) * fraction;
     }
+    const regions = [
+      [24, body],
+      [2, [231, 73, 34]],
+      [24, [13, 29, 67]],
+      [2, [231, 73, 34]],
+    ];
+    for (let k = 1; k < stations.length; k++)
+      for (let region = 0; region < regions.length; region++) {
+        const [segments, paint] = regions[region],
+          left = stations[k - 1],
+          right = stations[k];
+        for (let j = 0; j < segments; j++) {
+          const f0 = j / segments,
+            f1 = (j + 1) / segments,
+            p = [
+              surface(paintAngle(left, region, f0), left),
+              surface(paintAngle(right, region, f0), right),
+              surface(paintAngle(right, region, f1), right),
+              surface(paintAngle(left, region, f1), left),
+            ];
+          add(p, paint, true, p.map(surfaceNormal));
+        }
+      }
+  } else {
+    for (let k = 1; k < stations.length; k++)
+      for (let j = 0; j < N; j++) {
+        const p = [
+          surface((j / N) * Math.PI * 2, stations[k - 1]),
+          surface((j / N) * Math.PI * 2, stations[k]),
+          surface(((j + 1) / N) * Math.PI * 2, stations[k]),
+          surface(((j + 1) / N) * Math.PI * 2, stations[k - 1]),
+        ];
+        add(p, body, true, p.map(surfaceNormal));
+      }
+  }
   function tube(x, y, sections, color = body, n = wireframe ? 18 : 36, round = false) {
     for (let k = 1; k < sections.length; k++)
       for (let j = 0; j < n; j++) {
@@ -1380,7 +2007,10 @@ export function buildPlane(a, wireframe = false) {
             });
           add(
             points,
-            color.map((v) => v * (side > 0 ? 1 : 0.65)),
+            (airline === 'AEROFLOT' && a.code === 'A339' && k >= stations.length - 2
+              ? [225, 73, 35]
+              : color
+            ).map((v) => v * (side > 0 ? 1 : 0.65)),
             true,
             normals,
             0.22,
@@ -1869,8 +2499,20 @@ export function buildPlane(a, wireframe = false) {
           [z + 3.9 * es, er * 0.94],
           [z + 5.4 * es, er * 0.7],
         ],
-        airline === 'AEROFLOT' ? [25, 55, 103] : [172, 192, 215],
+        airline === 'AEROFLOT' ? [14, 32, 71] : [172, 192, 215],
       );
+      if (airline === 'AEROFLOT' && !wireframe)
+        tube(
+          ex,
+          ey,
+          [
+            [z + 0.12, er * 0.94],
+            [z + 0.2, er * 0.98],
+          ],
+          [232, 78, 35],
+          36,
+          true,
+        );
       tube(
         ex,
         ey,
@@ -2101,12 +2743,26 @@ export function buildPlane(a, wireframe = false) {
     // the fuselage and are occluded correctly as the model rotates.
     if (!wireframe) {
       marking = 'livery';
-      const art = liveryGlyphs[airline],
-        titleHeight = spec.narrow ? 1.35 : 1.55,
+      const art =
+          airline === 'AEROFLOT'
+            ? aeroflotMarks[sign > 0 ? 'АЭРОФЛОТ' : 'AEROFLOT']
+            : liveryGlyphs[airline],
+        titleHeight = airline === 'AEROFLOT' ? 0.78 : spec.narrow ? 1.35 : 1.55,
         titleWidth =
-          airline === 'spirit' ? 8.8 : airline === 'S7' ? 3.1 : airline === 'American' ? 14 : 14.5,
-        start = -half + spec.noseLength + (spec.narrow ? 1.5 : 3.2),
-        bottom = spec.narrow ? -0.78 : -0.95,
+          airline === 'spirit'
+            ? 8.8
+            : airline === 'S7'
+              ? 3.1
+              : airline === 'American'
+                ? 14
+                : a.code === 'B77W'
+                  ? 10.8
+                  : 9.2,
+        start =
+          airline === 'AEROFLOT'
+            ? -half + spec.doors[0] + 2
+            : -half + spec.noseLength + (spec.narrow ? 1.5 : 3.2),
+        bottom = airline === 'AEROFLOT' ? 1.54 : spec.narrow ? -0.78 : -0.95,
         along = (v) => (sign > 0 ? start + v * titleWidth : start + (1 - v) * titleWidth);
       for (const [x0, y0, x1, y1] of art.rects) {
         const z0 = along(x0 / art.width),
@@ -2123,6 +2779,30 @@ export function buildPlane(a, wireframe = false) {
           airlineColor,
           0.075,
         );
+      }
+      if (airline === 'AEROFLOT') {
+        const sub = aeroflotMarks[sign > 0 ? 'Российские авиалинии' : 'Russian Airlines'],
+          subWidth = titleWidth * 0.55,
+          subStart = start + titleWidth * 0.33,
+          subY = 1.27,
+          subHeight = 0.19,
+          subAlong = (x) => (sign > 0 ? subStart + x * subWidth : subStart + (1 - x) * subWidth);
+        for (const [x0, y0, x1, y1] of sub.rects) {
+          const z0 = subAlong(x0 / sub.width),
+            z1 = subAlong(x1 / sub.width),
+            low = subY + subHeight * (1 - y1 / sub.height),
+            high = subY + subHeight * (1 - y0 / sub.height);
+          skinPatch(
+            [
+              [z0, low],
+              [z1, low],
+              [z1, high],
+              [z0, high],
+            ],
+            airlineColor,
+            0.073,
+          );
+        }
       }
       if (airline === 'American') {
         const front = start - 1.2;
@@ -2149,7 +2829,10 @@ export function buildPlane(a, wireframe = false) {
       }
       // Small registration-country flags are intentionally generic and do not
       // pretend that a fictional model represents a particular airframe.
-      const flagZ = half - (spec.narrow ? 6.8 : 11.5),
+      const flagZ =
+          airline === 'AEROFLOT'
+            ? -half + spec.noseLength * 0.52
+            : half - (spec.narrow ? 6.8 : 11.5),
         flagW = spec.narrow ? 0.58 : 0.78,
         flagH = spec.narrow ? 0.3 : 0.4,
         yFlag = 0.54;
@@ -2198,28 +2881,6 @@ export function buildPlane(a, wireframe = false) {
           ],
           [35, 65, 121],
           0.075,
-        );
-      }
-      if (airline === 'AEROFLOT') {
-        const from = -half + spec.noseLength + 1,
-          to = half - (spec.narrow ? 5 : 9);
-        skinStroke(
-          [
-            [from, -1.43],
-            [to, -1.43],
-          ],
-          [31, 74, 139],
-          0.13,
-          0.055,
-        );
-        skinStroke(
-          [
-            [from, -1.59],
-            [to, -1.59],
-          ],
-          [193, 38, 52],
-          0.1,
-          0.055,
         );
       }
     }
@@ -2545,8 +3206,12 @@ export function buildPlane(a, wireframe = false) {
         h = small ? (spec.narrow ? 0.92 : 1.65) : spec.narrow ? 1.8 : 1.96,
         cy = small && spec.narrow ? 0.85 : 0.53,
         outline = rounded(z, cy, w, h, 0.16);
-      skinPatch(outline, [103, 120, 137], 0.034);
-      skinPatch(rounded(z, cy, w - 0.07, h - 0.07, 0.14), body, 0.052);
+      if (airline === 'AEROFLOT')
+        skinStroke([...outline, outline[0]], [87, 103, 120], 0.035, 0.052);
+      else {
+        skinPatch(outline, [103, 120, 137], 0.034);
+        skinPatch(rounded(z, cy, w - 0.07, h - 0.07, 0.14), body, 0.052);
+      }
       skinPatch(rounded(z, 1.02, 0.23, 0.33, 0.065), [64, 83, 101], 0.071);
       skinPatch(rounded(z, 1.02, 0.17, 0.26, 0.05), [15, 39, 56], 0.085, 1);
       skinPatch(rounded(z + 0.18, 0.37, 0.27, 0.12, 0.04), [88, 104, 119], 0.074);
@@ -2589,8 +3254,13 @@ export function buildPlane(a, wireframe = false) {
         : [spec.doors[1] - 4, a.len - 20]) {
         const z = -half + d,
           c = spec.narrow ? 0.66 : 1;
-        skinPatch(rounded(z, -1.25 * c, 2.8 * c, 1.55 * c, 0.15), [107, 124, 140], 0.026);
-        skinPatch(rounded(z, -1.25 * c, 2.73 * c, 1.48 * c, 0.13), body, 0.045);
+        if (airline === 'AEROFLOT') {
+          const outline = rounded(z, -1.25 * c, 2.8 * c, 1.55 * c, 0.15);
+          skinStroke([...outline, outline[0]], [102, 119, 138], 0.035, 0.055);
+        } else {
+          skinPatch(rounded(z, -1.25 * c, 2.8 * c, 1.55 * c, 0.15), [107, 124, 140], 0.026);
+          skinPatch(rounded(z, -1.25 * c, 2.73 * c, 1.48 * c, 0.13), body, 0.045);
+        }
         skinPatch(rounded(z + 0.75 * c, -1.16 * c, 0.28, 0.12, 0.03), [71, 87, 105], 0.065);
       }
     // Pitot probes sit below and behind the radome, clear of the windshield.
@@ -2731,14 +3401,7 @@ export function buildPlane(a, wireframe = false) {
               chord = (u + v) / 2;
             if (airline === 'spirit') return [247, 210, 23];
             if (airline === 'S7') return [112, 181, 35];
-            if (airline === 'AEROFLOT') {
-              const band = height + chord * 0.55;
-              return band > 0.55 && band < 0.77
-                ? [228, 233, 235]
-                : band >= 0.77 && band < 0.99
-                  ? [194, 31, 47]
-                  : [17, 55, 111];
-            }
+            if (airline === 'AEROFLOT') return [13, 29, 67];
             const stripe = Math.floor(height * 14);
             return stripe % 2 === 0
               ? [231, 235, 235]
@@ -2751,22 +3414,57 @@ export function buildPlane(a, wireframe = false) {
           0.12,
         );
       }
+  // Paint and markings follow the airfoil on each side of the fin.
+  const finAt = (height, fraction, side, lift = 0.045) => {
+    const y = baseFinSections[0][0] + height * (baseFinSections.at(-1)[0] - baseFinSections[0][0]);
+    let k = 1;
+    while (k < baseFinSections.length - 1 && y > baseFinSections[k][0]) k++;
+    const lo = baseFinSections[k - 1],
+      hi = baseFinSections[k],
+      t = (y - lo[0]) / (hi[0] - lo[0]);
+    const section = lo.map((v, i) => v + (hi[i] - v) * t);
+    const point = finPoint(section, fraction, side);
+    point[0] += side * lift;
+    return point;
+  };
+  if (!wireframe && airline === 'AEROFLOT') {
+    for (const side of [-1, 1]) {
+      const normal = [side, 0, 0];
+      part = { kind: 'decal', marking: 'aeroflot-tail-stripe', sign: side, normal };
+      for (let i = 0; i < 40; i++) {
+        const f0 = i / 40,
+          f1 = (i + 1) / 40,
+          curve = (f) => 0.18 + 0.55 * f + 0.07 * Math.sin(Math.PI * f),
+          strips = [
+            [[238, 239, 233], 0.2, 0.32],
+            [[46, 94, 151], 0.08, 0.2],
+            [[201, 36, 50], -0.04, 0.08],
+          ];
+        for (const [colour, low, high] of strips) {
+          const clip = (v) => Math.max(0.015, Math.min(0.985, v)),
+            y00 = clip(curve(f0) + low),
+            y01 = clip(curve(f0) + high),
+            y10 = clip(curve(f1) + low),
+            y11 = clip(curve(f1) + high);
+          add(
+            [
+              finAt(y00, f0, side, 0.065),
+              finAt(y10, f1, side, 0.065),
+              finAt(y11, f1, side, 0.065),
+              finAt(y01, f0, side, 0.065),
+            ],
+            colour,
+            false,
+            [normal, normal, normal, normal],
+          );
+        }
+      }
+      part = null;
+    }
+  }
   // Airline logos are attached to each side of the vertical stabilizer.
   if (!wireframe && (airline === 'spirit' || airline === 'S7')) {
     const art = liveryGlyphs[airline];
-    const finAt = (height, fraction, side, lift = 0.045) => {
-      const y =
-        baseFinSections[0][0] + height * (baseFinSections.at(-1)[0] - baseFinSections[0][0]);
-      let k = 1;
-      while (k < baseFinSections.length - 1 && y > baseFinSections[k][0]) k++;
-      const lo = baseFinSections[k - 1],
-        hi = baseFinSections[k],
-        t = (y - lo[0]) / (hi[0] - lo[0]);
-      const section = lo.map((v, i) => v + (hi[i] - v) * t);
-      const point = finPoint(section, fraction, side);
-      point[0] += side * lift;
-      return point;
-    };
     for (const side of [-1, 1]) {
       const normal = [side, 0, 0];
       part = { kind: 'decal', marking: 'tail-livery', sign: side, normal };
