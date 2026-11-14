@@ -18,13 +18,13 @@
     "f71f7b3017b260ff2d75bdf797e6aee4787ba8ae2eb317dcd5ce4e9fe05cd801"
   ],
   "static": {
-    "index.html": "7587e675f880eedd99670893030d1e79fc901c7840dfdff442b46b06564ca5d2"
+    "index.html": "2d91664fb9e6258b3e7b83519d6bb2d8c5f4e48cfbf897a4732e1bc0631f2f64"
   },
   "renderer": "9b5054080a9bd04374c321fb9dcf3abd7d0e48489a64dff9c076ab42f87a4245",
   "stylesheet": "b4abe9f96991806ed35f681df347bc7b62693aa21b424618bf9f6b7f198722f1",
-  "gallery": "664f844df26c44b9a503d7e2dc4760219341669815d094597c198ef965c02ee1",
+  "gallery": "a4e4a7c150234cd76f26e52c38aba75462ac4584c67ebb3f100d292d67ff7ef3",
   "reviewedChange": {
     "date": "2026-11-14",
-    "scope": "Add aviation photos and category filters"
+    "scope": "Add aviation photo selection"
   }
 }

@@ -79,7 +79,7 @@ const context = {
   $$: (s) => (s === '[data-gallery-filter]' ? filters : frames),
 };
 vm.runInNewContext(part, context);
-assert.equal(frames.length, 51);
+assert.equal(frames.length, 64);
 for (const f of filters) {
   f.click();
   const visible = frames.filter((x) => !x.hidden),

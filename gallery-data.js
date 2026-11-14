@@ -865,4 +865,225 @@ window.DK_GALLERY = [
     },
     categories: ['aircraft'],
   },
+  {
+    src: 'assets/gallery/moment-51.webp',
+    alt: {
+      ru: 'Philippine Airlines на заходе',
+      en: 'Philippine Airlines on approach',
+      it: 'Philippine Airlines on approach',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
+  {
+    src: 'assets/gallery/moment-52.webp',
+    alt: {
+      ru: 'Philippine Airlines на посадке',
+      en: 'Philippine Airlines landing',
+      it: 'Philippine Airlines landing',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
+  {
+    src: 'assets/gallery/moment-53.webp',
+    alt: {
+      ru: 'Philippine Airlines после посадки',
+      en: 'Philippine Airlines after landing',
+      it: 'Philippine Airlines after landing',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
+  {
+    src: 'assets/gallery/moment-54.webp',
+    alt: {
+      ru: 'Philippine Airlines у полосы',
+      en: 'Philippine Airlines near the runway',
+      it: 'Philippine Airlines near the runway',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
+  {
+    src: 'assets/gallery/moment-55.webp',
+    alt: {
+      ru: 'Крыло над ночным аэропортом',
+      en: 'Wing above an airport at night',
+      it: 'Wing above an airport at night',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['views', 'atc'],
+  },
+  {
+    src: 'assets/gallery/moment-56.webp',
+    alt: {
+      ru: 'Закат над аэропортом',
+      en: 'Sunset over an airport',
+      it: 'Sunset over an airport',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['views', 'atc'],
+  },
+  {
+    src: 'assets/gallery/moment-57.webp',
+    alt: {
+      ru: 'Lufthansa на заходе',
+      en: 'Lufthansa on approach',
+      it: 'Lufthansa on approach',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
+  {
+    src: 'assets/gallery/moment-58.webp',
+    alt: {
+      ru: 'Southwest в вечернем небе',
+      en: 'Southwest at dusk',
+      it: 'Southwest at dusk',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft'],
+  },
+  {
+    src: 'assets/gallery/moment-59.webp',
+    alt: {
+      ru: 'Lufthansa в полёте',
+      en: 'Lufthansa in flight',
+      it: 'Lufthansa in flight',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft'],
+  },
+  {
+    src: 'assets/gallery/moment-60.webp',
+    alt: {
+      ru: 'Посадочные огни',
+      en: 'Landing lights',
+      it: 'Landing lights',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft'],
+  },
+  {
+    src: 'assets/gallery/moment-61.webp',
+    alt: {
+      ru: 'Southwest на заходе',
+      en: 'Southwest on approach',
+      it: 'Southwest on approach',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
+  {
+    src: 'assets/gallery/moment-62.webp',
+    alt: {
+      ru: 'Spirit над аэропортом',
+      en: 'Spirit over the airport',
+      it: 'Spirit over the airport',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
+  {
+    src: 'assets/gallery/moment-63.webp',
+    alt: {
+      ru: 'Spirit на посадке',
+      en: 'Spirit landing',
+      it: 'Spirit landing',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
 ];
