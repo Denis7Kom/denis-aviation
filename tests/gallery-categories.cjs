@@ -12,6 +12,16 @@ const gallery = win.DK_GALLERY,
   filters = ['all', 'together', 'atc', 'aircraft', 'views'].map((x) => ({
     dataset: { galleryFilter: x },
     attrs: {},
+    count: {},
+    querySelector() {
+      return this.count;
+    },
+    focus() {
+      this.focused = true;
+    },
+    getAttribute(k) {
+      return this.attrs[k];
+    },
     addEventListener(k, f) {
       this.click = f;
     },
@@ -56,6 +66,9 @@ for (const id of [
   '#gallery',
   '#gallery-link',
   '#gallery-grid',
+  '#gallery-folders',
+  '#gallery-collection',
+  '#gallery-back',
   '#gallery-title',
   '#gallery-caption',
   '#gallery-dialog',
@@ -82,6 +95,8 @@ vm.runInNewContext(part, context);
 assert.equal(frames.length, 64);
 for (const f of filters) {
   f.click();
+  assert.equal(nodes['#gallery-folders'].hidden, true);
+  assert.equal(nodes['#gallery-collection'].hidden, false);
   const visible = frames.filter((x) => !x.hidden),
     expected = gallery.filter(
       (x) => f.dataset.galleryFilter === 'all' || x.categories.includes(f.dataset.galleryFilter),
@@ -89,6 +104,7 @@ for (const f of filters) {
   assert.equal(visible.length, expected.length);
   assert(visible.length);
   assert.equal(f.attrs['aria-pressed'], 'true');
+  assert.equal(f.count.textContent, expected.length);
   visible[0].click();
   assert.equal(nodes['#gallery-counter'].textContent, `1 / ${visible.length}`);
   nodes['#gallery-next'].click();
@@ -96,5 +112,9 @@ for (const f of filters) {
     nodes['#gallery-counter'].textContent,
     `${visible.length === 1 ? 1 : 2} / ${visible.length}`,
   );
+  nodes['#gallery-back'].click();
+  assert.equal(nodes['#gallery-folders'].hidden, false);
+  assert.equal(nodes['#gallery-collection'].hidden, true);
+  assert.equal(f.focused, true);
 }
 console.log('PASS: gallery filters, accessible state, and filtered navigation');

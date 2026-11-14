@@ -12751,18 +12751,31 @@ Details: ${notes}` : `Заявка: ${type}
         b.addEventListener("click", () => openGallery(i, b));
         $("#gallery-grid").append(b);
       });
-      $$("[data-gallery-filter]").forEach(
-        (filter) => filter.addEventListener("click", () => {
-          const selected = filter.dataset.galleryFilter;
-          galleryVisible = gallery.map((item, i) => selected === "all" || item.categories?.includes(selected) ? i : -1).filter((i) => i >= 0);
+      $$("[data-gallery-filter]").forEach((filter) => {
+        const selected = filter.dataset.galleryFilter;
+        filter.querySelector("[data-folder-count]").textContent = selected === "all" ? gallery.length : gallery.filter((item) => item.categories?.includes(selected)).length;
+        filter.addEventListener("click", () => {
+          const selected2 = filter.dataset.galleryFilter;
+          galleryVisible = gallery.map((item, i) => selected2 === "all" || item.categories?.includes(selected2) ? i : -1).filter((i) => i >= 0);
           $$("[data-gallery-filter]").forEach(
             (button) => button.setAttribute("aria-pressed", String(button === filter))
           );
           $$("[data-gallery]").forEach((button) => {
             button.hidden = !galleryVisible.includes(Number(button.dataset.gallery));
           });
-        })
-      );
+          $("#gallery-folders").hidden = true;
+          $("#gallery-collection").hidden = false;
+          $("#gallery-back").focus();
+        });
+      });
+      $("#gallery-back").addEventListener("click", () => {
+        $("#gallery-collection").hidden = true;
+        $("#gallery-folders").hidden = false;
+        const selected = $$("[data-gallery-filter]").find(
+          (button) => button.getAttribute("aria-pressed") === "true"
+        );
+        selected?.focus();
+      });
     }
     $("#gallery-close").addEventListener("click", () => $("#gallery-dialog").close());
     $("#gallery-prev").addEventListener("click", () => moveGallery(-1));
