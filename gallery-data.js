@@ -1086,4 +1086,344 @@ window.DK_GALLERY = [
     },
     categories: ['aircraft', 'atc'],
   },
+  {
+    src: 'assets/gallery/moment-64.webp',
+    alt: {
+      ru: 'Boeing 777 крупным планом',
+      en: 'Boeing 777 close up',
+      it: 'Boeing 777 close up',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
+  {
+    src: 'assets/gallery/moment-65.webp',
+    alt: {
+      ru: 'Boeing 777 на стоянке',
+      en: 'Boeing 777 on the apron',
+      it: 'Boeing 777 on the apron',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
+  {
+    src: 'assets/gallery/moment-66.webp',
+    alt: {
+      ru: 'Наземное обслуживание Boeing 777',
+      en: 'Boeing 777 ground handling',
+      it: 'Boeing 777 ground handling',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
+  {
+    src: 'assets/gallery/moment-67.webp',
+    alt: {
+      ru: 'Boeing 777 и Cathay Pacific на перроне',
+      en: 'Boeing 777 and Cathay Pacific on the apron',
+      it: 'Boeing 777 and Cathay Pacific on the apron',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
+  {
+    src: 'assets/gallery/moment-68.webp',
+    alt: {
+      ru: 'Двигатель Boeing 777 из иллюминатора',
+      en: 'Boeing 777 engine through the window',
+      it: 'Boeing 777 engine through the window',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'views'],
+  },
+  {
+    src: 'assets/gallery/moment-69.webp',
+    alt: {
+      ru: 'Boeing 777 в полёте',
+      en: 'Boeing 777 in flight',
+      it: 'Boeing 777 in flight',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft'],
+  },
+  {
+    src: 'assets/gallery/moment-70.webp',
+    alt: {
+      ru: 'Boeing 777 спереди',
+      en: 'Boeing 777 head-on',
+      it: 'Boeing 777 head-on',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft'],
+  },
+  {
+    src: 'assets/gallery/moment-71.webp',
+    alt: {
+      ru: 'Boeing 777 в облаках',
+      en: 'Boeing 777 in the clouds',
+      it: 'Boeing 777 in the clouds',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft'],
+  },
+  {
+    src: 'assets/gallery/moment-72.webp',
+    alt: {
+      ru: 'Boeing 777 в полёте сбоку',
+      en: 'Boeing 777 in flight from the side',
+      it: 'Boeing 777 in flight from the side',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft'],
+  },
+  {
+    src: 'assets/gallery/moment-73.webp',
+    alt: {
+      ru: 'Фюзеляж Boeing 777',
+      en: 'Boeing 777 fuselage',
+      it: 'Boeing 777 fuselage',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft'],
+  },
+  {
+    src: 'assets/gallery/moment-74.webp',
+    alt: {
+      ru: 'Крыло и двигатель Boeing 777',
+      en: 'Boeing 777 wing and engine',
+      it: 'Boeing 777 wing and engine',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft'],
+  },
+  {
+    src: 'assets/gallery/moment-75.webp',
+    alt: {
+      ru: 'Boeing 777 сзади',
+      en: 'Boeing 777 from behind',
+      it: 'Boeing 777 from behind',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft'],
+  },
+  {
+    src: 'assets/gallery/moment-76.webp',
+    alt: {
+      ru: 'Вид из иллюминатора над морем',
+      en: 'Sea view from the window',
+      it: 'Sea view from the window',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'views'],
+  },
+  {
+    src: 'assets/gallery/moment-77.webp',
+    alt: {
+      ru: 'Крыло над водой',
+      en: 'Wing above the water',
+      it: 'Wing above the water',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'views'],
+  },
+  {
+    src: 'assets/gallery/moment-78.webp',
+    alt: {
+      ru: 'Двигатель и берег',
+      en: 'Engine and coastline',
+      it: 'Engine and coastline',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'views'],
+  },
+  {
+    src: 'assets/gallery/moment-79.webp',
+    alt: {
+      ru: 'Boeing 777 на заходе',
+      en: 'Boeing 777 on approach',
+      it: 'Boeing 777 on approach',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft'],
+  },
+  {
+    src: 'assets/gallery/moment-80.webp',
+    alt: {
+      ru: 'Закрылки над морем',
+      en: 'Flaps above the sea',
+      it: 'Flaps above the sea',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'views'],
+  },
+  {
+    src: 'assets/gallery/moment-81.webp',
+    alt: {
+      ru: 'Boeing 777 перед посадкой',
+      en: 'Boeing 777 on final approach',
+      it: 'Boeing 777 on final approach',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft'],
+  },
+  {
+    src: 'assets/gallery/moment-83.webp',
+    alt: {
+      ru: 'Boeing 777 на перроне после высадки пассажиров',
+      en: 'Boeing 777 on the apron after passengers disembark',
+      it: 'Boeing 777 sul piazzale dopo lo sbarco dei passeggeri',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
+  {
+    src: 'assets/gallery/moment-82.webp',
+    alt: {
+      ru: 'Boeing 777 после посадки',
+      en: 'Boeing 777 after landing',
+      it: 'Boeing 777 after landing',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
 ];

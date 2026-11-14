@@ -1,6 +1,6 @@
 // Increase the cache version when changing the pre-cached app shell.
 const CACHE_PREFIX = 'denis-aviation-';
-const CACHE_NAME = `${CACHE_PREFIX}v45`;
+const CACHE_NAME = `${CACHE_PREFIX}v46`;
 const SHELL = [
   './',
   './index.html',
@@ -12,7 +12,7 @@ const SHELL = [
   './assets/developer-portfolio-preview-v2.webp',
   './assets/infinite-flight-profile-preview.webp',
   './assets/aerial-portfolio-preview-v2.webp',
-  './gallery-data.js?v=photos-38',
+  './gallery-data.js?v=photos-39',
   './aircraft-renderer.js?v=bank-59',
   './app.js?v=folders-85',
   './pwa.js?v=1',
