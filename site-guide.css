@@ -42,3 +42,8 @@
   .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .gallery-frame:nth-child(24), .gallery-frame:nth-child(25) { grid-column: span 2; }
 }
+.gallery-filters { display:flex; flex-wrap:wrap; gap:8px; margin: 4px 0 26px; }
+.gallery-filters button { border:1px solid #304b62; border-radius:999px; padding:10px 16px; color:#b7cadd; background:#0b1a29; font:600 13px Manrope,sans-serif; cursor:pointer; }
+.gallery-filters button:hover,.gallery-filters button:focus-visible { border-color:#9bd9ff; color:#fff; }
+.gallery-filters button[aria-pressed="true"] { color:#061522; background:#a7d9f4; border-color:#a7d9f4; }
+.gallery-frame[hidden] { display:none; }

@@ -4886,6 +4886,7 @@
     ];
     const gallery = Array.isArray(window.DK_GALLERY) ? window.DK_GALLERY : [];
     let galleryIndex = 0, galleryOpener = null;
+    let galleryVisible = gallery.map((_, i) => i);
     const translations = $$("[data-en]").map((n) => ({
       n,
       ru: n.innerHTML,
@@ -12713,7 +12714,7 @@ Details: ${notes}` : `Заявка: ${type}
         );
       }
       $("#gallery-image").alt = lang === "it" ? f.alt.it || (f.alt.en === "Tanker aircraft and two fighters in Infinite Flight" ? "Aereo cisterna e due caccia in Infinite Flight" : f.alt.en) : f.alt[lang];
-      $("#gallery-counter").textContent = galleryIndex + 1 + " / " + gallery.length;
+      $("#gallery-counter").textContent = galleryVisible.indexOf(galleryIndex) + 1 + " / " + galleryVisible.length;
       $$("[data-gallery]").forEach((b) => {
         const f2 = gallery[+b.dataset.gallery];
         b.querySelector("img").alt = lang === "it" ? f2.alt.it || (f2.alt.en === "Tanker aircraft and two fighters in Infinite Flight" ? "Aereo cisterna e due caccia in Infinite Flight" : f2.alt.en) : f2.alt[lang];
@@ -12727,6 +12728,11 @@ Details: ${notes}` : `Заявка: ${type}
       $("#gallery-image").src = gallery[galleryIndex].src;
       galleryText();
       if (!$("#gallery-dialog").open) $("#gallery-dialog").showModal();
+    }
+    function moveGallery(delta) {
+      const i = galleryVisible.indexOf(galleryIndex);
+      if (i >= 0)
+        openGallery(galleryVisible[(i + delta + galleryVisible.length) % galleryVisible.length]);
     }
     if (gallery.length) {
       $("#gallery").hidden = false;
@@ -12745,15 +12751,27 @@ Details: ${notes}` : `Заявка: ${type}
         b.addEventListener("click", () => openGallery(i, b));
         $("#gallery-grid").append(b);
       });
+      $$("[data-gallery-filter]").forEach(
+        (filter) => filter.addEventListener("click", () => {
+          const selected = filter.dataset.galleryFilter;
+          galleryVisible = gallery.map((item, i) => selected === "all" || item.categories?.includes(selected) ? i : -1).filter((i) => i >= 0);
+          $$("[data-gallery-filter]").forEach(
+            (button) => button.setAttribute("aria-pressed", String(button === filter))
+          );
+          $$("[data-gallery]").forEach((button) => {
+            button.hidden = !galleryVisible.includes(Number(button.dataset.gallery));
+          });
+        })
+      );
     }
     $("#gallery-close").addEventListener("click", () => $("#gallery-dialog").close());
-    $("#gallery-prev").addEventListener("click", () => openGallery(galleryIndex - 1));
-    $("#gallery-next").addEventListener("click", () => openGallery(galleryIndex + 1));
+    $("#gallery-prev").addEventListener("click", () => moveGallery(-1));
+    $("#gallery-next").addEventListener("click", () => moveGallery(1));
     $("#gallery-dialog").addEventListener("close", () => galleryOpener?.focus());
     $("#gallery-dialog").addEventListener("keydown", (e) => {
       if (!gallery.length) return;
-      if (e.key === "ArrowRight") openGallery(galleryIndex + 1);
-      if (e.key === "ArrowLeft") openGallery(galleryIndex - 1);
+      if (e.key === "ArrowRight") moveGallery(1);
+      if (e.key === "ArrowLeft") moveGallery(-1);
     });
     if ("IntersectionObserver" in window) {
       const sceneObserver = new IntersectionObserver(
