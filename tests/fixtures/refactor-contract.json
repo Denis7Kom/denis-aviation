@@ -18,13 +18,13 @@
     "f71f7b3017b260ff2d75bdf797e6aee4787ba8ae2eb317dcd5ce4e9fe05cd801"
   ],
   "static": {
-    "index.html": "d00a70992ccc31a6fac9cde36cd66d80153c14198942a8858b526e7d9919371a"
+    "index.html": "ef3e5458e65ceb4ada4f1c9ba3422537caa91232f721333650dac0632fed5f32"
   },
   "renderer": "9b5054080a9bd04374c321fb9dcf3abd7d0e48489a64dff9c076ab42f87a4245",
   "stylesheet": "b4abe9f96991806ed35f681df347bc7b62693aa21b424618bf9f6b7f198722f1",
   "gallery": "b325eef19cfd0fb8fd124d0e61b07ac13f5a9a8ae0d3cd0a3d28d696d3f3a864",
   "reviewedChange": {
     "date": "2026-11-17",
-    "scope": "Balance gallery album layout and update cover images"
+    "scope": "Rename flight album and set selected covers"
   }
 }
