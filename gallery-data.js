@@ -1528,4 +1528,344 @@ window.DK_GALLERY = [
     },
     categories: ['aircraft', 'views'],
   },
+  {
+    src: 'assets/gallery/msfs-2026-115.webp',
+    alt: {
+      ru: 'Самолёт на заходе над водой',
+      en: 'Aircraft approaching over water',
+      it: 'Aereo in avvicinamento sopra l’acqua',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'views'],
+  },
+  {
+    src: 'assets/gallery/msfs-2026-116.webp',
+    alt: {
+      ru: 'Самолёт перед посадкой на закате',
+      en: 'Aircraft on approach at sunset',
+      it: 'Aereo in avvicinamento al tramonto',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'views'],
+  },
+  {
+    src: 'assets/gallery/msfs-2026-117.webp',
+    alt: {
+      ru: 'Вид из кабины на аэропорт и горы',
+      en: 'Cockpit view of the airport and mountains',
+      it: 'Vista dalla cabina su aeroporto e montagne',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['views', 'atc'],
+  },
+  {
+    src: 'assets/gallery/msfs-2026-119.webp',
+    alt: {
+      ru: 'Boeing 737 над облаками',
+      en: 'Boeing 737 above the clouds',
+      it: 'Boeing 737 sopra le nuvole',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'views'],
+  },
+  {
+    src: 'assets/gallery/msfs-2026-120.webp',
+    alt: {
+      ru: 'Boeing 737 в полёте над облаками',
+      en: 'Boeing 737 flying above the clouds',
+      it: 'Boeing 737 in volo sopra le nuvole',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'views'],
+  },
+  {
+    src: 'assets/gallery/msfs-2026-121.webp',
+    alt: {
+      ru: 'Boeing 737 среди облаков',
+      en: 'Boeing 737 among the clouds',
+      it: 'Boeing 737 tra le nuvole',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'views'],
+  },
+  {
+    src: 'assets/gallery/msfs-2026-122.webp',
+    alt: {
+      ru: 'Boeing 737 над горными облаками',
+      en: 'Boeing 737 above clouds and mountains',
+      it: 'Boeing 737 sopra le nuvole e le montagne',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'views'],
+  },
+  {
+    src: 'assets/gallery/msfs-2026-123.webp',
+    alt: {
+      ru: 'Горы в облаках: вид из кабины',
+      en: 'Cloud-covered mountains from the cockpit',
+      it: 'Montagne tra le nuvole viste dalla cabina',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['views'],
+  },
+  {
+    src: 'assets/gallery/msfs-2026-124.webp',
+    alt: {
+      ru: 'Вид из кабины в облачную погоду',
+      en: 'Cockpit view in cloudy weather',
+      it: 'Vista dalla cabina con cielo nuvoloso',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['views'],
+  },
+  {
+    src: 'assets/gallery/msfs-2026-125.webp',
+    alt: {
+      ru: 'Заснеженные горы из кабины',
+      en: 'Snowy mountains from the cockpit',
+      it: 'Montagne innevate viste dalla cabina',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['views'],
+  },
+  {
+    src: 'assets/gallery/msfs-2026-126.webp',
+    alt: {
+      ru: 'Boeing 737 над заснеженными горами',
+      en: 'Boeing 737 above snowy mountains',
+      it: 'Boeing 737 sopra le montagne innevate',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'views'],
+  },
+  {
+    src: 'assets/gallery/msfs-2026-127.webp',
+    alt: {
+      ru: 'Boeing 737 над горным хребтом',
+      en: 'Boeing 737 above a mountain range',
+      it: 'Boeing 737 sopra una catena montuosa',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'views'],
+  },
+  {
+    src: 'assets/gallery/msfs-2026-128.webp',
+    alt: {
+      ru: 'Boeing 737 на заходе у гор',
+      en: 'Boeing 737 approaching near the mountains',
+      it: 'Boeing 737 in avvicinamento alle montagne',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'views'],
+  },
+  {
+    src: 'assets/gallery/msfs-2026-129.webp',
+    alt: {
+      ru: 'Boeing 737 на перроне в лучах заката',
+      en: 'Boeing 737 on the apron at sunset',
+      it: 'Boeing 737 sul piazzale al tramonto',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
+  {
+    src: 'assets/gallery/msfs-2026-130.webp',
+    alt: {
+      ru: 'Boeing 737 в аэропорту на закате',
+      en: 'Boeing 737 at the airport at sunset',
+      it: 'Boeing 737 in aeroporto al tramonto',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
+  {
+    src: 'assets/gallery/msfs-2026-131.webp',
+    alt: {
+      ru: 'Boeing 737 у терминала в сумерках',
+      en: 'Boeing 737 at the terminal at dusk',
+      it: 'Boeing 737 al terminal al crepuscolo',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
+  {
+    src: 'assets/gallery/msfs-2026-132.webp',
+    alt: {
+      ru: 'Boeing 737 у выхода на посадку на закате',
+      en: 'Boeing 737 at the gate at sunset',
+      it: 'Boeing 737 al gate al tramonto',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
+  {
+    src: 'assets/gallery/msfs-2026-152.webp',
+    alt: {
+      ru: 'Самолёт Dragonair на перроне',
+      en: 'Dragonair aircraft on the apron',
+      it: 'Aereo Dragonair sul piazzale',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
+  {
+    src: 'assets/gallery/msfs-2026-153.webp',
+    alt: {
+      ru: 'Dragonair и наземное обслуживание',
+      en: 'Dragonair and ground handling',
+      it: 'Dragonair e servizi di terra',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
+  {
+    src: 'assets/gallery/msfs-2026-154.webp',
+    alt: {
+      ru: 'Крыло и двигатель самолёта Dragonair',
+      en: 'Dragonair aircraft wing and engine',
+      it: 'Ala e motore di un aereo Dragonair',
+    },
+    title: {
+      ru: '',
+      en: '',
+    },
+    caption: {
+      ru: '',
+      en: '',
+    },
+    categories: ['aircraft', 'atc'],
+  },
 ];
