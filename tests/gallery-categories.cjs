@@ -92,7 +92,8 @@ const context = {
   $$: (s) => (s === '[data-gallery-filter]' ? filters : frames),
 };
 vm.runInNewContext(part, context);
-assert.equal(frames.length, 84);
+assert.equal(frames.length, gallery.length);
+for (const item of gallery) assert(fs.existsSync(item.src), `Missing gallery image: ${item.src}`);
 for (const f of filters) {
   f.click();
   assert.equal(nodes['#gallery-folders'].hidden, true);
