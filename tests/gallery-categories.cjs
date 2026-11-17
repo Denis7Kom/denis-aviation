@@ -9,7 +9,7 @@ const s = fs.readFileSync('src/main.js', 'utf8'),
 const win = {};
 vm.runInNewContext(fs.readFileSync('gallery-data.js', 'utf8'), { window: win });
 const gallery = win.DK_GALLERY,
-  filters = ['all', 'together', 'atc', 'aircraft', 'views'].map((x) => ({
+  filters = ['all', 'together', 'atc', 'flight', 'infinite', 'msfs'].map((x) => ({
     dataset: { galleryFilter: x },
     attrs: {},
     count: {},
@@ -29,6 +29,19 @@ const gallery = win.DK_GALLERY,
       this.attrs[k] = v;
     },
   }));
+
+const html = fs.readFileSync('index.html', 'utf8');
+const folderPattern = /data-gallery-filter="([^"]+)"[^>]*><img src="([^"]+)"/g;
+const covers = [...html.matchAll(folderPattern)];
+assert.equal(covers.length, filters.length);
+for (const [, category, src] of covers) {
+  const item = gallery.find((entry) => entry.src === src);
+  assert(item, `Cover image is missing from gallery: ${src}`);
+  assert(category === 'all' || item.categories.includes(category));
+}
+for (const item of gallery) {
+  assert(!(item.categories.includes('infinite') && item.categories.includes('msfs')));
+}
 let frames = [];
 const nodes = {};
 function node() {

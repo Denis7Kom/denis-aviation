@@ -13,7 +13,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['together', 'aircraft'],
+    categories: ['flight', 'together', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-01.webp',
@@ -30,7 +30,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight'],
   },
   {
     src: 'assets/gallery/moment-02.webp',
@@ -47,7 +47,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight'],
   },
   {
     src: 'assets/gallery/moment-03.webp',
@@ -64,7 +64,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight'],
   },
   {
     src: 'assets/gallery/moment-04.webp',
@@ -81,7 +81,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight'],
   },
   {
     src: 'assets/gallery/moment-05.webp',
@@ -98,7 +98,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['together', 'aircraft'],
+    categories: ['flight', 'together', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-06.webp',
@@ -115,7 +115,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-07.webp',
@@ -132,7 +132,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-08.webp',
@@ -166,7 +166,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-10.webp',
@@ -183,7 +183,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'atc'],
   },
   {
     src: 'assets/gallery/moment-11.webp',
@@ -200,7 +200,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'atc'],
   },
   {
     src: 'assets/gallery/moment-12.webp',
@@ -217,7 +217,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'atc'],
   },
   {
     src: 'assets/gallery/moment-13.webp',
@@ -234,7 +234,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-14.webp',
@@ -251,7 +251,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-15.webp',
@@ -268,7 +268,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'atc'],
   },
   {
     src: 'assets/gallery/moment-16.webp',
@@ -285,7 +285,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-17.webp',
@@ -302,7 +302,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-18.webp',
@@ -319,7 +319,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-19.webp',
@@ -336,7 +336,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-20.webp',
@@ -353,7 +353,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-21.webp',
@@ -370,7 +370,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-22.webp',
@@ -387,7 +387,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['atc'],
+    categories: ['together', 'atc'],
   },
   {
     src: 'assets/gallery/moment-23.webp',
@@ -404,7 +404,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['atc'],
+    categories: ['together', 'atc'],
   },
   {
     src: 'assets/gallery/moment-24.webp',
@@ -421,7 +421,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-25.webp',
@@ -438,7 +438,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-26.webp',
@@ -455,7 +455,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-27.webp',
@@ -472,7 +472,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-28.webp',
@@ -489,7 +489,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-29.webp',
@@ -506,7 +506,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight'],
   },
   {
     src: 'assets/gallery/moment-30.webp',
@@ -540,7 +540,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-32.webp',
@@ -557,7 +557,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'together'],
+    categories: ['flight', 'together', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-33.webp',
@@ -574,7 +574,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-34.webp',
@@ -591,7 +591,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'together'],
+    categories: ['flight', 'together', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-35.webp',
@@ -608,7 +608,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-36.webp',
@@ -625,7 +625,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-37.webp',
@@ -642,7 +642,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-38.webp',
@@ -659,7 +659,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-39.webp',
@@ -676,7 +676,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-40.webp',
@@ -693,7 +693,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-41.webp',
@@ -710,7 +710,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-42.webp',
@@ -727,7 +727,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-43.webp',
@@ -744,7 +744,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-44.webp',
@@ -761,7 +761,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'together', 'atc'],
+    categories: ['flight', 'together', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-45.webp',
@@ -778,7 +778,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['together', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-46.webp',
@@ -795,7 +795,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-47.webp',
@@ -812,7 +812,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-48.webp',
@@ -829,7 +829,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'together', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-49.webp',
@@ -846,7 +846,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-50.webp',
@@ -863,7 +863,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-51.webp',
@@ -880,7 +880,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-52.webp',
@@ -897,7 +897,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-53.webp',
@@ -914,7 +914,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-54.webp',
@@ -931,7 +931,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-55.webp',
@@ -948,7 +948,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['views', 'atc'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-56.webp',
@@ -965,7 +965,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['views', 'atc'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-57.webp',
@@ -982,7 +982,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-58.webp',
@@ -999,7 +999,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-59.webp',
@@ -1016,7 +1016,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-60.webp',
@@ -1033,7 +1033,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-61.webp',
@@ -1050,7 +1050,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-62.webp',
@@ -1067,7 +1067,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-63.webp',
@@ -1084,7 +1084,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'infinite'],
   },
   {
     src: 'assets/gallery/moment-64.webp',
@@ -1101,7 +1101,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'together', 'atc', 'msfs'],
   },
   {
     src: 'assets/gallery/moment-65.webp',
@@ -1118,7 +1118,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'together', 'atc', 'msfs'],
   },
   {
     src: 'assets/gallery/moment-66.webp',
@@ -1135,7 +1135,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'msfs'],
   },
   {
     src: 'assets/gallery/moment-67.webp',
@@ -1152,7 +1152,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'together', 'atc', 'msfs'],
   },
   {
     src: 'assets/gallery/moment-68.webp',
@@ -1169,7 +1169,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/moment-69.webp',
@@ -1186,7 +1186,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/moment-70.webp',
@@ -1203,7 +1203,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/moment-71.webp',
@@ -1220,7 +1220,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/moment-72.webp',
@@ -1237,7 +1237,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/moment-73.webp',
@@ -1254,7 +1254,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/moment-74.webp',
@@ -1271,7 +1271,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/moment-75.webp',
@@ -1288,7 +1288,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/moment-76.webp',
@@ -1305,7 +1305,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/moment-77.webp',
@@ -1322,7 +1322,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/moment-78.webp',
@@ -1339,7 +1339,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/moment-79.webp',
@@ -1356,7 +1356,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/moment-80.webp',
@@ -1373,7 +1373,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/moment-81.webp',
@@ -1390,7 +1390,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/moment-83.webp',
@@ -1407,7 +1407,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'msfs'],
   },
   {
     src: 'assets/gallery/moment-82.webp',
@@ -1424,7 +1424,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'msfs'],
   },
   {
     src: 'assets/gallery/delta-apron-01.webp',
@@ -1441,7 +1441,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'together', 'atc', 'msfs'],
   },
   {
     src: 'assets/gallery/delta-apron-02.webp',
@@ -1458,7 +1458,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'together', 'atc', 'msfs'],
   },
   {
     src: 'assets/gallery/delta-apron-03.webp',
@@ -1475,7 +1475,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'msfs'],
   },
   {
     src: 'assets/gallery/delta-flight-01.webp',
@@ -1492,7 +1492,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/delta-flight-02.webp',
@@ -1509,7 +1509,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/delta-flight-03.webp',
@@ -1526,7 +1526,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-115.webp',
@@ -1543,7 +1543,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'atc', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-116.webp',
@@ -1560,7 +1560,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'atc', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-117.webp',
@@ -1577,7 +1577,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['views', 'atc'],
+    categories: ['flight', 'atc', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-119.webp',
@@ -1594,7 +1594,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-120.webp',
@@ -1611,7 +1611,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-121.webp',
@@ -1628,7 +1628,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-122.webp',
@@ -1645,7 +1645,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-123.webp',
@@ -1662,7 +1662,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['views'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-124.webp',
@@ -1679,7 +1679,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['views'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-125.webp',
@@ -1696,7 +1696,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['views'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-126.webp',
@@ -1713,7 +1713,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-127.webp',
@@ -1730,7 +1730,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-128.webp',
@@ -1747,7 +1747,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'views'],
+    categories: ['flight', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-129.webp',
@@ -1764,7 +1764,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'together', 'atc', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-130.webp',
@@ -1781,7 +1781,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'together', 'atc', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-131.webp',
@@ -1798,7 +1798,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-132.webp',
@@ -1815,7 +1815,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-152.webp',
@@ -1832,7 +1832,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-153.webp',
@@ -1849,7 +1849,7 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'msfs'],
   },
   {
     src: 'assets/gallery/msfs-2026-154.webp',
@@ -1866,6 +1866,6 @@ window.DK_GALLERY = [
       ru: '',
       en: '',
     },
-    categories: ['aircraft', 'atc'],
+    categories: ['flight', 'atc', 'msfs'],
   },
 ];
