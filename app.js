@@ -773,6 +773,149 @@
     return isMainHub(a) ? "main" : favoriteCodes.has(a[0]) ? "favorite" : "frequent";
   }
 
+  // src/data/airport-labels.js
+  var italianCities = {
+    Moscow: "Mosca",
+    Rome: "Roma",
+    Naples: "Napoli",
+    "Saint Petersburg": "San Pietroburgo",
+    Venice: "Venezia",
+    Genoa: "Genova",
+    Barcelona: "Barcellona",
+    Gibraltar: "Gibilterra",
+    "Mexico City": "Città del Messico",
+    Nice: "Nizza",
+    Marseille: "Marsiglia",
+    Lisbon: "Lisbona",
+    Seville: "Siviglia",
+    Athens: "Atene",
+    Dublin: "Dublino",
+    London: "Londra"
+  };
+  var italianAirportNames = {
+    UUEE: "Aeroporto internazionale di Mosca-Šeremet’evo",
+    UUDD: "Aeroporto internazionale di Mosca-Domodedovo",
+    UUWW: "Aeroporto internazionale di Mosca-Vnukovo",
+    LIRF: "Aeroporto di Roma-Fiumicino Leonardo da Vinci",
+    LIRN: "Aeroporto internazionale di Napoli-Capodichino",
+    KLAX: "Aeroporto internazionale di Los Angeles",
+    KSFO: "Aeroporto internazionale di San Francisco",
+    KORD: "Aeroporto internazionale di Chicago O’Hare",
+    KATL: "Aeroporto internazionale di Atlanta Hartsfield-Jackson",
+    KDCA: "Aeroporto nazionale Ronald Reagan di Washington",
+    KEWR: "Aeroporto internazionale di Newark Liberty",
+    ULLI: "Aeroporto internazionale di San Pietroburgo-Pulkovo",
+    LIPZ: "Aeroporto di Venezia Marco Polo",
+    LIMJ: "Aeroporto di Genova Cristoforo Colombo",
+    LEMD: "Aeroporto Adolfo Suárez di Madrid-Barajas",
+    UWKD: "Aeroporto internazionale di Kazan",
+    PHNL: "Aeroporto internazionale Daniel K. Inouye",
+    YSSY: "Aeroporto di Sydney Kingsford Smith",
+    LMML: "Aeroporto internazionale di Malta",
+    LOWI: "Aeroporto di Innsbruck",
+    LEBL: "Aeroporto Josep Tarradellas di Barcellona-El Prat",
+    YSCB: "Aeroporto di Canberra",
+    LICC: "Aeroporto di Catania-Fontanarossa",
+    LEPA: "Aeroporto di Palma di Maiorca",
+    LXGB: "Aeroporto internazionale di Gibilterra",
+    MMMX: "Aeroporto internazionale Benito Juárez di Città del Messico",
+    KMIA: "Aeroporto internazionale di Miami",
+    MMUN: "Aeroporto internazionale di Cancún",
+    KDEN: "Aeroporto internazionale di Denver",
+    KIAH: "Aeroporto intercontinentale George Bush di Houston",
+    CYVR: "Aeroporto internazionale di Vancouver",
+    PANC: "Aeroporto internazionale Ted Stevens di Anchorage",
+    RJTT: "Aeroporto internazionale di Tokyo-Haneda",
+    VHHH: "Aeroporto internazionale di Hong Kong",
+    WSSS: "Aeroporto di Singapore-Changi",
+    KJFK: "Aeroporto internazionale John F. Kennedy",
+    SBGL: "Aeroporto internazionale di Rio de Janeiro-Galeão",
+    RJAA: "Aeroporto internazionale di Tokyo-Narita",
+    LIRA: "Aeroporto di Roma-Ciampino",
+    LFMN: "Aeroporto di Nizza Costa Azzurra",
+    LFML: "Aeroporto di Marsiglia-Provenza",
+    LPPT: "Aeroporto di Lisbona Humberto Delgado",
+    LEVC: "Aeroporto di Valencia",
+    LEZL: "Aeroporto di Siviglia",
+    LGAV: "Aeroporto internazionale Eleftherios Venizelos di Atene",
+    GCXO: "Aeroporto di Tenerife Nord-Ciudad de La Laguna",
+    SCEL: "Aeroporto internazionale Arturo Merino Benítez",
+    SAEZ: "Aeroporto internazionale di Buenos Aires-Ezeiza",
+    SACO: "Aeroporto internazionale di Córdoba Ambrosio Taravella",
+    SLET: "Aeroporto El Trompillo",
+    SLLP: "Aeroporto internazionale di El Alto",
+    SBGR: "Aeroporto internazionale di São Paulo-Guarulhos",
+    SBSV: "Aeroporto internazionale di Salvador",
+    SBRF: "Aeroporto internazionale di Recife-Guararapes",
+    MDSD: "Aeroporto internazionale Las Américas",
+    KLAS: "Aeroporto internazionale Harry Reid di Las Vegas",
+    KSEA: "Aeroporto internazionale di Seattle-Tacoma",
+    CYOW: "Aeroporto internazionale di Ottawa Macdonald-Cartier",
+    KBOS: "Aeroporto internazionale Logan di Boston",
+    EIDW: "Aeroporto di Dublino",
+    EGCC: "Aeroporto di Manchester",
+    EGPF: "Aeroporto di Glasgow",
+    EGGP: "Aeroporto di Liverpool John Lennon",
+    EGBB: "Aeroporto di Birmingham",
+    EGLL: "Aeroporto di Londra-Heathrow",
+    EGKK: "Aeroporto di Londra-Gatwick",
+    EGSS: "Aeroporto di Londra-Stansted",
+    EGLC: "Aeroporto di Londra-City"
+  };
+  var qualifiers = {
+    UUEE: ["Шереметьево", "Sheremetyevo"],
+    UUDD: ["Домодедово", "Domodedovo"],
+    UUWW: ["Внуково", "Vnukovo"],
+    LIRF: ["Фьюмичино", "Fiumicino"],
+    LIRA: ["Чампино", "Ciampino"],
+    RJTT: ["Ханэда", "Haneda"],
+    RJAA: ["Нарита", "Narita"],
+    EGLL: ["Хитроу", "Heathrow"],
+    EGKK: ["Гатвик", "Gatwick"],
+    EGSS: ["Станстед", "Stansted"],
+    EGLC: ["Сити", "City"]
+  };
+  var routeOnlyLabels = {
+    RJFF: { ru: "Фукуока", en: "Fukuoka", it: "Fukuoka" },
+    BIKF: { ru: "Кеблавик", en: "Keflavík", it: "Keflavík" },
+    ZSPD: { ru: "Шанхай · Пудун", en: "Shanghai · Pudong", it: "Shanghai · Pudong" },
+    LTBA: { ru: "Стамбул · Ататюрк", en: "Istanbul · Atatürk", it: "Istanbul · Atatürk" },
+    OMDB: { ru: "Дубай", en: "Dubai", it: "Dubai" }
+  };
+  var byIcao = new Map(airports.map((airport) => [airport[0], airport]));
+  function airportCity(airport, lang) {
+    if (lang === "ru") return airport[2];
+    return lang === "it" ? italianCities[airport[3]] || airport[3] : airport[3];
+  }
+  function airportName(airport, lang) {
+    if (lang === "it") return italianAirportNames[airport[0]];
+    return airport[lang === "ru" ? 4 : 5];
+  }
+  function airportLabel(airport, lang) {
+    const city = airportCity(airport, lang);
+    const qualifier = qualifiers[airport[0]]?.[lang === "ru" ? 0 : 1];
+    return qualifier ? city + " · " + qualifier : city;
+  }
+  function normalize(value) {
+    return value.toLowerCase().replaceAll("ё", "е").normalize("NFD").replace(/\p{M}/gu, "").replace(/['’]/g, "").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  }
+  function matchesAirport(airport, query, regions = []) {
+    const needle = normalize(query);
+    if (!needle) return true;
+    const labels = ["ru", "en", "it"].flatMap((lang) => [
+      airportLabel(airport, lang),
+      airportName(airport, lang)
+    ]);
+    const searchable = normalize([airport[0], airport[1], ...labels, ...regions].join(" "));
+    return needle.split(" ").every((word) => searchable.includes(word));
+  }
+  function routeLabel(flight, lang) {
+    return [flight.from, flight.to].map((code) => {
+      const airport = byIcao.get(code);
+      return airport ? airportLabel(airport, lang) : routeOnlyLabels[code]?.[lang] ?? code;
+    }).join(" → ");
+  }
+
   // src/data/aircraft.js
   var fleet = [
     { code: "B77W", name: "Boeing 777-300ER", len: 73.9, span: 64.8, r: 3.1, winglet: 0 },
@@ -5305,15 +5448,11 @@
       $("#network-list").append(b);
       return b;
     });
-    function normalizeAirportText(t) {
-      return t.toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ё/g, "е").trim();
-    }
+    const italianRegions = new Intl.DisplayNames(["it"], { type: "region" });
     function matchingAirports() {
-      const q = normalizeAirportText(networkQuery);
+      const query = networkQuery.trim();
       return airports.map((a, i) => ({ a, i })).filter(
-        ({ a }) => (q || airportRole(a) === networkRole) && (!networkCountry || a[8] === networkCountry) && (!q || normalizeAirportText(
-          a.slice(0, 6).join(" ") + " " + countryNames[a[8]].join(" ")
-        ).includes(q))
+        ({ a }) => (query || airportRole(a) === networkRole) && (!networkCountry || a[8] === networkCountry) && matchesAirport(a, query, [...countryNames[a[8]], italianRegions.of(a[8].toUpperCase())])
       );
     }
     function renderNetwork() {
@@ -5355,7 +5494,7 @@
       );
       $("#network-country").options[0].textContent = en ? lang === "it" ? "Tutti i paesi" : "All countries" : "Все страны";
       Array.from($("#network-country").options).slice(1).forEach((o) => {
-        o.textContent = lang === "it" ? new Intl.DisplayNames(["it"], { type: "region" }).of(o.value.toUpperCase()) : countryNames[o.value][en ? 1 : 0];
+        o.textContent = lang === "it" ? italianRegions.of(o.value.toUpperCase()) : countryNames[o.value][en ? 1 : 0];
       });
       $$("[data-network-role]").forEach((b) => {
         const role = b.dataset.networkRole;
@@ -5422,83 +5561,6 @@
       if (!networkExpanded)
         $("#network-tabs").scrollIntoView({ block: "nearest", behavior: motion ? "smooth" : "auto" });
     });
-    function airportCity(a) {
-      if (lang === "it")
-        return {
-          Moscow: "Mosca",
-          Rome: "Roma",
-          Naples: "Napoli",
-          "Saint Petersburg": "San Pietroburgo",
-          Venice: "Venezia",
-          Genoa: "Genova",
-          Madrid: "Madrid",
-          Barcelona: "Barcellona",
-          Gibraltar: "Gibilterra",
-          "Mexico City": "Città del Messico",
-          Tokyo: "Tokyo"
-        }[a[3]] || a[3];
-      return a[lang === "ru" ? 2 : 3];
-    }
-    const italianAirportNames = {
-      UUEE: "Aeroporto internazionale di Mosca-Šeremet’evo",
-      UUDD: "Aeroporto internazionale di Mosca-Domodedovo",
-      UUWW: "Aeroporto internazionale di Mosca-Vnukovo",
-      LIRF: "Aeroporto di Roma-Fiumicino Leonardo da Vinci",
-      LIRN: "Aeroporto internazionale di Napoli-Capodichino",
-      KLAX: "Aeroporto internazionale di Los Angeles",
-      KSFO: "Aeroporto internazionale di San Francisco",
-      KORD: "Aeroporto internazionale di Chicago O’Hare",
-      KATL: "Aeroporto internazionale di Atlanta Hartsfield-Jackson",
-      KDCA: "Aeroporto nazionale Ronald Reagan di Washington",
-      KEWR: "Aeroporto internazionale di Newark Liberty",
-      ULLI: "Aeroporto internazionale di San Pietroburgo-Pulkovo",
-      LIPZ: "Aeroporto di Venezia Marco Polo",
-      LIMJ: "Aeroporto di Genova Cristoforo Colombo",
-      LEMD: "Aeroporto Adolfo Suárez di Madrid-Barajas",
-      UWKD: "Aeroporto internazionale di Kazan",
-      PHNL: "Aeroporto internazionale Daniel K. Inouye",
-      YSSY: "Aeroporto di Sydney Kingsford Smith",
-      LMML: "Aeroporto internazionale di Malta",
-      LOWI: "Aeroporto di Innsbruck",
-      LEBL: "Aeroporto Josep Tarradellas di Barcellona-El Prat",
-      YSCB: "Aeroporto di Canberra",
-      LICC: "Aeroporto di Catania-Fontanarossa",
-      LEPA: "Aeroporto di Palma di Maiorca",
-      LXGB: "Aeroporto internazionale di Gibilterra",
-      MMMX: "Aeroporto internazionale Benito Juárez di Città del Messico",
-      KMIA: "Aeroporto internazionale di Miami",
-      MMUN: "Aeroporto internazionale di Cancún",
-      KDEN: "Aeroporto internazionale di Denver",
-      KIAH: "Aeroporto intercontinentale George Bush di Houston",
-      CYVR: "Aeroporto internazionale di Vancouver",
-      PANC: "Aeroporto internazionale Ted Stevens di Anchorage",
-      RJTT: "Aeroporto internazionale di Tokyo-Haneda",
-      VHHH: "Aeroporto internazionale di Hong Kong",
-      WSSS: "Aeroporto di Singapore-Changi",
-      KJFK: "Aeroporto internazionale John F. Kennedy",
-      SBGL: "Aeroporto internazionale di Rio de Janeiro-Galeão",
-      RJAA: "Aeroporto internazionale di Tokyo-Narita",
-      LIRA: "Aeroporto di Roma-Ciampino",
-      LFMN: "Aeroporto di Nizza Costa Azzurra",
-      LFML: "Aeroporto di Marsiglia-Provenza",
-      LPPT: "Aeroporto di Lisbona Humberto Delgado",
-      LEVC: "Aeroporto di Valencia",
-      LEZL: "Aeroporto di Siviglia",
-      LGAV: "Aeroporto internazionale Eleftherios Venizelos di Atene",
-      GCXO: "Aeroporto di Tenerife Nord-Ciudad de La Laguna",
-      SCEL: "Aeroporto internazionale Arturo Merino Benítez",
-      SAEZ: "Aeroporto internazionale di Buenos Aires-Ezeiza",
-      SACO: "Aeroporto internazionale di Córdoba Ambrosio Taravella",
-      SLET: "Aeroporto El Trompillo",
-      SLLP: "Aeroporto internazionale di El Alto",
-      SBGR: "Aeroporto internazionale di São Paulo-Guarulhos",
-      SBSV: "Aeroporto internazionale di Salvador",
-      SBRF: "Aeroporto internazionale di Recife-Guararapes",
-      MDSD: "Aeroporto internazionale Las Américas"
-    };
-    function airportName(a) {
-      return lang === "it" ? italianAirportNames[a[0]] || a[5] : a[lang === "ru" ? 4 : 5];
-    }
     function airportText() {
       const a = airports[airportIndex], en = lang !== "ru", role = airportRole(a);
       $("#airport-role").textContent = {
@@ -5509,31 +5571,18 @@
       $("#airport-role").dataset.role = role;
       $("#network-totals").textContent = airports.length + (en ? lang === "it" ? " AEROPORTI / " : " AIRPORTS / " : " АЭРОПОРТОВ / ") + new Set(airports.map((a2) => a2[8])).size + (en ? lang === "it" ? " PAESI E TERRITORI" : " COUNTRIES & TERRITORIES" : " СТРАН И ТЕРРИТОРИЙ");
       $("#airport-code").textContent = a[0] + " / " + a[1];
-      $("#airport-city").textContent = airportCity(a);
-      $("#airport-name").textContent = airportName(a);
+      $("#airport-city").textContent = airportCity(a, lang);
+      $("#airport-name").textContent = airportName(a, lang);
       $("#coordinates").textContent = Math.abs(a[6]).toFixed(2) + "° " + (a[6] < 0 ? "S" : "N") + " / " + Math.abs(a[7]).toFixed(2) + "° " + (a[7] < 0 ? "W" : "E");
       $$("[data-airport]").forEach((b) => {
         const i = Number(b.dataset.airport), x = airports[i];
-        const shortNames = {
-          UUEE: en ? "Sheremetyevo" : "Шереметьево",
-          UUDD: en ? "Domodedovo" : "Домодедово",
-          UUWW: en ? "Vnukovo" : "Внуково",
-          LIRF: en ? "Fiumicino" : "Фьюмичино",
-          LIRA: en ? "Ciampino" : "Чампино",
-          RJTT: en ? "Haneda" : "Ханэда",
-          RJAA: en ? "Narita" : "Нарита",
-          EGLL: "Heathrow",
-          EGKK: "Gatwick",
-          EGSS: "Stansted",
-          EGLC: "City"
-        };
-        b.querySelector("span").textContent = shortNames[x[0]] ? airportCity(x) + " · " + shortNames[x[0]] : airportCity(x);
+        b.querySelector("span").textContent = airportLabel(x, lang);
         b.setAttribute("aria-pressed", String(i === airportIndex));
-        b.setAttribute("title", airportCity(x) + " / " + x[0] + " — " + airportName(x));
+        b.setAttribute("title", airportLabel(x, lang) + " / " + x[0] + " — " + airportName(x, lang));
       });
       $("#globe").setAttribute(
         "aria-label",
-        (en ? lang === "it" ? "Rete di volo. Selezionato: " : "Flight network. Selected: " : "География полётов. Выбран: ") + airportCity(a) + " / " + a[0]
+        (en ? lang === "it" ? "Rete di volo. Selezionato: " : "Flight network. Selected: " : "География полётов. Выбран: ") + airportLabel(a, lang) + " / " + a[0]
       );
       renderNetwork();
     }
@@ -12583,7 +12632,7 @@
       const f = flights[flightIndex];
       $("#route-from").textContent = f.from;
       $("#route-to").textContent = f.to;
-      $("#route-name").textContent = f[lang === "it" ? "en" : lang];
+      $("#route-name").textContent = routeLabel(f, lang);
       $("#route-meta").textContent = [f.aircraft, f.callsign, f.reg].filter(Boolean).join(" / ");
       $("#route-duration").textContent = f.duration;
       $("#route-timing").textContent = f.demo ? f.departure + " → " + arrivalTime(f.departure, f.duration) + " UTC" : "";
@@ -12618,7 +12667,7 @@
         const code = document.createElement("strong");
         code.textContent = flight.from + " → " + flight.to;
         const name = document.createElement("span");
-        name.textContent = flight[lang === "it" ? "en" : lang];
+        name.textContent = routeLabel(flight, lang);
         const timing = document.createElement("small");
         timing.textContent = flight.departure + " → " + arrivalTime(flight.departure, flight.duration) + " UTC · " + flight.duration + " · " + flight.callsign;
         row.append(code, name, timing);
