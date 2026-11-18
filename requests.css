@@ -725,6 +725,31 @@ textarea:focus-visible {
   background: #10291f;
   border-radius: 5px;
 }
+.request-photo {
+  display: block;
+  width: 100%;
+  height: clamp(130px, 22vw, 220px);
+  margin: 16px 0;
+  border-radius: 5px;
+  object-fit: cover;
+  object-position: center 58%;
+}
+.request-apron-photo {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.confirmation-photo {
+  object-position: center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .confirmation:not([hidden]) .confirmation-photo {
+    animation: request-photo-reveal 360ms ease-out both;
+  }
+  @keyframes request-photo-reveal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
 .confirmation-mark {
   color: #a5edc0;
   font-size: 24px;

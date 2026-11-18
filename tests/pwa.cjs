@@ -92,7 +92,7 @@ vm.runInNewContext(readFileSync('sw.js', 'utf8'), {
   for (const src of [
     'style.css?v=mobile-arrows-91',
     'app.js?v=network-86',
-    'assets/gallery/nov-2026-12.webp',
+    'assets/gallery/delta-flight-02.webp',
   ]) {
     assert(entries.has(resolve(src)), `Missing offline resource ${src}`);
     assert(existsSync(src.split('?')[0]));

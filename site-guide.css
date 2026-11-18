@@ -75,3 +75,4 @@
 #flying:has(.fleet-btn[data-aircraft="0"][aria-pressed="true"]) .fleet-photo-777,
 #flying:has(.fleet-btn[data-aircraft="4"][aria-pressed="true"]) .fleet-photo-737 { display:block; }
 @media (max-width:760px) { .aviation-photo { margin:20px 0; } .aviation-photo img { height:200px; } }
+.booking-photo img { height:clamp(140px, 22vw, 240px); object-position:center 58%; }
