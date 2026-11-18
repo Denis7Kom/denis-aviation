@@ -69,11 +69,9 @@
 /* Cinematic views from the pilot's logbook. */
 .aviation-photo { position:relative; margin:28px 0; overflow:hidden; border:1px solid #35516a; border-radius:8px; background:#0b1a29; }
 .aviation-photo img { display:block; width:100%; height:clamp(190px, 25vw, 300px); object-fit:cover; }
-.aviation-photo::after { content:''; position:absolute; inset:35% 0 0; background:linear-gradient(transparent,#050d16d9); pointer-events:none; }
-.aviation-photo figcaption { position:absolute; z-index:1; left:22px; right:22px; bottom:18px; color:#f0f8ff; font:600 12px/1.4 'IBM Plex Mono',monospace; letter-spacing:.04em; }
 .intro-flight-photo img { object-position:center 58%; }
 .airport-photo img { object-position:center 58%; }
 .fleet-photo { display:none; }
 #flying:has(.fleet-btn[data-aircraft="0"][aria-pressed="true"]) .fleet-photo-777,
 #flying:has(.fleet-btn[data-aircraft="4"][aria-pressed="true"]) .fleet-photo-737 { display:block; }
-@media (max-width:760px) { .aviation-photo { margin:20px 0; } .aviation-photo img { height:200px; } .aviation-photo figcaption { left:14px; right:14px; bottom:14px; font-size:11px; } }
+@media (max-width:760px) { .aviation-photo { margin:20px 0; } .aviation-photo img { height:200px; } }
