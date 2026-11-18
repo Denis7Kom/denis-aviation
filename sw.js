@@ -1,6 +1,6 @@
 // Increase the cache version when changing the pre-cached app shell.
 const CACHE_PREFIX = 'denis-aviation-';
-const CACHE_NAME = `${CACHE_PREFIX}release-3.5.0-glass-1`;
+const CACHE_NAME = `${CACHE_PREFIX}release-3.6.0`;
 const SHELL = [
   './',
   './index.html',
