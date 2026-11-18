@@ -5514,4 +5514,7 @@ nav a[href='requests.html#new-request']::after {
     background-position: right 16px center;
     padding-inline-end: 44px;
   }
+  .booking-email .request-form :is(input[type='date'], input[type='time']) {
+    padding-inline-end: 16px;
+  }
 }
