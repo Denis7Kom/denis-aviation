@@ -1,13 +1,13 @@
 // Increase the cache version when changing the pre-cached app shell.
 const CACHE_PREFIX = 'denis-aviation-';
-const CACHE_NAME = `${CACHE_PREFIX}v63`;
+const CACHE_NAME = `${CACHE_PREFIX}v64`;
 const SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
   './favicon.svg',
   './style.css?v=mobile-arrows-91',
-  './site-guide.css?v=14',
+  './site-guide.css?v=15',
   './site-guide.js?v=1',
   './photo-slideshow.js?v=2',
   './assets/developer-portfolio-preview-v2.webp',
@@ -25,6 +25,21 @@ const SHELL = [
   './assets/gallery/nov-2026-15.webp',
   './assets/gallery/msfs-2026-117.webp',
   './assets/gallery/delta-apron-01.webp',
+  './assets/gallery/nov-2026-85.webp',
+  './assets/gallery/nov-2026-84.webp',
+  './assets/gallery/nov-2026-76.webp',
+  './assets/gallery/nov-2026-71.webp',
+  './assets/gallery/nov-2026-70.webp',
+  './assets/gallery/nov-2026-69.webp',
+  './assets/gallery/nov-2026-67.webp',
+  './assets/gallery/nov-2026-65.webp',
+  './assets/gallery/nov-2026-64.webp',
+  './assets/gallery/nov-2026-58.webp',
+  './assets/gallery/nov-2026-52.webp',
+  './assets/gallery/nov-2026-47.webp',
+  './assets/gallery/nov-2026-45.webp',
+  './assets/gallery/nov-2026-33.webp',
+  './assets/gallery/nov-2026-38.webp',
   './assets/gallery/msfs-2026-122.webp',
   './assets/gallery/moment-24.webp',
   './assets/gallery/msfs-2026-119.webp',
