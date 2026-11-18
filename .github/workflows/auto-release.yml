@@ -7,6 +7,7 @@ on:
 permissions:
   contents: write
   pages: write
+  checks: read
 concurrency:
   group: aviation-version
   cancel-in-progress: false
@@ -14,6 +15,7 @@ jobs:
   version:
     if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,6 +64,24 @@ jobs:
       - name: Install dependencies for release retry
         if: steps.current.outputs.released == 'true'
         run: npm ci
+      - name: Wait for the release commit's Cloudflare check
+        if: steps.current.outputs.released == 'true' || (steps.current.outputs.current == 'true' && steps.version.outputs.next != steps.version.outputs.current)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha=$(git rev-parse HEAD)
+          for attempt in {1..40}; do
+            conclusion=$(gh api --method GET "repos/$GITHUB_REPOSITORY/commits/$sha/check-runs" \
+              -f 'check_name=Workers Builds: denis-aviation' \
+              --jq '[.check_runs[] | select(.app.slug == "cloudflare-workers-and-pages")] | max_by(.id) | .conclusion // "pending"')
+            case "$conclusion" in
+              success) exit 0 ;;
+              pending) sleep 15 ;;
+              *) echo "::error::Cloudflare check concluded: $conclusion"; exit 1 ;;
+            esac
+          done
+          echo '::error::Cloudflare check did not succeed within ten minutes'
+          exit 1
       - name: Publish checked GitHub release
         if: steps.current.outputs.released == 'true' || (steps.current.outputs.current == 'true' && steps.version.outputs.next != steps.version.outputs.current)
         env:
