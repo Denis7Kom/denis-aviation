@@ -5518,3 +5518,86 @@ nav a[href='requests.html#new-request']::after {
     padding-inline-end: 16px;
   }
 }
+
+@media (max-width: 800px) {
+  .booking-email .request-form :is(input[type='date'], input[type='time']) {
+    position: relative;
+    appearance: none;
+    -webkit-appearance: none;
+    padding-inline-end: 44px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m7 10 5 5 5-5' stroke='%23c7d8e6' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: 18px 18px;
+    background-position: right 16px center;
+  }
+  .booking-email
+    .request-form
+    :is(input[type='date'], input[type='time'])::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 44px;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .booking-email
+    .request-form
+    :is(input[type='date'], input[type='time'])::-webkit-inner-spin-button {
+    display: none;
+  }
+}
+@media (max-width: 800px) and (forced-colors: active) {
+  .booking-email .request-form :is(input[type='date'], input[type='time']) {
+    appearance: auto;
+    -webkit-appearance: auto;
+    background-image: none;
+  }
+  .booking-email
+    .request-form
+    :is(input[type='date'], input[type='time'])::-webkit-calendar-picker-indicator {
+    position: static;
+    width: 18px;
+    height: 18px;
+    opacity: 1;
+  }
+}
+
+/* A shared outer box fixes the chevron axis independently of native input rendering. */
+.booking-control {
+  display: block;
+  min-width: 0;
+}
+@media (max-width: 800px) {
+  .booking-email .booking-control {
+    position: relative;
+    width: 100%;
+  }
+  .booking-email .request-form .booking-control > :is(select, input) {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    padding-inline-end: 44px;
+    background-image: none;
+  }
+  .booking-email .booking-control::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    right: 17px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m7 10 5 5 5-5' stroke='%23c7d8e6' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+}
+@media (max-width: 800px) and (forced-colors: active) {
+  .booking-email .booking-control::after {
+    display: none;
+  }
+}

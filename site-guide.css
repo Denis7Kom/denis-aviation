@@ -121,7 +121,7 @@
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .guide-launch {
     isolation: isolate;
-    background: rgba(29, 40, 51, .40);
+    background: rgba(29, 40, 51, .22);
     -webkit-backdrop-filter: blur(3.5px) saturate(1.7);
     backdrop-filter: blur(3.5px) saturate(1.7);
   }
@@ -157,4 +157,16 @@
 @media (forced-colors: active) {
   .guide-launch, .site-guide, #gallery-dialog, .request-status-tooltip { background: Canvas; color: CanvasText; border: 1px solid CanvasText; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
   .guide-launch::before, .site-guide::before, #gallery-dialog::before, .request-status-tooltip::before { display: none; }
+}
+
+/* Lighter glass throughout the guided tour. */
+.site-guide::backdrop { background: #02091259; }
+.guide-actions button { border-radius: 999px; }
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .site-guide { background: rgba(17, 31, 44, .48); -webkit-backdrop-filter: blur(10px) saturate(1.9); backdrop-filter: blur(10px) saturate(1.9); }
+  .guide-actions [data-guide-next] { background: rgba(190, 231, 250, .18); border-color: rgba(190, 231, 250, .5); color: #e8f4fb; }
+}
+@media (forced-colors: active) {
+  .site-guide { background: Canvas; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .guide-actions [data-guide-next] { background: ButtonFace; color: ButtonText; border-color: ButtonText; }
 }
