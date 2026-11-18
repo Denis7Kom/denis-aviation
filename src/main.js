@@ -229,6 +229,16 @@ import {
     jp: ['Япония', 'Japan'],
     hk: ['Гонконг', 'Hong Kong'],
     sg: ['Сингапур', 'Singapore'],
+    br: ['Бразилия', 'Brazil'],
+    fr: ['Франция', 'France'],
+    pt: ['Португалия', 'Portugal'],
+    gr: ['Греция', 'Greece'],
+    cl: ['Чили', 'Chile'],
+    ar: ['Аргентина', 'Argentina'],
+    bo: ['Боливия', 'Bolivia'],
+    do: ['Доминиканская Республика', 'Dominican Republic'],
+    gb: ['Великобритания', 'United Kingdom'],
+    ie: ['Ирландия', 'Ireland'],
   };
   let networkRole = 'main',
     networkQuery = '',
@@ -328,9 +338,9 @@ import {
       'aria-label',
       en
         ? lang === 'it'
-          ? 'Cerca in tutti i 35 aeroporti'
-          : 'Search all 35 airports'
-        : 'Поиск по всем 35 аэропортам',
+          ? `Cerca in tutti i ${airports.length} aeroporti`
+          : `Search all ${airports.length} airports`
+        : `Поиск по всем ${airports.length} аэропортам`,
     );
     $('#network-country').setAttribute(
       'aria-label',
@@ -479,6 +489,26 @@ import {
     RJTT: 'Aeroporto internazionale di Tokyo-Haneda',
     VHHH: 'Aeroporto internazionale di Hong Kong',
     WSSS: 'Aeroporto di Singapore-Changi',
+    KJFK: 'Aeroporto internazionale John F. Kennedy',
+    SBGL: 'Aeroporto internazionale di Rio de Janeiro-Galeão',
+    RJAA: 'Aeroporto internazionale di Tokyo-Narita',
+    LIRA: 'Aeroporto di Roma-Ciampino',
+    LFMN: 'Aeroporto di Nizza Costa Azzurra',
+    LFML: 'Aeroporto di Marsiglia-Provenza',
+    LPPT: 'Aeroporto di Lisbona Humberto Delgado',
+    LEVC: 'Aeroporto di Valencia',
+    LEZL: 'Aeroporto di Siviglia',
+    LGAV: 'Aeroporto internazionale Eleftherios Venizelos di Atene',
+    GCXO: 'Aeroporto di Tenerife Nord-Ciudad de La Laguna',
+    SCEL: 'Aeroporto internazionale Arturo Merino Benítez',
+    SAEZ: 'Aeroporto internazionale di Buenos Aires-Ezeiza',
+    SACO: 'Aeroporto internazionale di Córdoba Ambrosio Taravella',
+    SLET: 'Aeroporto El Trompillo',
+    SLLP: 'Aeroporto internazionale di El Alto',
+    SBGR: 'Aeroporto internazionale di São Paulo-Guarulhos',
+    SBSV: 'Aeroporto internazionale di Salvador',
+    SBRF: 'Aeroporto internazionale di Recife-Guararapes',
+    MDSD: 'Aeroporto internazionale Las Américas',
   };
   function airportName(a) {
     return lang === 'it' ? italianAirportNames[a[0]] || a[5] : a[lang === 'ru' ? 4 : 5];
@@ -528,6 +558,14 @@ import {
         UUEE: en ? 'Sheremetyevo' : 'Шереметьево',
         UUDD: en ? 'Domodedovo' : 'Домодедово',
         UUWW: en ? 'Vnukovo' : 'Внуково',
+        LIRF: en ? 'Fiumicino' : 'Фьюмичино',
+        LIRA: en ? 'Ciampino' : 'Чампино',
+        RJTT: en ? 'Haneda' : 'Ханэда',
+        RJAA: en ? 'Narita' : 'Нарита',
+        EGLL: 'Heathrow',
+        EGKK: 'Gatwick',
+        EGSS: 'Stansted',
+        EGLC: 'City',
       };
       b.querySelector('span').textContent = shortNames[x[0]]
         ? airportCity(x) + ' · ' + shortNames[x[0]]
@@ -676,10 +714,10 @@ import {
     );
     const description =
       l === 'it'
-        ? 'Denis Komarov — aviazione virtuale. Oltre 350 ore su VATSIM, oltre 600 ore su Infinite Flight, formazione VATRUS, aeromobili preferiti, tre hub e 35 aeroporti.'
+        ? 'Denis Komarov — aviazione virtuale. Oltre 350 ore su VATSIM, oltre 600 ore su Infinite Flight, formazione VATRUS, aeromobili preferiti, otto hub e 68 aeroporti.'
         : l === 'en'
-          ? 'Denis Komarov — virtual aviation. 350+ hours on VATSIM, 600+ hours in Infinite Flight, VATRUS training, favourite aircraft, three main hubs and thirty-five airports.'
-          : 'Денис Комаров — виртуальная авиация. 350+ часов в VATSIM, 600+ часов в Infinite Flight, подготовка VATRUS, избранный флот, три основных хаба и 35 аэропортов.';
+          ? 'Denis Komarov — virtual aviation. 350+ hours on VATSIM, 600+ hours in Infinite Flight, VATRUS training, favourite aircraft, eight main hubs and 68 airports.'
+          : 'Денис Комаров — виртуальная авиация. 350+ часов в VATSIM, 600+ часов в Infinite Flight, подготовка VATRUS, избранный флот, восемь основных хабов и 68 аэропортов.';
     $$('meta[name=description],meta[property="og:description"]').forEach(
       (n) => (n.content = description),
     );

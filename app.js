@@ -387,13 +387,388 @@
       1.35019,
       103.994003,
       "sg"
+    ],
+    [
+      "KJFK",
+      "JFK",
+      "Нью-Йорк",
+      "New York",
+      "Международный аэропорт имени Джона Кеннеди",
+      "John F. Kennedy International Airport",
+      40.6398,
+      -73.7789,
+      "us"
+    ],
+    [
+      "SBGL",
+      "GIG",
+      "Рио-де-Жанейро",
+      "Rio de Janeiro",
+      "Международный аэропорт Рио-де-Жанейро — Галеан",
+      "Rio de Janeiro–Galeão International Airport",
+      -22.81,
+      -43.2506,
+      "br"
+    ],
+    [
+      "RJAA",
+      "NRT",
+      "Токио",
+      "Tokyo",
+      "Международный аэропорт Нарита",
+      "Narita International Airport",
+      35.7647,
+      140.3864,
+      "jp"
+    ],
+    [
+      "LIRA",
+      "CIA",
+      "Рим",
+      "Rome",
+      "Аэропорт Рим — Чампино",
+      "Rome Ciampino Airport",
+      41.7994,
+      12.5949,
+      "it"
+    ],
+    [
+      "LFMN",
+      "NCE",
+      "Ницца",
+      "Nice",
+      "Аэропорт Ницца — Лазурный Берег",
+      "Nice Côte d’Azur Airport",
+      43.6584,
+      7.2159,
+      "fr"
+    ],
+    [
+      "LFML",
+      "MRS",
+      "Марсель",
+      "Marseille",
+      "Аэропорт Марсель — Прованс",
+      "Marseille Provence Airport",
+      43.4393,
+      5.2214,
+      "fr"
+    ],
+    [
+      "LPPT",
+      "LIS",
+      "Лиссабон",
+      "Lisbon",
+      "Аэропорт Лиссабона имени Умберту Делгаду",
+      "Humberto Delgado Airport",
+      38.7742,
+      -9.1342,
+      "pt"
+    ],
+    [
+      "LEVC",
+      "VLC",
+      "Валенсия",
+      "Valencia",
+      "Аэропорт Валенсии",
+      "Valencia Airport",
+      39.4893,
+      -0.4816,
+      "es"
+    ],
+    [
+      "LEZL",
+      "SVQ",
+      "Севилья",
+      "Seville",
+      "Аэропорт Севильи",
+      "Seville Airport",
+      37.418,
+      -5.8931,
+      "es"
+    ],
+    [
+      "LGAV",
+      "ATH",
+      "Афины",
+      "Athens",
+      "Международный аэропорт Афин имени Элефтериоса Венизелоса",
+      "Athens International Airport",
+      37.9364,
+      23.9445,
+      "gr"
+    ],
+    [
+      "GCXO",
+      "TFN",
+      "Санта-Крус-де-Тенерифе",
+      "Santa Cruz de Tenerife",
+      "Аэропорт Тенерифе-Северный — Сьюдад-де-ла-Лагуна",
+      "Tenerife North–Ciudad de La Laguna Airport",
+      28.4827,
+      -16.3415,
+      "es"
+    ],
+    [
+      "SCEL",
+      "SCL",
+      "Сантьяго",
+      "Santiago",
+      "Международный аэропорт имени Артуро Мерино Бенитеса",
+      "Arturo Merino Benítez International Airport",
+      -33.393,
+      -70.7858,
+      "cl"
+    ],
+    [
+      "SAEZ",
+      "EZE",
+      "Буэнос-Айрес",
+      "Buenos Aires",
+      "Международный аэропорт Эсейса имени Министро Пистарини",
+      "Ministro Pistarini International Airport",
+      -34.8222,
+      -58.5358,
+      "ar"
+    ],
+    [
+      "SACO",
+      "COR",
+      "Кордова",
+      "Córdoba",
+      "Международный аэропорт имени Амбросио Таравельи",
+      "Ingeniero Aeronáutico Ambrosio L. V. Taravella International Airport",
+      -31.3236,
+      -64.208,
+      "ar"
+    ],
+    [
+      "SLET",
+      "SRZ",
+      "Санта-Крус-де-ла-Сьерра",
+      "Santa Cruz de la Sierra",
+      "Аэропорт Эль-Тромпильо",
+      "El Trompillo Airport",
+      -17.8116,
+      -63.1715,
+      "bo"
+    ],
+    [
+      "SLLP",
+      "LPB",
+      "Эль-Альто",
+      "El Alto",
+      "Международный аэропорт Эль-Альто",
+      "El Alto International Airport",
+      -16.5133,
+      -68.1923,
+      "bo"
+    ],
+    [
+      "SBGR",
+      "GRU",
+      "Сан-Паулу",
+      "São Paulo",
+      "Международный аэропорт Сан-Паулу — Гуарульюс",
+      "São Paulo–Guarulhos International Airport",
+      -23.4356,
+      -46.4731,
+      "br"
+    ],
+    [
+      "SBSV",
+      "SSA",
+      "Салвадор",
+      "Salvador",
+      "Международный аэропорт Салвадора",
+      "Salvador Bahia Airport",
+      -12.9086,
+      -38.3225,
+      "br"
+    ],
+    [
+      "SBRF",
+      "REC",
+      "Ресифи",
+      "Recife",
+      "Международный аэропорт Ресифи — Гуарарапис",
+      "Recife/Guararapes–Gilberto Freyre International Airport",
+      -8.1265,
+      -34.9236,
+      "br"
+    ],
+    [
+      "MDSD",
+      "SDQ",
+      "Санто-Доминго",
+      "Santo Domingo",
+      "Международный аэропорт Лас-Америкас",
+      "Las Américas International Airport",
+      18.4297,
+      -69.6689,
+      "do"
+    ],
+    [
+      "KLAS",
+      "LAS",
+      "Лас-Вегас",
+      "Las Vegas",
+      "Международный аэропорт имени Гарри Рида",
+      "Harry Reid International Airport",
+      36.0801,
+      -115.1522,
+      "us"
+    ],
+    [
+      "KSEA",
+      "SEA",
+      "Сиэтл",
+      "Seattle",
+      "Международный аэропорт Сиэтл — Такома",
+      "Seattle–Tacoma International Airport",
+      47.449,
+      -122.3093,
+      "us"
+    ],
+    [
+      "CYOW",
+      "YOW",
+      "Оттава",
+      "Ottawa",
+      "Международный аэропорт Оттавы имени Макдональда — Картье",
+      "Ottawa Macdonald–Cartier International Airport",
+      45.3225,
+      -75.6692,
+      "ca"
+    ],
+    [
+      "KBOS",
+      "BOS",
+      "Бостон",
+      "Boston",
+      "Международный аэропорт Бостон — Логан",
+      "Boston Logan International Airport",
+      42.3656,
+      -71.0096,
+      "us"
+    ],
+    ["EIDW", "DUB", "Дублин", "Dublin", "Аэропорт Дублина", "Dublin Airport", 53.4213, -6.2701, "ie"],
+    [
+      "EGCC",
+      "MAN",
+      "Манчестер",
+      "Manchester",
+      "Аэропорт Манчестера",
+      "Manchester Airport",
+      53.3537,
+      -2.275,
+      "gb"
+    ],
+    [
+      "EGPF",
+      "GLA",
+      "Глазго",
+      "Glasgow",
+      "Аэропорт Глазго",
+      "Glasgow Airport",
+      55.8719,
+      -4.4331,
+      "gb"
+    ],
+    [
+      "EGGP",
+      "LPL",
+      "Ливерпуль",
+      "Liverpool",
+      "Аэропорт Ливерпуля имени Джона Леннона",
+      "Liverpool John Lennon Airport",
+      53.3336,
+      -2.8497,
+      "gb"
+    ],
+    [
+      "EGBB",
+      "BHX",
+      "Бирмингем",
+      "Birmingham",
+      "Аэропорт Бирмингема",
+      "Birmingham Airport",
+      52.4539,
+      -1.748,
+      "gb"
+    ],
+    [
+      "EGLL",
+      "LHR",
+      "Лондон",
+      "London",
+      "Аэропорт Лондон — Хитроу",
+      "London Heathrow Airport",
+      51.47,
+      -0.4543,
+      "gb"
+    ],
+    [
+      "EGKK",
+      "LGW",
+      "Лондон",
+      "London",
+      "Аэропорт Лондон — Гатвик",
+      "London Gatwick Airport",
+      51.1481,
+      -0.1903,
+      "gb"
+    ],
+    [
+      "EGSS",
+      "STN",
+      "Лондон",
+      "London",
+      "Аэропорт Лондон — Станстед",
+      "London Stansted Airport",
+      51.885,
+      0.235,
+      "gb"
+    ],
+    [
+      "EGLC",
+      "LCY",
+      "Лондон",
+      "London",
+      "Аэропорт Лондон-Сити",
+      "London City Airport",
+      51.5053,
+      0.0553,
+      "gb"
     ]
   ];
-  var mainHubCodes = /* @__PURE__ */ new Set(["UUEE", "LIRN", "KLAX"]);
+  var mainHubCodes = /* @__PURE__ */ new Set([
+    "UUEE",
+    "LIRN",
+    "KLAX",
+    "LIRF",
+    "KORD",
+    "KJFK",
+    "KSFO",
+    "EGLL"
+  ]);
   function isMainHub(a) {
     return mainHubCodes.has(a[0]);
   }
-  var favoriteCodes = /* @__PURE__ */ new Set(["ULLI", "LIRF", "KATL", "KORD", "PHNL"]);
+  var favoriteCodes = /* @__PURE__ */ new Set([
+    "ULLI",
+    "KATL",
+    "PHNL",
+    "UUDD",
+    "RJTT",
+    "LEMD",
+    "LOWI",
+    "MMMX",
+    "SBGL",
+    "VHHH",
+    "KLAS",
+    "EGLC"
+  ]);
   function airportRole(a) {
     return isMainHub(a) ? "main" : favoriteCodes.has(a[0]) ? "favorite" : "frequent";
   }
@@ -4906,7 +5281,17 @@
       ca: ["Канада", "Canada"],
       jp: ["Япония", "Japan"],
       hk: ["Гонконг", "Hong Kong"],
-      sg: ["Сингапур", "Singapore"]
+      sg: ["Сингапур", "Singapore"],
+      br: ["Бразилия", "Brazil"],
+      fr: ["Франция", "France"],
+      pt: ["Португалия", "Portugal"],
+      gr: ["Греция", "Greece"],
+      cl: ["Чили", "Chile"],
+      ar: ["Аргентина", "Argentina"],
+      bo: ["Боливия", "Bolivia"],
+      do: ["Доминиканская Республика", "Dominican Republic"],
+      gb: ["Великобритания", "United Kingdom"],
+      ie: ["Ирландия", "Ireland"]
     };
     let networkRole = "main", networkQuery = "", networkCountry = "", networkExpanded = false;
     const networkButtons = airports.map((a, i) => {
@@ -4962,7 +5347,7 @@
       $("#network-search").placeholder = en ? lang === "it" ? "Città o codice aeroporto" : "City or airport code" : "Город или код аэропорта";
       $("#network-search").setAttribute(
         "aria-label",
-        en ? lang === "it" ? "Cerca in tutti i 35 aeroporti" : "Search all 35 airports" : "Поиск по всем 35 аэропортам"
+        en ? lang === "it" ? `Cerca in tutti i ${airports.length} aeroporti` : `Search all ${airports.length} airports` : `Поиск по всем ${airports.length} аэропортам`
       );
       $("#network-country").setAttribute(
         "aria-label",
@@ -5089,7 +5474,27 @@
       PANC: "Aeroporto internazionale Ted Stevens di Anchorage",
       RJTT: "Aeroporto internazionale di Tokyo-Haneda",
       VHHH: "Aeroporto internazionale di Hong Kong",
-      WSSS: "Aeroporto di Singapore-Changi"
+      WSSS: "Aeroporto di Singapore-Changi",
+      KJFK: "Aeroporto internazionale John F. Kennedy",
+      SBGL: "Aeroporto internazionale di Rio de Janeiro-Galeão",
+      RJAA: "Aeroporto internazionale di Tokyo-Narita",
+      LIRA: "Aeroporto di Roma-Ciampino",
+      LFMN: "Aeroporto di Nizza Costa Azzurra",
+      LFML: "Aeroporto di Marsiglia-Provenza",
+      LPPT: "Aeroporto di Lisbona Humberto Delgado",
+      LEVC: "Aeroporto di Valencia",
+      LEZL: "Aeroporto di Siviglia",
+      LGAV: "Aeroporto internazionale Eleftherios Venizelos di Atene",
+      GCXO: "Aeroporto di Tenerife Nord-Ciudad de La Laguna",
+      SCEL: "Aeroporto internazionale Arturo Merino Benítez",
+      SAEZ: "Aeroporto internazionale di Buenos Aires-Ezeiza",
+      SACO: "Aeroporto internazionale di Córdoba Ambrosio Taravella",
+      SLET: "Aeroporto El Trompillo",
+      SLLP: "Aeroporto internazionale di El Alto",
+      SBGR: "Aeroporto internazionale di São Paulo-Guarulhos",
+      SBSV: "Aeroporto internazionale di Salvador",
+      SBRF: "Aeroporto internazionale di Recife-Guararapes",
+      MDSD: "Aeroporto internazionale Las Américas"
     };
     function airportName(a) {
       return lang === "it" ? italianAirportNames[a[0]] || a[5] : a[lang === "ru" ? 4 : 5];
@@ -5112,7 +5517,15 @@
         const shortNames = {
           UUEE: en ? "Sheremetyevo" : "Шереметьево",
           UUDD: en ? "Domodedovo" : "Домодедово",
-          UUWW: en ? "Vnukovo" : "Внуково"
+          UUWW: en ? "Vnukovo" : "Внуково",
+          LIRF: en ? "Fiumicino" : "Фьюмичино",
+          LIRA: en ? "Ciampino" : "Чампино",
+          RJTT: en ? "Haneda" : "Ханэда",
+          RJAA: en ? "Narita" : "Нарита",
+          EGLL: "Heathrow",
+          EGKK: "Gatwick",
+          EGSS: "Stansted",
+          EGLC: "City"
         };
         b.querySelector("span").textContent = shortNames[x[0]] ? airportCity(x) + " · " + shortNames[x[0]] : airportCity(x);
         b.setAttribute("aria-pressed", String(i === airportIndex));
@@ -5216,7 +5629,7 @@
           n.dataset[l === "it" ? "ariaIt" : l === "en" ? "ariaEn" : "ariaRu"]
         )
       );
-      const description = l === "it" ? "Denis Komarov — aviazione virtuale. Oltre 350 ore su VATSIM, oltre 600 ore su Infinite Flight, formazione VATRUS, aeromobili preferiti, tre hub e 35 aeroporti." : l === "en" ? "Denis Komarov — virtual aviation. 350+ hours on VATSIM, 600+ hours in Infinite Flight, VATRUS training, favourite aircraft, three main hubs and thirty-five airports." : "Денис Комаров — виртуальная авиация. 350+ часов в VATSIM, 600+ часов в Infinite Flight, подготовка VATRUS, избранный флот, три основных хаба и 35 аэропортов.";
+      const description = l === "it" ? "Denis Komarov — aviazione virtuale. Oltre 350 ore su VATSIM, oltre 600 ore su Infinite Flight, formazione VATRUS, aeromobili preferiti, otto hub e 68 aeroporti." : l === "en" ? "Denis Komarov — virtual aviation. 350+ hours on VATSIM, 600+ hours in Infinite Flight, VATRUS training, favourite aircraft, eight main hubs and 68 airports." : "Денис Комаров — виртуальная авиация. 350+ часов в VATSIM, 600+ часов в Infinite Flight, подготовка VATRUS, избранный флот, восемь основных хабов и 68 аэропортов.";
       $$('meta[name=description],meta[property="og:description"]').forEach(
         (n) => n.content = description
       );
