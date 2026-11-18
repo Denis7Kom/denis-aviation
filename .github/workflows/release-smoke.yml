@@ -1,0 +1,31 @@
+name: Release smoke test
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  release-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract release command
+        run: |
+          ruby -ryaml -e '
+            workflow = YAML.load_file(ARGV[0])
+            step = workflow.fetch("jobs").values.flat_map { |job| job.fetch("steps") }
+                           .find { |item| item["name"] == ARGV[1] }
+            puts step.fetch("run")
+          ' .github/workflows/auto-release.yml "Wait for the release commit's Cloudflare check" > "$RUNNER_TEMP/release-step.sh"
+      - name: Exercise release command without GitHub writes
+        run: |
+          bash -n "$RUNNER_TEMP/release-step.sh"
+          mkdir "$RUNNER_TEMP/fake-bin"
+          export PATH="$RUNNER_TEMP/fake-bin:$PATH"
+          printf '#!/bin/bash\nprintf "%%s\\n" "$FAKE_CONCLUSION"\n' > "$RUNNER_TEMP/fake-bin/gh"
+          printf '#!/bin/bash\nexit 0\n' > "$RUNNER_TEMP/fake-bin/sleep"
+          chmod +x "$RUNNER_TEMP"/fake-bin/*
+          FAKE_CONCLUSION=success bash -eo pipefail "$RUNNER_TEMP/release-step.sh"
+          if FAKE_CONCLUSION=failure bash -eo pipefail "$RUNNER_TEMP/release-step.sh"; then exit 1; fi
+          if FAKE_CONCLUSION=pending bash -eo pipefail "$RUNNER_TEMP/release-step.sh"; then exit 1; fi
