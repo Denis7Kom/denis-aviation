@@ -59,3 +59,23 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: gh api --method POST "repos/$GH_REPO/pages/builds"
+      - name: Install dependencies for release retry
+        if: steps.current.outputs.released == 'true'
+        run: npm ci
+      - name: Publish checked GitHub release
+        if: steps.current.outputs.released == 'true' || (steps.current.outputs.current == 'true' && steps.version.outputs.next != steps.version.outputs.current)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          npm run check
+          version=$(node -p "require('./package.json').version")
+          tag="v$version"
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            test "$(git rev-parse "$tag^{commit}")" = "$(git rev-parse HEAD)"
+          else
+            git tag "$tag"
+            git push origin "refs/tags/$tag"
+          fi
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --verify-tag --generate-notes --title "$tag"
+          fi
