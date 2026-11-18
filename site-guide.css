@@ -77,34 +77,5 @@
 @media (max-width:760px) { .aviation-photo { margin:20px 0; } .aviation-photo img { height:200px; } }
 .booking-photo img { height:clamp(140px, 22vw, 240px); object-position:center 58%; }
 
-.photo-slideshow-toggle {
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border: 1px solid #84a5bc;
-  border-radius: 50%;
-  background: #081521ed;
-  color: #eef8ff;
-  cursor: pointer;
-}
-.photo-slideshow-toggle[hidden] { display: none; }
-.photo-slideshow-toggle:focus-visible { outline: 2px solid #a9defd; outline-offset: 2px; }
-.photo-slideshow-toggle::before {
-  content: '';
-  box-sizing: border-box;
-  border: 6px solid transparent;
-  border-left: 9px solid currentColor;
-  transform: translateX(3px);
-}
-.photo-slideshow-toggle[aria-pressed='true']::before {
-  width: 10px;
-  height: 12px;
-  border: 0;
-  border-inline: 3px solid currentColor;
-  transform: none;
-}
+
+.aviation-photo .photo-slide-incoming { position:absolute; inset:0; }
