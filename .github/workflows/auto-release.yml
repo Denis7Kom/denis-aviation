@@ -1,0 +1,61 @@
+name: Automatic version
+on:
+  workflow_run:
+    workflows: ['Code checks']
+    types: [completed]
+    branches: [main]
+permissions:
+  contents: write
+  pages: write
+concurrency:
+  group: aviation-version
+  cancel-in-progress: false
+jobs:
+  version:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Check the verified commit is still current
+        id: current
+        env:
+          VERIFIED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if [ "$(git rev-parse HEAD)" = "$VERIFIED_SHA" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          elif [ "$(git rev-parse HEAD^)" = "$VERIFIED_SHA" ] && git log -1 --format=%s | grep -Eq '^chore: release version [0-9]'; then
+            echo "released=true" >> "$GITHUB_OUTPUT"
+          fi
+      - run: npm ci
+        if: steps.current.outputs.current == 'true'
+      - name: Determine next version
+        id: version
+        if: steps.current.outputs.current == 'true'
+        run: |
+          echo "next=$(node scripts/auto-version.mjs)" >> "$GITHUB_OUTPUT"
+          echo "current=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Update and verify release
+        if: steps.current.outputs.current == 'true' && steps.version.outputs.next != steps.version.outputs.current
+        env:
+          NEXT_VERSION: ${{ steps.version.outputs.next }}
+        run: |
+          node scripts/set-version.mjs "$NEXT_VERSION"
+          npm run check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add package.json package-lock.json index.html requests.html sw.js tests/fixtures/refactor-contract.json
+          git commit -m "chore: release version $NEXT_VERSION"
+          git push origin HEAD:main
+      - name: Request Pages build
+        if: steps.current.outputs.released == 'true' || (steps.current.outputs.current == 'true' && steps.version.outputs.next != steps.version.outputs.current)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh api --method POST "repos/$GH_REPO/pages/builds"

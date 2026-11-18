@@ -35,6 +35,23 @@ Run `npm run build` after editing `src/` and commit both the source and generate
 Do not edit `app.js` directly. The separate `requests.js` file is served directly; it is
 not generated from `src/`.
 
+## Versioning
+
+The current stable release starts at `3.5.0`. On a successful main-branch CI run,
+version automation classifies commits since the previous automatic release. A
+`feat:` commit increases MINOR, `fix:` and other user-facing changes increase PATCH,
+and `type!:` or a `BREAKING CHANGE:` footer increases MAJOR. The highest change
+wins. Conventional `docs:`, `test:`, `ci:`, `build:`, `chore:` and `refactor:`
+commits do not create a release. Unrecognized commit subjects default to PATCH.
+
+Versions follow SemVer 2.0.0, including multi-digit components, prerelease identifiers
+and build metadata. Automatic releases advance stable versions only. The workflow
+updates the package files, both site labels, the PWA cache and the reviewed HTML
+fixture together, verifies them, and explicitly requests a GitHub Pages build.
+Existing tags are not modified. Rerunning the same successful CI run does not bump
+the version twice. If a push races a newer commit, its version push fails without
+rewriting history; the newer successful CI run handles the outstanding changes.
+
 ## Structure
 
 ```text
