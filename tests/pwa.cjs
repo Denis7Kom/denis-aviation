@@ -90,7 +90,7 @@ vm.runInNewContext(readFileSync('sw.js', 'utf8'), {
   await task;
   assert(entries.has(resolve('./index.html')), 'Entry page is cached');
   for (const src of [
-    'style.css?v=mobile-arrows-91',
+    'style.css?v=mobile-arrows-92',
     'app.js?v=airport-labels-87',
     'assets/gallery/delta-flight-02.webp',
   ]) {
