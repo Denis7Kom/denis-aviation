@@ -45,4 +45,3 @@ jobs:
           test ! -e .wrangler-public/functions
           test ! -e .wrangler-public/firestore.rules
           test ! -e .wrangler-public/package.json
-      - run: npx prettier scripts/build.mjs
