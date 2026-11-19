@@ -28,7 +28,11 @@ if (!checking && process.env.WORKERS_CI === '1') {
   await mkdir(directory, { recursive: true });
   const files = await readdir('.');
   for (const file of files) {
-    if (/\.(?:html|css|js|svg|webmanifest)$/.test(file) || file === 'assets' || file === 'docs') {
+    if (
+      /\.(?:html|css|js|svg|webmanifest)$/.test(file) ||
+      file === 'assets' ||
+      file === 'docs'
+    ) {
       await cp(file, `${directory}/${file}`, { recursive: true });
     }
   }
