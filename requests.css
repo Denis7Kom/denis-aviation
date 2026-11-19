@@ -1056,3 +1056,36 @@ textarea:focus-visible {
   #request-date { appearance: auto; -webkit-appearance: auto; background-image: none; }
   #request-date::-webkit-calendar-picker-indicator { position: static; width: 14px; height: 14px; opacity: 1; }
 }
+
+/* Request notes are shown in a vertical log. */
+.entry .request-chat { margin-top: 22px; padding-top: 22px; }
+.request-chat h4 { margin: 0 0 14px; font-size: 15px; }
+.chat-history { padding: 0; color: #a7bfd1; font-size: 13px; line-height: 1.5; }
+.chat-message, .chat-message[data-own='true'], .entry .request-chat .admin-comment {
+  align-self: stretch;
+  width: 100%;
+  max-width: none;
+  border-radius: 8px;
+  background: #16304770;
+}
+.chat-message[data-role='admin'] { border-left: 3px solid #87c9fa; }
+.entry .request-chat[data-admin-briefing='true'] .chat-composer {
+  gap: 16px;
+  margin-top: 20px;
+  padding: clamp(12px, 3vw, 20px);
+  border: 1px solid #85bdd234;
+  border-radius: 12px;
+  background: #162f4050;
+  box-shadow: inset 0 1px #ffffff14;
+}
+.entry .chat-composer[hidden] { display: none; }
+.entry .request-chat[data-admin-briefing='true'] textarea { min-height: 104px; }
+.briefing-template { border-bottom: 1px solid #85bdd234; padding-bottom: 14px; }
+.briefing-template summary { color: #c9e9ff; font-size: 13px; font-weight: 600; cursor: pointer; }
+.briefing-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+.briefing-fields label { min-width: 0; }
+.entry .briefing-template .briefing-insert { width: auto; border: 1px solid #5c8ba8; background: #152c3c; color: #e0f2ff; border-radius: 8px; margin-bottom: 8px; }
+@media (max-width: 480px) { .briefing-fields { grid-template-columns: minmax(0, 1fr); } }
+
+/* Traffic intensity is independent from the request status. */
+.entry .briefing-fields label > select { color: #e2eef8; border-color: #42627b; background-color: #0a1a28; font-weight: 400; }

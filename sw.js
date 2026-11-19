@@ -1,13 +1,13 @@
 // Increase the cache version when changing the pre-cached app shell.
 const CACHE_PREFIX = 'denis-aviation-';
-const CACHE_NAME = `${CACHE_PREFIX}release-3.6.3-picker-axis`;
+const CACHE_NAME = `${CACHE_PREFIX}release-3.8.0`;
 const SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
   './favicon.svg',
   './style.css?v=mobile-arrows-95',
-  './site-guide.css?v=19',
+  './site-guide.css?v=20',
   './site-guide.js?v=1',
   './photo-slideshow.js?v=2',
   './assets/developer-portfolio-preview-v2.webp',
@@ -119,12 +119,12 @@ self.addEventListener('push', (event) => {
   }
   const data = payload?.data || {};
   if (!['message', 'status', 'request'].includes(data.kind)) return;
-  const title =
-    data.language === 'it'
-      ? 'Denis Aviation · Aggiornamento'
-      : data.language === 'en'
-        ? 'Denis Aviation · Update'
-        : 'Denis Aviation · Обновление';
+  const titles = {
+    request: { ru: 'Новая заявка', en: 'New request', it: 'Nuova richiesta' },
+    status: { ru: 'Статус заявки изменён', en: 'Request status changed', it: 'Stato della richiesta aggiornato' },
+    message: { ru: 'Новый ответ по заявке', en: 'New request reply', it: 'Nuova risposta alla richiesta' },
+  };
+  const title = 'Denis Aviation · ' + (titles[data.kind][data.language] || titles[data.kind].ru);
   const body =
     data.language === 'it'
       ? 'Apri le richieste per vedere le novità.'
@@ -135,7 +135,7 @@ self.addEventListener('push', (event) => {
     self.registration.showNotification(title, {
       body,
       icon: new URL('./assets/icons/icon-192.png', self.registration.scope).href,
-      tag: `aviation-${data.requestId || 'requests'}`,
+      tag: `aviation-${data.kind}-${data.requestId || 'requests'}`,
       data: { requestId: data.requestId || '' },
     }),
   );

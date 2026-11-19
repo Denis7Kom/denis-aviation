@@ -153,8 +153,7 @@ const italian = {
   'Choose hours and minutes.': 'Scegli ore e minuti.',
   'Fill in the required fields.': 'Compila i campi obbligatori.',
   'No requests yet.': 'Nessuna richiesta.',
-  'No requests match the selected filters.':
-    'Nessuna richiesta corrisponde ai filtri selezionati.',
+  'No requests match the selected filters.': 'Nessuna richiesta corrisponde ai filtri selezionati.',
   'Status saved.': 'Stato salvato.',
   'Send request': 'Invia richiesta',
   'Sending request...': 'Invio della richiesta...',
@@ -173,8 +172,7 @@ const italian = {
   'Could not load requests.': 'Impossibile caricare le richieste.',
   'Could not load requests. Check your connection and Firestore rules.':
     'Impossibile caricare le richieste. Controlla la connessione e le regole Firestore.',
-  'Could not save a draft on this device.':
-    'Impossibile salvare una bozza su questo dispositivo.',
+  'Could not save a draft on this device.': 'Impossibile salvare una bozza su questo dispositivo.',
   'Could not change status. Check your connection and database rules.':
     'Impossibile cambiare lo stato. Controlla la connessione e le regole del database.',
   'Could not cancel the request. Its status may have changed. Refresh the page and try again.':
@@ -309,13 +307,10 @@ function announceVisitorChanges(snapshot) {
       visitorUpdates = [update];
       if (browserAlertsSupported() && Notification.permission === 'granted') {
         try {
-          const alert = new Notification(
-            text('Статус заявки изменён', 'Request status changed'),
-            {
-              body: formatVisitorUpdate(update),
-              icon: 'favicon.svg',
-            },
-          );
+          const alert = new Notification(text('Статус заявки изменён', 'Request status changed'), {
+            body: formatVisitorUpdate(update),
+            icon: 'favicon.svg',
+          });
           alert.onclick = () => {
             alert.close();
             openRequestFromAlert(item.id);
@@ -358,9 +353,7 @@ function openRequestFromAlert(id) {
   $('#status-filter').value = 'all';
   $('#request-search').value = '';
   renderList(lastSnapshot);
-  const card = Array.from($('#list').children).find(
-    (element) => element.dataset.requestId === id,
-  );
+  const card = Array.from($('#list').children).find((element) => element.dataset.requestId === id);
   if (card) {
     card.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
     card.focus?.({ preventScroll: true });
@@ -455,20 +448,13 @@ function announceNewRequests(snapshot) {
     const newRequests = confirmed.filter(
       (item) => !adminKnownIds.has(item.id) && item.data().status === 'new',
     );
-    if (
-      newRequests.length &&
-      browserAlertsSupported() &&
-      Notification.permission === 'granted'
-    ) {
+    if (newRequests.length && browserAlertsSupported() && Notification.permission === 'granted') {
       for (const item of newRequests)
         try {
-          const alert = new Notification(
-            text('Новая заявка на сайте', 'New request on the site'),
-            {
-              body: formatRequestDetails(item.data()),
-              icon: 'favicon.svg',
-            },
-          );
+          const alert = new Notification(text('Новая заявка на сайте', 'New request on the site'), {
+            body: formatRequestDetails(item.data()),
+            icon: 'favicon.svg',
+          });
           alert.onclick = () => {
             alert.close();
             openRequestFromAlert(item.id);
@@ -516,11 +502,7 @@ function translate() {
   document.querySelectorAll('[data-placeholder-ru]').forEach((el) => {
     el.placeholder =
       el.dataset[
-        language === 'it'
-          ? 'placeholderIt'
-          : language === 'en'
-            ? 'placeholderEn'
-            : 'placeholderRu'
+        language === 'it' ? 'placeholderIt' : language === 'en' ? 'placeholderEn' : 'placeholderRu'
       ];
   });
   document.querySelectorAll('[data-lang]').forEach((button) => {
@@ -608,8 +590,7 @@ function renderTimezoneOptions() {
   for (const zone of zones) {
     const option = document.createElement('option');
     option.value = zone;
-    option.textContent =
-      zone === 'Zulu' ? 'ZULU (UTC+0)' : timezoneLabel(zone);
+    option.textContent = zone === 'Zulu' ? 'ZULU (UTC+0)' : timezoneLabel(zone);
     select.append(option);
   }
   select.value = previous;
@@ -662,8 +643,7 @@ function renderMessageAlerts() {
   $('#message-alert-open').textContent = text('Открыть сообщение', 'Open message');
   $('#message-alert-body').textContent = Array.from(messageAlerts.values())
     .map(
-      (entry) =>
-        `${entry.request.callsign || '—'} · ${entry.request.route || '—'}\n${entry.body}`,
+      (entry) => `${entry.request.callsign || '—'} · ${entry.request.route || '—'}\n${entry.body}`,
     )
     .join('\n\n');
 }
@@ -715,8 +695,7 @@ function syncMessageWatchers(snapshot) {
         const data = latest?.data();
         if (data) chatPreviews.set(item.id, data);
         else chatPreviews.delete(item.id);
-        const unread =
-          latest && data.authorUid !== uid && readMessageMarker(item.id) !== latest.id;
+        const unread = latest && data.authorUid !== uid && readMessageMarker(item.id) !== latest.id;
         if (unread) {
           messageAlerts.delete(item.id);
           messageAlerts.set(item.id, { request: entry.request, body: data.body });
@@ -863,13 +842,106 @@ function closeChatSubscriptions() {
   for (const unsubscribeChat of chatSubscriptions.values()) unsubscribeChat();
   chatSubscriptions.clear();
 }
+function createBriefingTemplate(state, updateComposer, input) {
+  const template = document.createElement('details');
+  template.className = 'briefing-template';
+  template.open = !!state.briefingOpen;
+  template.addEventListener('toggle', () => {
+    state.briefingOpen = template.open;
+  });
+  const summary = document.createElement('summary');
+  summary.textContent = text('Заполнить предполётный брифинг', 'Fill in a preflight briefing');
+  const fields = document.createElement('div');
+  fields.className = 'briefing-fields';
+  const saved = (state.briefingFields ||= {});
+  const entries = [
+    ['stand', 'Стоянка', 'Stand', text('Стоянка', 'Stand'), 'A12'],
+    ['call', 'Время первого вызова', 'Initial call time', text('Вызов', 'Call'), '18:30Z'],
+    ['sid', 'Ожидаемый SID', 'Expected SID', 'SID', 'NANDO2A'],
+    ['star', 'Ожидаемый STAR', 'Expected STAR', 'STAR', 'NANDO1B'],
+    ['taxi', 'Ожидаемый маршрут руления', 'Expected taxi route', text('Руление', 'Taxi'), 'A B C'],
+    ['runway', 'Ожидаемая ВПП', 'Expected runway', 'RWY', '25L'],
+    ['traffic', 'Ожидаемый трафик', 'Expected traffic', text('Трафик', 'Traffic'), ''],
+  ];
+  const controls = entries.map(([key, ru, en, short, example]) => {
+    const label = document.createElement('label');
+    const caption = document.createElement('span');
+    caption.textContent = text(ru, en);
+    const control = document.createElement(key === 'traffic' ? 'select' : 'input');
+    if (key === 'traffic') {
+      for (const [value, name] of [
+        ['', text('Не задано', 'Not specified')],
+        ['high', text('Высокий', 'High')],
+        ['medium', text('Средний', 'Medium')],
+        ['low', text('Низкий', 'Low')],
+      ]) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = name;
+        control.append(option);
+      }
+    } else {
+      control.type = 'text';
+      control.placeholder = example;
+      control.maxLength = 80;
+    }
+    control.value = saved[key] || '';
+    control.addEventListener('input', () => {
+      saved[key] = control.value;
+    });
+    label.append(caption, control);
+    fields.append(label);
+    return { key, short, control };
+  });
+  const insert = document.createElement('button');
+  insert.type = 'button';
+  insert.className = 'briefing-insert';
+  insert.textContent = text('Вставить в комментарий', 'Insert into comment');
+  const feedback = document.createElement('p');
+  feedback.className = 'chat-feedback';
+  feedback.setAttribute('role', 'status');
+  insert.addEventListener('click', () => {
+    if (state.sending) return;
+    const lines = controls.flatMap(({ key, short, control }) => {
+      const value = control.value.trim();
+      if (!value) return [];
+      const display = key === 'traffic' ? control.selectedOptions[0].textContent : value;
+      return [short + ': ' + display];
+    });
+    if (!lines.length) {
+      feedback.textContent = text('Заполни хотя бы одно поле.', 'Fill in at least one field.');
+      return;
+    }
+    const body = [state.draft.trim(), lines.join('\n')].filter(Boolean).join('\n\n');
+    if (body.length > input.maxLength) {
+      feedback.textContent = text(
+        'Сократи брифинг или черновик. Лимит комментария — 150 символов.',
+        'Shorten the briefing or draft. The comment limit is 150 characters.',
+      );
+      return;
+    }
+    state.draft = body;
+    for (const { key, control } of controls) {
+      delete saved[key];
+      control.value = '';
+    }
+    feedback.textContent = '';
+    template.open = false;
+    updateComposer();
+    input.focus();
+  });
+  template.append(summary, fields, insert, feedback);
+  return template;
+}
 function attachChat(card, item) {
   const state = chatStates.get(item.id) || { draft: '', sending: false };
   chatStates.set(item.id, state);
   const shell = document.createElement('section');
+  const admin = isAdmin(user);
   shell.className = 'request-chat';
+  if (admin) shell.dataset.adminBriefing = 'true';
   const heading = document.createElement('h4');
-  heading.textContent = text('Комментарии', 'Comments');
+  heading.textContent = text('Брифинг и уточнения', 'Briefing and clarifications');
   shell.append(heading);
   const oldComment = item.data().adminComment;
   state.canReply = !!(
@@ -897,8 +969,8 @@ function attachChat(card, item) {
   const label = document.createElement('label');
   const title = document.createElement('span');
   title.textContent = isAdmin(user)
-    ? text('Ответить клиенту', 'Reply to client')
-    : text('Ответить администратору', 'Reply to administrator');
+    ? text('Комментарий к заявке', 'Request comment')
+    : text('Уточнить у администратора', 'Ask for clarification');
   const input = document.createElement('textarea');
   input.maxLength = 150;
   input.rows = 2;
@@ -935,6 +1007,7 @@ function attachChat(card, item) {
   });
   updateComposer();
   actions.append(counter, send);
+  if (admin) composer.append(createBriefingTemplate(state, updateComposer, input));
   composer.append(label, actions, feedback);
   const earlier = document.createElement('button');
   earlier.type = 'button';
@@ -988,7 +1061,11 @@ function attachChat(card, item) {
             ? 1
             : 0),
     );
-    if (!docs.length) history.textContent = text('Сообщений пока нет.', 'No messages yet.');
+    if (!docs.length)
+      history.textContent = text(
+        'Комментариев к заявке пока нет.',
+        'No comments on this request yet.',
+      );
     for (const message of docs) {
       const data = message.data();
       const bubble = document.createElement('div');
@@ -1005,9 +1082,7 @@ function attachChat(card, item) {
             : text('Клиент', 'Client');
       const date = data.createdAt?.toDate?.();
       const stamp = date
-        ? new Intl.DateTimeFormat(language, { dateStyle: 'short', timeStyle: 'short' }).format(
-            date,
-          )
+        ? new Intl.DateTimeFormat(language, { dateStyle: 'short', timeStyle: 'short' }).format(date)
         : '…';
       meta.textContent = `${author} · ${stamp}`;
       const body = document.createElement('p');
@@ -1095,8 +1170,7 @@ function attachChat(card, item) {
   composer.addEventListener('submit', async (event) => {
     event.preventDefault();
     const body = input.value.trim();
-    if (!state.canReply || state.sending || phase || !body || body.length > 150 || !user)
-      return;
+    if (!state.canReply || state.sending || phase || !body || body.length > 150 || !user) return;
     const account = user;
     state.draft = input.value;
     state.sending = true;
@@ -1295,9 +1369,29 @@ $('#show-new-requests').addEventListener('click', () => {
 });
 $('#enable-browser-alerts').addEventListener('click', () => enablePush());
 $('#enable-visitor-alerts').addEventListener('click', () => enablePush());
+let workerPushConfig;
 translate();
+function hasBackgroundPush() {
+  return !!workerPushConfig || (serviceConfig.secureApi === true && !!serviceConfig.vapidKey);
+}
+async function readWorkerPushConfig() {
+  const endpoint = $('meta[name="request-push-endpoint"]')?.content;
+  if (!endpoint) return;
+  try {
+    const origin = new URL(endpoint).origin;
+    const response = await fetch(new URL('/push/config', origin), {
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!response.ok) return;
+    const data = await response.json();
+    if (/^[A-Za-z0-9_-]{87}$/.test(data.vapidKey || ''))
+      workerPushConfig = { origin, vapidKey: data.vapidKey };
+  } catch (_) {
+    // Keep the page and local alerts usable while the push service is offline.
+  }
+}
 async function getPushMessaging() {
-  if (!serviceConfig.vapidKey || serviceConfig.secureApi !== true || !secureCall)
+  if (!hasBackgroundPush())
     throw new Error('Push service is not configured');
   if (!('serviceWorker' in navigator)) throw new Error('Service worker unavailable');
   pushSdk ||= await import('https://www.gstatic.com/firebasejs/12.6.0/firebase-messaging.js');
@@ -1309,7 +1403,7 @@ async function getPushMessaging() {
 }
 function renderPushStatus() {
   const active = !!user && pushOwner === user.uid && !!pushToken;
-  const configured = serviceConfig.secureApi === true && !!serviceConfig.vapidKey;
+  const configured = hasBackgroundPush();
   if (!configured) {
     if ($('#push-status'))
       $('#push-status').textContent = text(
@@ -1322,10 +1416,7 @@ function renderPushStatus() {
     const button = $(id);
     if (!button) continue;
     button.disabled =
-      active ||
-      !configured ||
-      !browserAlertsSupported() ||
-      Notification.permission === 'denied';
+      active || !configured || !browserAlertsSupported() || Notification.permission === 'denied';
     button.textContent =
       browserAlertsSupported() && Notification.permission === 'denied'
         ? text('Уведомления браузера заблокированы', 'Browser notifications blocked')
@@ -1341,17 +1432,30 @@ function renderPushStatus() {
   if ($('#push-status')) $('#push-status').textContent = pushProblem;
 }
 async function registerPush() {
-  const uid = user?.uid;
+  const account = user;
+  const uid = account?.uid;
   if (!uid) return;
   await getPushMessaging();
   const registration = await navigator.serviceWorker.register('./sw.js');
   await navigator.serviceWorker.ready;
   const token = await pushSdk.getToken(pushMessaging, {
-    vapidKey: serviceConfig.vapidKey,
+    vapidKey: workerPushConfig?.vapidKey || serviceConfig.vapidKey,
     serviceWorkerRegistration: registration,
   });
   if (!token || user?.uid !== uid) return;
-  await secureCall('registerRequestPush', { token, language });
+  if (workerPushConfig) {
+    const idToken = await account.getIdToken();
+    if (user?.uid !== uid) return;
+    const response = await fetch(new URL('/push/device', workerPushConfig.origin), {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${idToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, language }),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!response.ok) throw new Error('Push device registration failed');
+  } else {
+    await secureCall('registerRequestPush', { token, language });
+  }
   if (user?.uid !== uid) {
     await pushSdk.deleteToken(pushMessaging);
     return;
@@ -1370,7 +1474,15 @@ async function enablePush() {
         ? await Notification.requestPermission()
         : Notification.permission;
     if (permission === 'granted') {
-      if (serviceConfig.secureApi === true && serviceConfig.vapidKey) await registerPush();
+      if (hasBackgroundPush()) {
+        const uid = user.uid;
+        await registerPush();
+        if (workerPushConfig && pushOwner === uid) {
+          try {
+            localStorage.setItem(`request-push-opt-in:${uid}`, '1');
+          } catch (_) {}
+        }
+      }
     } else throw new Error('Notifications blocked');
   } catch (_) {
     pushProblem = text(
@@ -1384,12 +1496,18 @@ async function enablePush() {
 }
 async function restorePush() {
   if (
-    serviceConfig.secureApi !== true ||
-    !serviceConfig.vapidKey ||
+    !hasBackgroundPush() ||
     !browserAlertsSupported() ||
     Notification.permission !== 'granted'
   )
     return;
+  if (workerPushConfig) {
+    try {
+      if (localStorage.getItem(`request-push-opt-in:${user?.uid}`) !== '1') return;
+    } catch (_) {
+      return;
+    }
+  }
   try {
     await registerPush();
   } catch (_) {
@@ -1400,14 +1518,27 @@ async function restorePush() {
   }
   renderPushStatus();
 }
-async function disconnectPush() {
+async function disconnectPush(previousAccount) {
   // Delete the browser subscription on sign-out/account change. The server binds a
   // token to only one UID and deletes stale/invalid registrations on delivery.
+  const token = pushToken;
+  const owner = pushOwner;
   pushToken = null;
   pushOwner = null;
   try {
     if (pushMessaging && pushSdk) await pushSdk.deleteToken(pushMessaging);
   } catch (_) {}
+  if (workerPushConfig && token && previousAccount && previousAccount.uid === owner) {
+    try {
+      const idToken = await previousAccount.getIdToken();
+      await fetch(new URL('/push/device', workerPushConfig.origin), {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${idToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, remove: true }),
+        signal: AbortSignal.timeout(4000),
+      });
+    } catch (_) {}
+  }
   renderPushStatus();
 }
 function resetRequestPage() {
@@ -1472,8 +1603,7 @@ async function refreshRequestCounts(uid, generation) {
     renderAdminAlerts();
   } catch (_) {
     if (user?.uid === uid && pageGeneration === generation)
-      for (const status of ['new', 'review', 'confirmed'])
-        $(`#count-${status}`).textContent = '—';
+      for (const status of ['new', 'review', 'confirmed']) $(`#count-${status}`).textContent = '—';
   }
 }
 function subscribe() {
@@ -1506,9 +1636,7 @@ function subscribe() {
     { includeMetadataChanges: true },
     (rawSnapshot) => {
       if (user?.uid !== uid || pageGeneration !== generation) return;
-      const docs = isAdmin(user)
-        ? rawSnapshot.docs.slice(0, REQUEST_PAGE_SIZE)
-        : rawSnapshot.docs;
+      const docs = isAdmin(user) ? rawSnapshot.docs.slice(0, REQUEST_PAGE_SIZE) : rawSnapshot.docs;
       const snapshot = { docs, empty: !docs.length, metadata: rawSnapshot.metadata };
       requestPageNext =
         isAdmin(user) && rawSnapshot.docs.length > REQUEST_PAGE_SIZE ? docs.at(-1) : null;
@@ -1521,10 +1649,7 @@ function subscribe() {
       adminAlertProblem = false;
       renderList(snapshot);
       // Rebuild the title before adding the current count.
-      document.title = text(
-        'Заявки на полёт — Denis Aviation',
-        'Flight requests — Denis Aviation',
-      );
+      document.title = text('Заявки на полёт — Denis Aviation', 'Flight requests — Denis Aviation');
       renderAdminAlerts();
     },
     () => {
@@ -1532,10 +1657,7 @@ function subscribe() {
       adminAlertProblem = true;
       clearMessageWatchers();
       lastSnapshot = null;
-      document.title = text(
-        'Заявки на полёт — Denis Aviation',
-        'Flight requests — Denis Aviation',
-      );
+      document.title = text('Заявки на полёт — Denis Aviation', 'Flight requests — Denis Aviation');
       renderAdminAlerts();
       notice(
         'Не удалось загрузить заявки. Проверь соединение и правила Firestore.',
@@ -1865,6 +1987,7 @@ async function start() {
     } catch (_) {
       serviceConfig = {};
     }
+    await readWorkerPushConfig();
     if (serviceConfig.secureApi === true) {
       const functionsSdk = await import(
         'https://www.gstatic.com/firebasejs/12.6.0/firebase-functions.js'
@@ -1906,7 +2029,7 @@ async function start() {
       const previousUser = user;
       user = u;
       resetRequestPage();
-      const pushReset = previousUser?.uid !== u?.uid ? disconnectPush() : Promise.resolve();
+      const pushReset = previousUser?.uid !== u?.uid ? disconnectPush(previousUser) : Promise.resolve();
       authReady = true;
       if (unsubscribe) unsubscribe();
       unsubscribe = null;
