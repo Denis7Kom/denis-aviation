@@ -1,5 +1,5 @@
 import { build } from 'esbuild';
-import { readFile, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 
 const checking = process.argv.includes('--check');
 const result = await build({
@@ -21,4 +21,15 @@ if (checking) {
   console.log('PASS: app.js matches the source modules.');
 } else {
   await writeFile('app.js', output);
+}
+
+if (!checking && process.env.WORKERS_CI === '1') {
+  const directory = '.wrangler-public';
+  await mkdir(directory, { recursive: true });
+  const files = await readdir('.');
+  for (const file of files) {
+    if (/\.(?:html|css|js|svg|webmanifest)$/.test(file) || file === 'assets' || file === 'docs') {
+      await cp(file, `${directory}/${file}`, { recursive: true });
+    }
+  }
 }
