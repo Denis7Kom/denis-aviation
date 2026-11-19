@@ -1,0 +1,8 @@
+{
+  "name": "denis-aviation",
+  "compatibility_date": "2026-11-19",
+  "assets": {
+    "directory": ".wrangler-public"
+  },
+  "previews": {}
+}

@@ -7,6 +7,7 @@ on:
 permissions:
   contents: write
   pages: write
+  checks: read
 concurrency:
   group: aviation-version
   cancel-in-progress: false
@@ -14,6 +15,7 @@ jobs:
   version:
     if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
@@ -59,3 +61,41 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: gh api --method POST "repos/$GH_REPO/pages/builds"
+      - name: Install dependencies for release retry
+        if: steps.current.outputs.released == 'true'
+        run: npm ci
+      - name: Wait for the release commit's Cloudflare check
+        if: steps.current.outputs.released == 'true' || (steps.current.outputs.current == 'true' && steps.version.outputs.next != steps.version.outputs.current)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha=$(git rev-parse HEAD)
+          for attempt in {1..40}; do
+            conclusion=$(gh api --method GET "repos/$GITHUB_REPOSITORY/commits/$sha/check-runs" \
+              -f 'check_name=Workers Builds: denis-aviation' \
+              --jq '[.check_runs[] | select(.app.slug == "cloudflare-workers-and-pages")] | max_by(.id) | .conclusion // "pending"')
+            case "$conclusion" in
+              success) exit 0 ;;
+              pending) sleep 15 ;;
+              *) echo "::error::Cloudflare check concluded: $conclusion"; exit 1 ;;
+            esac
+          done
+          echo '::error::Cloudflare check did not succeed within ten minutes'
+          exit 1
+      - name: Publish checked GitHub release
+        if: steps.current.outputs.released == 'true' || (steps.current.outputs.current == 'true' && steps.version.outputs.next != steps.version.outputs.current)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          npm run check
+          version=$(node -p "require('./package.json').version")
+          tag="v$version"
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            test "$(git rev-parse "$tag^{commit}")" = "$(git rev-parse HEAD)"
+          else
+            git tag "$tag"
+            git push origin "refs/tags/$tag"
+          fi
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --verify-tag --generate-notes --title "$tag"
+          fi
