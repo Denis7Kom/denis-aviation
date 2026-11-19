@@ -29,3 +29,19 @@ jobs:
           FAKE_CONCLUSION=success bash -eo pipefail "$RUNNER_TEMP/release-step.sh"
           if FAKE_CONCLUSION=failure bash -eo pipefail "$RUNNER_TEMP/release-step.sh"; then exit 1; fi
           if FAKE_CONCLUSION=pending bash -eo pipefail "$RUNNER_TEMP/release-step.sh"; then exit 1; fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Check Cloudflare public assets
+        env:
+          WORKERS_CI: '1'
+        run: |
+          npm run build
+          test -s .wrangler-public/index.html
+          test -s .wrangler-public/app.js
+          test -d .wrangler-public/assets
+          test ! -e .wrangler-public/functions
+          test ! -e .wrangler-public/firestore.rules
+          test ! -e .wrangler-public/package.json
