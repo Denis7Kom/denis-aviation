@@ -1,3 +1,5 @@
+import { handleBrowserPush, runBrowserPush } from './browser-push.js';
+
 // Scheduled notification worker. Only the request ID and creation time are read;
 // no visitor details are sent to Telegram or written to the state database.
 const PROJECT = 'denis-komarov---aviation';
@@ -13,7 +15,7 @@ function base64url(bytes) {
   return btoa(binary).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 }
 
-async function googleToken(raw, fetcher) {
+async function googleToken(raw, fetcher, scope = 'https://www.googleapis.com/auth/datastore') {
   let key;
   try {
     key = JSON.parse(raw);
@@ -37,7 +39,7 @@ async function googleToken(raw, fetcher) {
     encoder.encode(
       JSON.stringify({
         iss: key.client_email,
-        scope: 'https://www.googleapis.com/auth/datastore',
+        scope,
         aud: 'https://oauth2.googleapis.com/token',
         iat: now,
         exp: now + 3600,
@@ -202,7 +204,11 @@ export async function run(env, fetcher = fetch) {
 }
 
 export default {
+  fetch(request, env) {
+    return handleBrowserPush(request, env);
+  },
   async scheduled(_event, env, ctx) {
     ctx.waitUntil(run(env));
+    ctx.waitUntil(runBrowserPush(env, googleToken));
   },
 };

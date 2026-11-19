@@ -1369,9 +1369,29 @@ $('#show-new-requests').addEventListener('click', () => {
 });
 $('#enable-browser-alerts').addEventListener('click', () => enablePush());
 $('#enable-visitor-alerts').addEventListener('click', () => enablePush());
+let workerPushConfig;
 translate();
+function hasBackgroundPush() {
+  return !!workerPushConfig || (serviceConfig.secureApi === true && !!serviceConfig.vapidKey);
+}
+async function readWorkerPushConfig() {
+  const endpoint = $('meta[name="request-push-endpoint"]')?.content;
+  if (!endpoint) return;
+  try {
+    const origin = new URL(endpoint).origin;
+    const response = await fetch(new URL('/push/config', origin), {
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!response.ok) return;
+    const data = await response.json();
+    if (/^[A-Za-z0-9_-]{87}$/.test(data.vapidKey || ''))
+      workerPushConfig = { origin, vapidKey: data.vapidKey };
+  } catch (_) {
+    // Keep the page and local alerts usable while the push service is offline.
+  }
+}
 async function getPushMessaging() {
-  if (!serviceConfig.vapidKey || serviceConfig.secureApi !== true || !secureCall)
+  if (!hasBackgroundPush())
     throw new Error('Push service is not configured');
   if (!('serviceWorker' in navigator)) throw new Error('Service worker unavailable');
   pushSdk ||= await import('https://www.gstatic.com/firebasejs/12.6.0/firebase-messaging.js');
@@ -1383,7 +1403,7 @@ async function getPushMessaging() {
 }
 function renderPushStatus() {
   const active = !!user && pushOwner === user.uid && !!pushToken;
-  const configured = serviceConfig.secureApi === true && !!serviceConfig.vapidKey;
+  const configured = hasBackgroundPush();
   if (!configured) {
     if ($('#push-status'))
       $('#push-status').textContent = text(
@@ -1412,17 +1432,30 @@ function renderPushStatus() {
   if ($('#push-status')) $('#push-status').textContent = pushProblem;
 }
 async function registerPush() {
-  const uid = user?.uid;
+  const account = user;
+  const uid = account?.uid;
   if (!uid) return;
   await getPushMessaging();
   const registration = await navigator.serviceWorker.register('./sw.js');
   await navigator.serviceWorker.ready;
   const token = await pushSdk.getToken(pushMessaging, {
-    vapidKey: serviceConfig.vapidKey,
+    vapidKey: workerPushConfig?.vapidKey || serviceConfig.vapidKey,
     serviceWorkerRegistration: registration,
   });
   if (!token || user?.uid !== uid) return;
-  await secureCall('registerRequestPush', { token, language });
+  if (workerPushConfig) {
+    const idToken = await account.getIdToken();
+    if (user?.uid !== uid) return;
+    const response = await fetch(new URL('/push/device', workerPushConfig.origin), {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${idToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, language }),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!response.ok) throw new Error('Push device registration failed');
+  } else {
+    await secureCall('registerRequestPush', { token, language });
+  }
   if (user?.uid !== uid) {
     await pushSdk.deleteToken(pushMessaging);
     return;
@@ -1441,7 +1474,15 @@ async function enablePush() {
         ? await Notification.requestPermission()
         : Notification.permission;
     if (permission === 'granted') {
-      if (serviceConfig.secureApi === true && serviceConfig.vapidKey) await registerPush();
+      if (hasBackgroundPush()) {
+        const uid = user.uid;
+        await registerPush();
+        if (workerPushConfig && pushOwner === uid) {
+          try {
+            localStorage.setItem(`request-push-opt-in:${uid}`, '1');
+          } catch (_) {}
+        }
+      }
     } else throw new Error('Notifications blocked');
   } catch (_) {
     pushProblem = text(
@@ -1455,12 +1496,18 @@ async function enablePush() {
 }
 async function restorePush() {
   if (
-    serviceConfig.secureApi !== true ||
-    !serviceConfig.vapidKey ||
+    !hasBackgroundPush() ||
     !browserAlertsSupported() ||
     Notification.permission !== 'granted'
   )
     return;
+  if (workerPushConfig) {
+    try {
+      if (localStorage.getItem(`request-push-opt-in:${user?.uid}`) !== '1') return;
+    } catch (_) {
+      return;
+    }
+  }
   try {
     await registerPush();
   } catch (_) {
@@ -1471,14 +1518,27 @@ async function restorePush() {
   }
   renderPushStatus();
 }
-async function disconnectPush() {
+async function disconnectPush(previousAccount) {
   // Delete the browser subscription on sign-out/account change. The server binds a
   // token to only one UID and deletes stale/invalid registrations on delivery.
+  const token = pushToken;
+  const owner = pushOwner;
   pushToken = null;
   pushOwner = null;
   try {
     if (pushMessaging && pushSdk) await pushSdk.deleteToken(pushMessaging);
   } catch (_) {}
+  if (workerPushConfig && token && previousAccount && previousAccount.uid === owner) {
+    try {
+      const idToken = await previousAccount.getIdToken();
+      await fetch(new URL('/push/device', workerPushConfig.origin), {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${idToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, remove: true }),
+        signal: AbortSignal.timeout(4000),
+      });
+    } catch (_) {}
+  }
   renderPushStatus();
 }
 function resetRequestPage() {
@@ -1927,6 +1987,7 @@ async function start() {
     } catch (_) {
       serviceConfig = {};
     }
+    await readWorkerPushConfig();
     if (serviceConfig.secureApi === true) {
       const functionsSdk = await import(
         'https://www.gstatic.com/firebasejs/12.6.0/firebase-functions.js'
@@ -1968,7 +2029,7 @@ async function start() {
       const previousUser = user;
       user = u;
       resetRequestPage();
-      const pushReset = previousUser?.uid !== u?.uid ? disconnectPush() : Promise.resolve();
+      const pushReset = previousUser?.uid !== u?.uid ? disconnectPush(previousUser) : Promise.resolve();
       authReady = true;
       if (unsubscribe) unsubscribe();
       unsubscribe = null;
