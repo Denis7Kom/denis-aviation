@@ -1086,3 +1086,6 @@ textarea:focus-visible {
 .briefing-fields label { min-width: 0; }
 .entry .briefing-template .briefing-insert { width: auto; border: 1px solid #5c8ba8; background: #152c3c; color: #e0f2ff; border-radius: 8px; margin-bottom: 8px; }
 @media (max-width: 480px) { .briefing-fields { grid-template-columns: minmax(0, 1fr); } }
+
+/* Traffic intensity is independent from the request status. */
+.entry .briefing-fields label > select { color: #e2eef8; border-color: #42627b; background-color: #0a1a28; font-weight: 400; }
