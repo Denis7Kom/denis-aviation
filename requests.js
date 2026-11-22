@@ -1370,6 +1370,7 @@ $('#show-new-requests').addEventListener('click', () => {
 $('#enable-browser-alerts').addEventListener('click', () => enablePush());
 $('#enable-visitor-alerts').addEventListener('click', () => enablePush());
 let workerPushConfig;
+let enablingPush = false;
 translate();
 function hasBackgroundPush() {
   return !!workerPushConfig || (serviceConfig.secureApi === true && !!serviceConfig.vapidKey);
@@ -1406,30 +1407,32 @@ function renderPushStatus() {
   const configured = hasBackgroundPush();
   if (!configured) {
     if ($('#push-status'))
-      $('#push-status').textContent = text(
+      $('#push-status').textContent = pushProblem || text(
         'Фоновая доставка ещё не настроена. Уведомления браузера работают при открытой странице.',
         'Background delivery is not configured yet. Browser notifications work while this page is open.',
       );
-    return;
+    if (!$('meta[name="request-push-endpoint"]')?.content) return;
   }
   for (const id of ['#enable-browser-alerts', '#enable-visitor-alerts']) {
     const button = $(id);
     if (!button) continue;
     button.disabled =
-      active || !configured || !browserAlertsSupported() || Notification.permission === 'denied';
+      active || enablingPush || !browserAlertsSupported() || Notification.permission === 'denied';
     button.textContent =
-      browserAlertsSupported() && Notification.permission === 'denied'
+      !browserAlertsSupported()
+        ? text('Уведомления браузера недоступны', 'Browser notifications unavailable')
+        : Notification.permission === 'denied'
         ? text('Уведомления браузера заблокированы', 'Browser notifications blocked')
         : active
           ? text('Фоновые уведомления включены', 'Background notifications enabled')
           : configured
             ? text('Включить фоновые уведомления', 'Enable background notifications')
             : text(
-                'Фоновые уведомления ещё не настроены',
-                'Background notifications are not configured yet',
+                'Подключить фоновые уведомления',
+                'Connect background notifications',
               );
   }
-  if ($('#push-status')) $('#push-status').textContent = pushProblem;
+  if (configured && $('#push-status')) $('#push-status').textContent = pushProblem;
 }
 async function registerPush() {
   const account = user;
@@ -1466,33 +1469,39 @@ async function registerPush() {
   renderPushStatus();
 }
 async function enablePush() {
-  if (!user || !browserAlertsSupported()) return;
+  if (!user || enablingPush || !browserAlertsSupported()) return;
+  const uid = user.uid;
+  enablingPush = true;
   try {
     // Permission request stays directly inside the visitor's click gesture.
     const permission =
       Notification.permission === 'default'
         ? await Notification.requestPermission()
         : Notification.permission;
-    if (permission === 'granted') {
-      if (hasBackgroundPush()) {
-        const uid = user.uid;
-        await registerPush();
-        if (workerPushConfig && pushOwner === uid) {
-          try {
-            localStorage.setItem(`request-push-opt-in:${uid}`, '1');
-          } catch (_) {}
-        }
-      }
-    } else throw new Error('Notifications blocked');
+    if (permission !== 'granted') throw new Error('Notifications blocked');
+    if (!hasBackgroundPush()) {
+      if (!$('meta[name="request-push-endpoint"]')?.content) return;
+      await readWorkerPushConfig();
+    }
+    if (user?.uid !== uid) return;
+    await registerPush();
+    if (workerPushConfig && pushOwner === uid) {
+      try {
+        localStorage.setItem(`request-push-opt-in:${uid}`, '1');
+      } catch (_) {}
+    }
   } catch (_) {
-    pushProblem = text(
-      'Не удалось включить фоновые уведомления. Проверь разрешение браузера и попробуй снова.',
-      'Could not enable background notifications. Check browser permission and try again.',
-    );
+    if (user?.uid === uid)
+      pushProblem = text(
+        'Не удалось включить фоновые уведомления. Проверь разрешение браузера и попробуй снова.',
+        'Could not enable background notifications. Check browser permission and try again.',
+      );
+  } finally {
+    enablingPush = false;
+    renderAdminAlerts();
+    renderVisitorAlerts();
+    renderPushStatus();
   }
-  renderAdminAlerts();
-  renderVisitorAlerts();
-  renderPushStatus();
 }
 async function restorePush() {
   if (

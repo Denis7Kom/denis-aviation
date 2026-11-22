@@ -191,6 +191,7 @@ async function sendPending(db, token, fetcher) {
     )
     .bind(SEND_LIMIT)
     .all();
+  let retryStatus;
   for (const item of results) {
     const response = await fetcher(
       `https://fcm.googleapis.com/v1/projects/${PROJECT}/messages:send`,
@@ -206,11 +207,26 @@ async function sendPending(db, token, fetcher) {
         }),
         signal: AbortSignal.timeout(10000),
       },
-    );
-    if (!response.ok) {
-      const failure = await response.json().catch(() => ({}));
-      if (!failure.error?.details?.some((detail) => detail.errorCode === 'UNREGISTERED'))
-        throw new Error(`Browser push sending failed (${response.status})`);
+    ).catch(() => null);
+    if (!response?.ok) {
+      const status = response?.status ?? 0;
+      const failure = response ? await response.json().catch(() => ({})) : {};
+      const unregistered = failure.error?.details?.some(
+        (detail) => detail.errorCode === 'UNREGISTERED',
+      );
+      if (!unregistered && [401, 403, 429].includes(status))
+        throw new Error(`Browser push sending failed (${status})`);
+      if (!unregistered) {
+        // Keep the delivery for the next cron, behind notifications not tried yet.
+        await db
+          .prepare(
+            'UPDATE browser_delivery SET id = (SELECT max(id) + 1 FROM browser_delivery) WHERE id = ?',
+          )
+          .bind(item.id)
+          .run();
+        retryStatus = status;
+        continue;
+      }
       await db.batch([
         db.prepare('DELETE FROM browser_delivery WHERE token = ?').bind(item.token),
         db.prepare('DELETE FROM browser_devices WHERE token = ?').bind(item.token),
@@ -219,6 +235,8 @@ async function sendPending(db, token, fetcher) {
     }
     await db.prepare('DELETE FROM browser_delivery WHERE id = ?').bind(item.id).run();
   }
+  if (retryStatus !== undefined)
+    throw new Error(`Browser push retained failed deliveries (${retryStatus || 'network error'})`);
 }
 
 export async function runBrowserPush(env, authorize, fetcher = fetch) {

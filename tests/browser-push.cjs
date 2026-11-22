@@ -71,9 +71,12 @@ async function main() {
   };
   const messages = [];
   const sent = [];
+  let failAdmin = false;
   const fetcher = async (url, options) => {
     const body = JSON.parse(options.body);
     if (url.endsWith('/messages:send')) {
+      if (failAdmin && body.message.token === device('a'))
+        return new Response(null, { status: 503 });
       sent.push([body.message.data.kind, body.message.token[0]]);
       return Response.json({ name: 'sent' });
     }
@@ -109,6 +112,15 @@ async function main() {
     ['status', 'a'],
     ['status', 'b'],
   ]);
+  await run();
+  assert.deepEqual(sent, []);
+  doc.fields.status.stringValue = 'completed';
+  failAdmin = true;
+  await assert.rejects(run(), /retained failed deliveries \(503\)/);
+  assert.deepEqual(sent.splice(0), [['status', 'b']]);
+  failAdmin = false;
+  await run();
+  assert.deepEqual(sent.splice(0), [['status', 'a']]);
   await run();
   assert.deepEqual(sent, []);
   console.log('PASS: browser push identity, private routing, status, reply, replay protection');
