@@ -627,6 +627,7 @@ nav a:hover:after {
   letter-spacing: 1.3px;
 }
 .credential h3 {
+  overflow-wrap: anywhere;
   font-size: 40px;
   font-weight: 500;
   letter-spacing: -1.5px;
@@ -637,6 +638,13 @@ nav a:hover:after {
   line-height: 1.85;
   color: #a6b7d0;
   margin: 0;
+}
+.credential-training + .credential-training {
+  margin-top: 0.75em;
+}
+.credential-training a {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
 }
 .status {
   margin-top: 20px;

@@ -17,9 +17,9 @@
     "dffe668dbbf62514728574c32ebc29506b1d9ce7e3ab5f7092b4d7fae7d6e164",
     "f71f7b3017b260ff2d75bdf797e6aee4787ba8ae2eb317dcd5ce4e9fe05cd801"
   ],
-  "static": { "index.html": "b903c1936a235cae8473d576200bbe5863c5858c6d6c2731c9043f99fac701cc" },
+  "static": { "index.html": "aca0219f64d6786c4a17a3dd863435bfb7c46dca7577e6c9fa5c851f16be2597" },
   "renderer": "9b5054080a9bd04374c321fb9dcf3abd7d0e48489a64dff9c076ab42f87a4245",
-  "stylesheet": "76a71dcfc05a663149971218194a909ccd1cd9cc92b5a409ca33345b302b1c33",
+  "stylesheet": "d07565ea98977b8c84d31843b69bf2339edd2a033eb384ec2e2123fecb8031b9",
   "gallery": "5dfe94faa660912a70a26a1d4f45d43e7b3687f731fffbd75da925bfdfd07e86",
   "reviewedChange": { "date": "2026-11-18", "scope": "Use native date and time picker icons" }
 }
