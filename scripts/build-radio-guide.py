@@ -53,6 +53,15 @@ pages=[
  ('ADVISORY CALLS  /  choose the phase', [('TAXI','[Airport] traffic, [callsign], taxiing from stand [number] to runway [runway] via [route], [airport].'),('DEPART','[Airport] traffic, [callsign], departing runway [runway], [departure direction], [airport].'),('ARRIVAL','[Airport] traffic, [callsign], [distance] miles [direction], inbound for runway [runway], [airport].'),('VACATED','[Airport] traffic, [callsign], runway [runway] vacated via [taxiway], [airport].')], 'These are position reports. They do not authorise crossing, takeoff or landing.'),
  ('PREPARE FOR ATC', [('CHANGE','When entering controlled coverage, contact the appropriate unit as required.'),('CHECK IN','[Station], [callsign], [position], [level] and [intentions].')], 'Review current local frequency and coverage information before departure.')]) ]
 
+parser=argparse.ArgumentParser(description='Build the radio phrasebook')
+parser.add_argument('--output', help='PDF file to create; without this option, emit base64 to stdout')
+parser.add_argument('--language', choices=('en', 'ru'), default='en', help='Guide language')
+args=parser.parse_args()
+
+if args.language == 'ru':
+ from radio_guide_ru import PAGES
+ pages = PAGES
+
 def lines(s, font, size, width): return simpleSplit(s,font,size,width)
 def frame(c,n,title,kicker):
  c.setFillColor(BG); c.rect(0,0,W,H,fill=1,stroke=0)
@@ -60,8 +69,8 @@ def frame(c,n,title,kicker):
  c.saveState();c.setFillColor(HexColor('#294258'));c.setFont('SegoeBold',44);c.translate(W/2,H/2);c.rotate(35);c.drawCentredString(0,0,'DENIS-AVIATION');c.restoreState()
  for x,angle in [(18,90),(W-18,-90)]:
   c.saveState();c.translate(x,H/2);c.rotate(angle);c.setFillColor(HexColor('#52728e'));c.setFont('SegoeBold',7);c.drawCentredString(0,0,'D E N I S - A V I A T I O N');c.restoreState()
- c.setFont('SegoeBold',8);c.setFillColor(BLUE);c.drawString(48,H-39,'DENIS-AVIATION  /  RADIO GUIDE');c.drawRightString(W-48,H-39,f'{n}  /  {len(pages):02}')
- c.setFillColor(MUTED);c.setFont('Segoe',7.5);c.drawString(48,27,'ATC COMMUNICATION  /  ENGLISH PHRASEBOOK');c.drawRightString(W-48,27,'DENIS-AVIATION')
+ c.setFont('SegoeBold',8);c.setFillColor(BLUE);c.drawString(48,H-39,'DENIS-AVIATION  /  ПАМЯТКА ПО РАДИОСВЯЗИ (РУС)' if args.language == 'ru' else 'DENIS-AVIATION  /  RADIO GUIDE');c.drawRightString(W-48,H-39,f'{n}  /  {len(pages):02}')
+ c.setFillColor(MUTED);c.setFont('Segoe',7.5);c.drawString(48,27,'РАДИООБМЕН В VATSIM  /  РУССКИЙ ЯЗЫК' if args.language == 'ru' else 'ATC COMMUNICATION  /  ENGLISH PHRASEBOOK');c.drawRightString(W-48,27,'DENIS-AVIATION')
  c.setFillColor(BLUE);c.setFont('SegoeBold',8);c.drawString(48,H-86,kicker)
  c.setFillColor(WHITE);c.setFont('SegoeBold',25);c.drawString(48,H-116,title)
  return H-137
@@ -70,15 +79,17 @@ def card(c,y,title,entries,tip):
  x=48; w=W-96; text_w=w-115
  rows=[]
  for label,phrase in entries:
+  if pdfmetrics.stringWidth(label,'SegoeBold',7)>74: raise ValueError(f'Row label is too wide: {label}')
   wrapped=lines(phrase,'Segoe',9.3,text_w)
   rows.append((label,wrapped))
  tip_lines=lines(tip,'Segoe',8.5,w-35)
  height=32+sum(max(15,len(words)*12+3) for _,words in rows)+18+len(tip_lines)*11
+ if pdfmetrics.stringWidth(title,'SegoeBold',8.3)>w-28: raise ValueError(f'Card title is too wide: {title}')
  c.setFillColor(PANEL);c.setStrokeColor(EDGE);c.roundRect(x,y-height,w,height,7,fill=1,stroke=1)
  c.setFillColor(BLUE);c.setFont('SegoeBold',8.3);c.drawString(x+14,y-19,title)
  yy=y-36
  for label,words in rows:
-  c.setFillColor(ORANGE if label in ('ATC','UNABLE') else MUTED);c.setFont('SegoeBold',7);c.drawString(x+14,yy,label)
+  c.setFillColor(ORANGE if label in ('ATC','UNABLE','ДИСПЕТЧЕР','НЕ МОГУ') else MUTED);c.setFont('SegoeBold',7);c.drawString(x+14,yy,label)
   c.setFillColor(WHITE);c.setFont('Segoe',9.3)
   for line in words: c.drawString(x+93,yy,line);yy-=12
   yy-=3
@@ -89,16 +100,13 @@ def card(c,y,title,entries,tip):
 
 buffer=io.BytesIO()
 c=canvas.Canvas(buffer, pagesize=A4, pageCompression=1)
-c.setTitle('ATC Communication | Denis Aviation');c.setAuthor('Denis Aviation')
+c.setTitle('Памятка по радиосвязи (РУС) | Denis Aviation' if args.language == 'ru' else 'ATC Communication | Denis Aviation');c.setAuthor('Denis Aviation')
 for n,title,kicker,cards in pages:
  y=frame(c,n,title,kicker)
  for t,e,tip in cards: y=card(c,y,t,e,tip)
  if y<48: raise ValueError(f'Content overflows page {n}: {y}')
  c.showPage()
 c.save()
-parser=argparse.ArgumentParser(description='Build the radio phrasebook')
-parser.add_argument('--output', help='PDF file to create; without this option, emit base64 to stdout')
-args=parser.parse_args()
 if args.output:
  Path(args.output).write_bytes(buffer.getvalue())
 else:
