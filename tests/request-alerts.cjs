@@ -303,6 +303,39 @@ function snapshot(docs, fromCache = false) {
   );
   snapshot([request('visitor', 'declined')]);
   assert.equal(alerts.length, 7, 'A different account does not inherit the previous baseline');
+  const endpoint = document.querySelector('meta[name="request-push-endpoint"]');
+  endpoint.content = 'https://worker.example.test';
+  let configRequests = 0;
+  let registrations = 0;
+  context.URL = URL;
+  context.AbortSignal = AbortSignal;
+  context.navigator = { serviceWorker: { register: async () => ({}), ready: Promise.resolve() } };
+  context.fetch = async (url) => {
+    if (url.pathname === '/push/config') {
+      configRequests++;
+      return configRequests === 1
+        ? { ok: false }
+        : { ok: true, json: async () => ({ vapidKey: 'A'.repeat(87) }) };
+    }
+    assert.equal(url.pathname, '/push/device');
+    registrations++;
+    return { ok: true };
+  };
+  vm.runInContext(
+    `user.getIdToken = async () => 'test-auth';
+     pushSdk = { isSupported: async () => true, getMessaging: () => ({}), getToken: async () => 'test-device' };
+     renderVisitorAlerts();`,
+    context,
+  );
+  const pushButton = elements.get('#enable-visitor-alerts');
+  assert.equal(pushButton.disabled, false, 'A failed config load must leave a retry available');
+  await pushButton.listeners.click();
+  assert.equal(registrations, 0);
+  assert.equal(pushButton.disabled, false);
+  await pushButton.listeners.click();
+  assert.equal(registrations, 1);
+  assert.equal(pushButton.disabled, true);
+  assert.equal(storage.get('request-push-opt-in:other'), '1');
   console.log(
     'PASS: administrator alerts, cached snapshots, status updates, permissions and visitor isolation',
   );

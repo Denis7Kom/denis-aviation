@@ -208,7 +208,9 @@ export default {
     return handleBrowserPush(request, env);
   },
   async scheduled(_event, env, ctx) {
-    ctx.waitUntil(run(env));
+    if (env.TELEGRAM_BOT_TOKEN?.trim() || env.TELEGRAM_CHAT_ID?.trim()) {
+      ctx.waitUntil(run(env));
+    }
     ctx.waitUntil(runBrowserPush(env, googleToken));
   },
 };

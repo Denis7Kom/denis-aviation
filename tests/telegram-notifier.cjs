@@ -4,9 +4,10 @@ const { generateKeyPairSync } = require('node:crypto');
 const { readFileSync } = require('node:fs');
 
 (async () => {
-  const { run } = await import('../telegram-notifier/worker.js');
+  const { default: worker, run } = await import('../telegram-notifier/worker.js');
   const sql = new DatabaseSync(':memory:');
   sql.exec(readFileSync('telegram-notifier/schema.sql', 'utf8'));
+  sql.exec(readFileSync('telegram-notifier/browser-push.sql', 'utf8'));
   sql
     .prepare('UPDATE notifier_state SET created_at = ?, document_name = NULL WHERE id = 1')
     .run('2026-01-01T00:00:00.000Z');
@@ -20,6 +21,9 @@ const { readFileSync } = require('node:fs');
         },
         async first() {
           return sql.prepare(statement).get(...this.values) || null;
+        },
+        async all() {
+          return { results: sql.prepare(statement).all(...this.values) };
         },
         async run() {
           return { meta: { changes: Number(sql.prepare(statement).run(...this.values).changes) } };
@@ -38,6 +42,22 @@ const { readFileSync } = require('node:fs');
     TELEGRAM_BOT_TOKEN: 'TEST_SECRET_TOKEN',
     TELEGRAM_CHAT_ID: '100',
   };
+  const scheduledTasks = [];
+  const ctx = { waitUntil: (task) => scheduledTasks.push(task) };
+  const webPushOnly = {
+    DB: db,
+    FCM_VAPID_PUBLIC_KEY: 'test-key',
+    GOOGLE_SERVICE_ACCOUNT: env.GOOGLE_SERVICE_ACCOUNT,
+  };
+  await worker.scheduled({}, webPushOnly, ctx);
+  assert.equal(scheduledTasks.length, 1, 'Only Web Push runs when Telegram is unconfigured');
+  await scheduledTasks.pop();
+  await worker.scheduled({}, { ...webPushOnly, TELEGRAM_CHAT_ID: '100' }, ctx);
+  assert.equal(scheduledTasks.length, 2, 'Partial Telegram configuration still reports an error');
+  await Promise.all([
+    assert.rejects(scheduledTasks[0], /Missing Worker configuration: TELEGRAM_BOT_TOKEN/),
+    scheduledTasks[1],
+  ]);
   for (const name of ['DB', 'GOOGLE_SERVICE_ACCOUNT', 'TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID']) {
     await assert.rejects(
       run({ ...env, [name]: undefined }),
